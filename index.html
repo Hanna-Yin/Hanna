@@ -2,51 +2,1327 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hanna · 在线应用集</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f9d6e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="冰箱管家">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<title>冰箱管家 · 低碳生酮版</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-    background: linear-gradient(160deg, #eef4fb 0%, #f7fafd 100%);
-    min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
-  }
-  .wrap { width: 100%; max-width: 640px; }
-  h1 { font-size: 26px; color: #1f2d3d; text-align: center; margin-bottom: 6px; }
-  .sub { text-align: center; color: #7a8a99; font-size: 14px; margin-bottom: 28px; }
-  .card {
-    display: block; text-decoration: none; background: #fff; border-radius: 16px;
-    padding: 22px 24px; margin-bottom: 16px; box-shadow: 0 4px 16px rgba(31,45,61,.08);
-    transition: transform .15s, box-shadow .15s;
-  }
-  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(31,45,61,.14); }
-  .card .emoji { font-size: 34px; }
-  .card .name { font-size: 18px; font-weight: 700; color: #1f2d3d; margin: 8px 0 4px; }
-  .card .desc { font-size: 13px; color: #7a8a99; line-height: 1.6; }
-  .card .go { color: #3498db; font-size: 13px; font-weight: 600; margin-top: 8px; }
-  footer { text-align: center; color: #a0adb9; font-size: 12px; margin-top: 24px; }
+:root{
+  --green:#0f9d6e; --green-dark:#0b7d57; --green-light:#e6f7f0;
+  --amber:#e6a23c; --red:#e25c4a; --blue:#4a90d9;
+  --bg:#f4f6f5; --card:#ffffff; --text:#2c3e3a; --sub:#8a9a95; --line:#e8eeeb;
+  --radius:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);font-size:15px;}
+#app{max-width:520px;margin:0 auto;min-height:100vh;padding-bottom:76px;position:relative;}
+
+/* header */
+.header{background:linear-gradient(135deg,#0f9d6e,#14b884);color:#fff;padding:18px 18px 14px;position:sticky;top:0;z-index:20;border-radius:0 0 18px 18px;}
+.header h1{font-size:19px;font-weight:700;display:flex;align-items:center;gap:8px;}
+.header .date{font-size:12px;opacity:.85;margin-top:3px;}
+.header .keto-badge{background:rgba(255,255,255,.2);font-size:11px;padding:2px 8px;border-radius:99px;font-weight:500;}
+
+/* tabs */
+.tabs{display:flex;background:var(--card);position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;border-top:1px solid var(--line);z-index:30;padding-bottom:env(safe-area-inset-bottom);}
+.tab{flex:1;text-align:center;padding:8px 0 6px;color:var(--sub);cursor:pointer;transition:.15s;user-select:none;}
+.tab .icon{font-size:20px;display:block;line-height:1;}
+.tab .label{font-size:11px;margin-top:2px;display:block;}
+.tab.active{color:var(--green);font-weight:600;}
+
+.view{display:none;padding:14px;}
+.view.active{display:block;animation:fadein .2s;}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* cards & general */
+.card{background:var(--card);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(30,60,50,.05);}
+.card h3{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.section-title{font-size:13px;color:var(--sub);margin:16px 4px 8px;display:flex;justify-content:space-between;align-items:center;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;border:none;border-radius:10px;padding:9px 14px;font-size:14px;cursor:pointer;font-family:inherit;transition:.15s;}
+.btn-primary{background:var(--green);color:#fff;}
+.btn-primary:hover{background:var(--green-dark);}
+.btn-ghost{background:var(--green-light);color:var(--green-dark);}
+.btn-danger{background:#fdeeed;color:var(--red);}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:8px;}
+.btn-block{width:100%;padding:12px;font-size:15px;}
+input,select,textarea{font-family:inherit;font-size:14px;border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:#fff;color:var(--text);outline:none;width:100%;}
+input:focus,select:focus{border-color:var(--green);}
+.form-row{display:flex;gap:8px;margin-bottom:8px;}
+.form-row>*{flex:1;}
+label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4px;}
+
+/* inventory */
+.food-item{display:flex;align-items:center;gap:10px;padding:11px 12px;background:var(--card);border-radius:12px;margin-bottom:8px;box-shadow:0 1px 3px rgba(30,60,50,.04);}
+.food-item .emoji{font-size:24px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(--green-light);border-radius:10px;flex-shrink:0;}
+.food-item .info{flex:1;min-width:0;}
+.food-item .name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.food-item .meta{font-size:12px;color:var(--sub);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.qty-box{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.qty-box .num{font-weight:700;font-size:15px;min-width:52px;text-align:center;}
+.qty-box .num small{font-size:11px;color:var(--sub);font-weight:400;}
+.qty-btn{width:28px;height:28px;border-radius:8px;border:none;background:var(--green-light);color:var(--green-dark);font-size:16px;font-weight:700;cursor:pointer;line-height:1;}
+.empty{text-align:center;color:var(--sub);padding:34px 10px;font-size:13px;}
+.empty .big{font-size:40px;margin-bottom:8px;}
+.tag{font-size:10px;padding:2px 7px;border-radius:99px;font-weight:500;}
+.tag-keto{background:var(--green-light);color:var(--green-dark);}
+.tag-warn{background:#fdf3e7;color:#b97821;}
+.tag-bad{background:#fdeeed;color:var(--red);}
+.tag-cat{background:#eef2f7;color:#5a7184;}
+.tag-stockout{background:#f2f3f4;color:#aaa;}
+.tag-exp{background:#f2f3f4;color:#8a9a95;cursor:pointer;}
+.exp-alert{background:#fdeeed;border:1px solid #f3c4bb;border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:13px;color:var(--red);line-height:1.7;}
+.exp-alert.warn{background:#fdf6ec;border-color:#eed9ae;color:#a86a14;}
+
+/* meal */
+.meal-type-pick{display:flex;gap:8px;margin-bottom:14px;}
+.meal-type-pick .mt{flex:1;text-align:center;padding:10px 0;border-radius:12px;background:var(--card);border:2px solid var(--line);cursor:pointer;font-size:14px;transition:.15s;}
+.meal-type-pick .mt.sel{border-color:var(--green);background:var(--green-light);color:var(--green-dark);font-weight:700;}
+.pick-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border-radius:12px;margin-bottom:8px;border:2px solid transparent;cursor:pointer;transition:.15s;}
+.pick-item.sel{border-color:var(--green);background:var(--green-light);}
+.pick-item .ck{width:20px;height:20px;border-radius:6px;border:2px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;}
+.pick-item.sel .ck{background:var(--green);border-color:var(--green);}
+.pick-item .amt{width:84px;flex-shrink:0;}
+.pick-item .amt input{text-align:center;padding:7px 6px;}
+.meal-log{border-left:3px solid var(--green-light);padding:10px 12px;background:var(--card);border-radius:0 12px 12px 0;margin-bottom:10px;}
+.meal-log .mt-tag{font-size:11px;color:var(--green-dark);background:var(--green-light);border-radius:6px;padding:2px 7px;display:inline-block;margin-bottom:5px;font-weight:600;}
+.meal-log .items{font-size:13px;line-height:1.7;}
+.meal-log .time{font-size:11px;color:var(--sub);margin-top:4px;}
+
+/* recipes */
+.recipe-card{background:var(--card);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(30,60,50,.05);}
+.recipe-card .r-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.recipe-card .r-name{font-size:16px;font-weight:700;}
+.recipe-card .r-sub{font-size:12px;color:var(--sub);margin-top:3px;}
+.recipe-card .r-ings{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;}
+.ing{font-size:12px;padding:3px 9px;border-radius:99px;background:#f2f5f4;color:#5a6b66;}
+.ing.ok{background:var(--green-light);color:var(--green-dark);}
+.ing.miss{background:#fdeeed;color:var(--red);}
+.recipe-card .r-detail{display:none;margin-top:10px;border-top:1px dashed var(--line);padding-top:10px;font-size:13px;line-height:1.9;color:#485853;white-space:pre-line;}
+.recipe-card.open .r-detail{display:block;}
+.match-pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;flex-shrink:0;}
+.match-yes{background:var(--green);color:#fff;}
+.match-near{background:#fdf3e7;color:#b97821;}
+.match-no{background:#f2f3f4;color:#999;}
+.filter-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px;scrollbar-width:none;}
+.filter-row::-webkit-scrollbar{display:none;}
+.chip{flex-shrink:0;padding:7px 14px;border-radius:99px;background:var(--card);border:1px solid var(--line);font-size:13px;color:var(--sub);cursor:pointer;white-space:nowrap;}
+.chip.sel{background:var(--green);color:#fff;border-color:var(--green);font-weight:600;}
+
+/* seasonal */
+.month-strip{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:none;}
+.month-strip::-webkit-scrollbar{display:none;}
+.month-btn{flex-shrink:0;width:58px;height:58px;border-radius:14px;background:var(--card);border:2px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:var(--sub);}
+.month-btn b{font-size:17px;color:var(--text);}
+.month-btn.cur{border-color:var(--green);background:var(--green-light);color:var(--green-dark);}
+.month-btn.cur b{color:var(--green-dark);}
+.season-food{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border-radius:12px;margin-bottom:8px;}
+/* 食物地图（红黄绿灯） */
+.map-row{display:flex;gap:8px;align-items:flex-start;padding:0 4px 10px;}
+.map-row b{flex:0 0 56px;font-size:11px;margin-top:6px;font-weight:600;}
+.mr-g{color:#0f9d6e}.mr-y{color:#b97821}.mr-r{color:#d64545}
+.map-chips{display:flex;flex-wrap:wrap;gap:6px;flex:1;min-width:0;}
+.map-chip{font-size:12px;padding:4px 10px;border-radius:99px;white-space:nowrap;}
+.mc-g{background:#e6f5ee;color:#0b7a55;}
+.mc-y{background:#fdf3e2;color:#96650f;}
+.mc-r{background:#fdeaea;color:#b03030;}
+.map-chip.clk{cursor:pointer;}
+.season-food .sf-info{flex:1;}
+.season-food .sf-name{font-weight:600;font-size:14px;}
+.season-food .sf-note{font-size:11px;color:var(--sub);margin-top:2px;}
+.sf-cat{font-size:11px;color:var(--sub);background:#f2f5f4;border-radius:6px;padding:2px 7px;margin-left:8px;}
+
+/* shopping */
+.shop-item{display:flex;align-items:center;gap:10px;padding:11px 12px;background:var(--card);border-radius:12px;margin-bottom:8px;}
+.shop-item.done{opacity:.5;}
+.shop-item.done .sf-name{text-decoration:line-through;}
+.cb{width:20px;height:20px;border-radius:6px;border:2px solid var(--line);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;}
+.cb.on{background:var(--green);border-color:var(--green);}
+
+/* toast */
+#toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:rgba(40,55,50,.92);color:#fff;padding:10px 18px;border-radius:99px;font-size:13px;z-index:99;opacity:0;pointer-events:none;transition:.25s;white-space:nowrap;}
+#toast.show{opacity:1;}
+.back-top{position:fixed;bottom:88px;right:16px;width:42px;height:42px;border-radius:50%;background:var(--card);box-shadow:0 2px 10px rgba(30,60,50,.15);display:none;align-items:center;justify-content:center;font-size:19px;z-index:25;border:none;cursor:pointer;color:var(--green-dark);}
+/* sync modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:80;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.show{display:flex;}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:400px;max-height:85vh;overflow-y:auto;padding:20px;}
+.modal h3{margin-bottom:14px;}
+.modal .sync-step{background:var(--bg);border-radius:12px;padding:14px;margin-bottom:12px;}
+.modal .sync-step h4{font-size:13px;margin-bottom:6px;}
+.modal .sync-step p{font-size:12px;color:var(--sub);margin:0 0 8px;line-height:1.5;}
+.modal textarea{width:100%;height:90px;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:11px;font-family:monospace;resize:vertical;}
+.modal .close-btn{width:100%;margin-top:8px;}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>📦 Hanna · 在线应用集</h1>
-  <div class="sub">选择应用进入 · 均为纯前端 PWA，数据保存在本机浏览器</div>
+<div id="app">
+  <div class="header">
+    <h1>🧊 冰箱管家 <span class="keto-badge" style="cursor:pointer" title="低碳生酮饮食模式" onclick="openKeto()">🥑 低碳生酮</span> <span class="keto-badge" style="cursor:pointer" title="数据备份/恢复" onclick="openSync()">☁️ 同步</span></h1>
+    <div class="date" id="todayText"></div>
+  </div>
 
-  <a class="card" href="./water-todo/">
-    <div class="emoji">💧</div>
-    <div class="name">喝水助手 · 待办提醒</div>
-    <div class="desc">定点喝水提醒 · 五种待办类型（含工作日/自定义）· 密码日记</div>
-    <div class="go">进入 →</div>
-  </a>
+  <!-- ============ 冰箱库存 ============ -->
+  <div class="view active" id="view-fridge">
+    <div class="card">
+      <h3>➕ 添加食物</h3>
+      <div class="form-row">
+        <div><label class="field-label">名称</label><input id="f-name" placeholder="如：五花肉" oninput="updateShelfHint()"></div>
+        <div style="flex:0 0 96px"><label class="field-label">数量</label><input id="f-qty" type="number" min="0" step="any" value="1"></div>
+        <div style="flex:0 0 84px"><label class="field-label">单位</label>
+          <select id="f-unit"><option>份</option><option>颗</option><option>斤</option><option>个</option><option>盒</option><option>包</option><option>条</option><option>块</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div><label class="field-label">分类</label>
+          <select id="f-cat" onchange="updateShelfHint()"><option>肉类</option><option>蔬菜</option><option>蛋奶</option><option>水产</option><option>菌菇豆制品</option><option>主食</option><option>水果</option><option>其他</option></select>
+        </div>
+        <div><label class="field-label">备注（可选）</label><input id="f-note" placeholder="如：切好了3块"></div>
+      </div>
+      <div class="form-row">
+        <div style="flex:0 0 88px"><label class="field-label">存储</label>
+          <select id="f-store" onchange="updateShelfHint()"><option>🧊 冷藏</option><option>🏠 常温</option><option>❄️ 冷冻</option></select>
+        </div>
+        <div><label class="field-label">保质期（可选 · 留空自动估算）</label>
+          <div style="display:flex;gap:6px">
+            <input id="f-days" type="number" min="0" step="1" placeholder="如：3" oninput="updateShelfHint()">
+            <select id="f-days-unit" style="flex:0 0 64px" onchange="updateShelfHint()"><option>天</option><option>月</option><option>年</option></select>
+          </div>
+          <div style="font-size:11px;color:var(--sub);margin-top:4px" id="shelfHint"></div>
+        </div>
+      </div>
+      <div style="font-size:11px;line-height:1.6;margin-top:2px;padding:0 2px" id="storeHint"></div>
+      <button class="btn btn-primary btn-block" onclick="addFood()">放入冰箱 🧊</button>
+    </div>
+    <div id="expAlert"></div>
+    <div class="section-title"><span id="fridgeCount"></span><span></span></div>
+    <div id="foodList"></div>
+  </div>
 
-  <a class="card" href="./学习工作台/">
-    <div class="emoji">📚</div>
-    <div class="name">学习工作台</div>
-    <div class="desc">读书 / 英语 / SQL / 自定义模块 / 看板 / 复盘</div>
-    <div class="go">进入 →</div>
-  </a>
+  <!-- ============ 今日饮食 ============ -->
+  <div class="view" id="view-meal">
+    <div class="card">
+      <h3>🍽️ 记录一餐 · 吃了多少减多少</h3>
+      <div class="meal-type-pick" id="mealTypePick">
+        <div class="mt sel" data-t="早餐">🌅 早餐</div>
+        <div class="mt" data-t="午餐">☀️ 午餐</div>
+        <div class="mt" data-t="晚餐">🌙 晚餐</div>
+        <div class="mt" data-t="加餐">🥜 加餐</div>
+      </div>
+      <div id="mealPickList"></div>
+      <button class="btn btn-primary btn-block" style="margin-top:10px" onclick="logMeal()">确认并扣减库存 ✅</button>
+    </div>
+    <div class="section-title"><span>📋 饮食记录</span></div>
+    <div id="mealHistory"></div>
+  </div>
 
-  <footer>Hanna · GitHub Pages 托管</footer>
+  <!-- ============ 菜谱推荐 ============ -->
+  <div class="view" id="view-recipe">
+    <div class="card" style="padding:12px">
+      <input id="recipeSearch" placeholder="🔍 搜索菜谱 / 食材" oninput="renderRecipes()">
+      <div class="filter-row" style="margin-top:10px" id="recipeFilter">
+        <div class="chip sel" data-f="all">全部</div>
+        <div class="chip" data-f="keto">🥑 严格生酮</div>
+        <div class="chip" data-f="meat">肉类</div>
+        <div class="chip" data-f="fish">水产</div>
+        <div class="chip" data-f="egg">蛋奶</div>
+        <div class="chip" data-f="veg">蔬菜</div>
+        <div class="chip" data-f="fast">⚡ 15分钟快手</div>
+      </div>
+    </div>
+    <div class="section-title"><span>💡 根据冰箱现有食材推荐（已按匹配度排序）</span></div>
+    <div id="recipeList"></div>
+  </div>
+
+  <!-- ============ 生酮推荐（隐藏页：点顶部「🥑 低碳生酮」徽章进入） ============ -->
+  <div class="view" id="view-keto">
+    <div class="card" style="padding:12px 14px">
+      <h3>🗺️ 食物地图 · 野兽生活版</h3>
+      <p style="font-size:12px;color:var(--sub);line-height:1.8;margin:0">
+        参考鸡侠（野兽生活）的饮食地图，按碳水含量把食物分成三档：
+        <b style="color:#0f9d6e">🟢 绿灯 = 推荐摄入</b>、<b style="color:#b97821">🟡 黄灯 = 限量摄入</b>、<b style="color:#d64545">🔴 红灯 = 不推荐</b>。
+        低碳水饮食：每日碳水 &lt;150g；生酮饮食：&lt;50g。在绿灯和黄灯里尽量广泛地选，保证维生素和矿物质充足。
+        点击绿/黄灯食物可直接加入购物清单。
+      </p>
+      <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="backToMain()">← 返回冰箱</button>
+    </div>
+    <div id="ketoList"></div>
+  </div>
+
+  <!-- ============ 应季食材 ============ -->
+  <div class="view" id="view-season">
+    <div class="card">
+      <h3>📅 应季食材 · 挑当季的更新鲜便宜</h3>
+      <div class="month-strip" id="monthStrip"></div>
+      <div id="seasonList"></div>
+    </div>
+    <p style="font-size:11px;color:var(--sub);text-align:center;padding:0 10px;">⚠️ 标注「高碳」的水果和根茎类，生酮期间请控制量或不吃</p>
+  </div>
+
+  <!-- ============ 购物清单 ============ -->
+  <div class="view" id="view-shop">
+    <div class="card">
+      <h3>🛒 购物清单</h3>
+      <div class="form-row">
+        <div><input id="shop-input" placeholder="想买的食物…" onkeydown="if(event.key==='Enter')addShop()"></div>
+        <div style="flex:0 0 76px"><button class="btn btn-primary" style="width:100%" onclick="addShop()">添加</button></div>
+      </div>
+      <div id="shopList"></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-v="fridge"><span class="icon">🧊</span><span class="label">冰箱</span></div>
+    <div class="tab" data-v="meal"><span class="icon">🍽️</span><span class="label">饮食</span></div>
+    <div class="tab" data-v="recipe"><span class="icon">📖</span><span class="label">菜谱</span></div>
+    <div class="tab" data-v="season"><span class="icon">🥬</span><span class="label">应季</span></div>
+    <div class="tab" data-v="shop"><span class="icon">🛒</span><span class="label">清单</span></div>
+  </div>
 </div>
+<div id="toast"></div>
+
+<!-- 数据同步弹窗 -->
+<div class="modal-overlay" id="syncModal" onclick="if(event.target===this)closeSync()">
+  <div class="modal">
+    <h3>☁️ 数据同步</h3>
+    <p style="font-size:12px;color:var(--sub);line-height:1.6;margin-bottom:14px">
+      手机和电脑的数据各自独立保存在浏览器里。换设备使用时，先在这里「导出」数据，到另一台设备上「导入」即可同步。
+    </p>
+    <div class="sync-step">
+      <h4>📤 导出数据</h4>
+      <p>点击下方按钮，生成同步码。复制后到另一台设备粘贴。</p>
+      <button class="btn btn-primary btn-block" onclick="exportData()">生成同步码</button>
+      <textarea id="exportBox" style="margin-top:8px" placeholder="同步码会显示在这里…" onclick="this.select()"></textarea>
+    </div>
+    <div class="sync-step">
+      <h4>📥 导入数据</h4>
+      <p>将另一台设备导出的同步码粘贴到下方，点导入即可同步（会覆盖当前数据）。</p>
+      <textarea id="importBox" placeholder="在此粘贴同步码…"></textarea>
+      <button class="btn btn-primary btn-block" style="margin-top:8px" onclick="importData()">导入数据</button>
+    </div>
+    <button class="btn btn-ghost close-btn" onclick="closeSync()">关闭</button>
+  </div>
+</div>
+
+<script>
+/* ================= 数据层 ================= */
+const KEY='fridgeKetoApp_v1';
+let state=JSON.parse(localStorage.getItem(KEY)||'null')||{foods:[],meals:[],shopping:[]};
+let ui={mealType:'早餐',picked:{},seasonMonth:null,recipeFilter:'all'};
+
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1800);}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* 常见食物碳水级别（生酮友好度） */
+const CARB_DB={
+  '五花肉':'keto','猪五花肉':'keto','牛肉':'keto','牛排':'keto','肥牛':'keto','羊肉':'keto','鸡肉':'keto','鸡腿':'keto','鸡胸':'keto','鸡翅':'keto','鸭':'keto',
+  '鸡蛋':'keto','鹌鹑蛋':'keto','奶酪':'keto','奶油':'keto','黄油':'keto','培根':'keto',
+  '鱼':'keto','鲈鱼':'keto','带鱼':'keto','三文鱼':'keto','鳕鱼':'keto','黄花鱼':'keto','草鱼':'keto','黑鱼':'keto','虾':'keto','虾仁':'keto','蟹':'keto','贝':'keto','鱿鱼':'keto','生蚝':'keto','牡蛎':'keto','扇贝':'keto',
+  '菠菜':'keto','生菜':'keto','油菜':'keto','油麦菜':'keto','芹菜':'keto','韭菜':'keto','黄瓜':'keto','西红柿':'keto','番茄':'keto','白萝卜':'keto','西兰花':'keto','花菜':'keto','白菜':'keto','大白菜':'keto','娃娃菜':'keto',
+  '芦笋':'keto','莴笋':'keto','冬瓜':'keto','苦瓜':'keto','丝瓜':'keto','茄子':'keto','青椒':'keto','辣椒':'keto','秋葵':'keto','菜心':'keto','空心菜':'keto','苋菜':'keto','荠菜':'keto','豌豆苗':'keto','香椿':'keto','茭白':'keto','西葫芦':'keto','魔芋':'keto',
+  '香菇':'keto','金针菇':'keto','平菇':'keto','蘑菇':'keto','杏鲍菇':'keto','口蘑':'keto','木耳':'keto','海带':'keto','豆腐':'mid','豆干':'mid','腐竹':'mid','内酯豆腐':'keto',
+  '牛油果':'keto','柠檬':'keto','草莓':'mid','蓝莓':'mid','柚子':'mid','橙子':'mid',
+  '土豆':'high','红薯':'high','山药':'high','芋头':'high','莲藕':'mid','玉米':'high','米饭':'high','面条':'high','面粉':'high','面包':'high','香蕉':'high','西瓜':'high','葡萄':'high','苹果':'mid','豌豆':'mid','蚕豆':'high','毛豆':'mid','南瓜':'mid','胡萝卜':'mid','洋葱':'mid',
+  '馒头':'high','包子':'high','饺子':'high','馄饨':'high','云吞':'high','粥':'high','米粉':'high','意面':'high','意大利面':'high','荞麦面':'high','燕麦':'mid','年糕':'high','汤圆':'high','饼':'high','蛋糕':'high','披萨':'high','汉堡':'high','薯条':'high','薯片':'high','饼干':'high','巧克力':'high','粽子':'high','月饼':'high','花卷':'high','烧麦':'high','方便面':'high','挂面':'high','粉丝':'high',
+  '红薯叶':'keto','茼蒿':'keto','荷兰豆':'mid','蒜苔':'keto','四季豆':'mid','鸡毛菜':'keto','樱桃番茄':'keto','白菜薹':'keto','圣女果':'keto','魔芋丝':'keto','魔芋凉皮':'keto','魔芋豆腐':'keto',
+  '鳜鱼':'keto','鲫鱼':'keto','鲅鱼':'keto','秋刀鱼':'keto','青鱼':'keto','黄鱼':'keto','泥鳅':'keto','海蜇':'keto','螺':'keto','蛤':'keto','花蛤':'keto',
+  '菠萝':'mid','芒果':'mid','杨梅':'mid','枇杷':'mid','桃':'mid','李子':'mid','火龙果':'mid','无花果':'mid','石榴':'mid','猕猴桃':'mid','梨':'mid','樱桃':'mid','桑葚':'mid','荔枝':'high','柿子':'high','冬枣':'high','甘蔗':'high'
+};
+const CARB_KEYS=Object.keys(CARB_DB).sort((a,b)=>b.length-a.length);
+function carbLevel(name){
+  for(const k of CARB_KEYS){if(name.includes(k))return CARB_DB[k];}
+  return 'unknown';
+}
+const CARB_LABEL={keto:['🥑 生酮友好','tag-keto'],mid:['⚠️ 中等碳水','tag-warn'],high:['⛔ 高碳水','tag-bad'],unknown:['','tag-cat']};
+const CAT_EMOJI={'肉类':'🥩','蔬菜':'🥬','蛋奶':'🥚','水产':'🐟','菌菇豆制品':'🍄','主食':'🍚','水果':'🍓','其他':'📦'};
+
+/* 精细化食物图标：按具体名称匹配（长词优先），匹配不到再退回分类图标 */
+const FOOD_EMOJI={
+  /* 肉类 */
+  '牛排':'🥩','肥牛':'🥩','牛腩':'🥩','牛霖':'🥩','牛肉':'🥩',
+  '五花肉':'🍖','排骨':'🍖','猪蹄':'🍖','猪肘':'🍖','里脊':'🥩','猪肉':'🍖','羊肉':'🍖','火腿':'🍖',
+  '培根':'🥓','香肠':'🌭','午餐肉':'🥫',
+  '整鸡':'🐔','土鸡':'🐔','公鸡':'🐔','母鸡':'🐔','鸡肉':'🍗','鸡腿':'🍗','鸡翅':'🍗','鸡胸':'🍗','鸡爪':'🍗','鸭':'🦆','鹅':'🦢',
+  /* 蛋奶 */
+  '鹌鹑蛋':'🥚','皮蛋':'🥚','鸭蛋':'🥚','鸡蛋':'🥚','蛋':'🥚',
+  '奶酪':'🧀','黄油':'🧈','奶油':'🥛','牛奶':'🥛','酸奶':'🥛','奶':'🥛',
+  /* 水产 */
+  '三文鱼':'🍣','金枪鱼':'🍣','鱿鱼':'🦑','章鱼':'🐙','八爪鱼':'🐙',
+  '小龙虾':'🦞','龙虾':'🦞','虾':'🦐','蟹':'🦀','牡蛎':'🦪','生蚝':'🦪','海蛎':'🦪','扇贝':'🦪','花甲':'🐚','蛤':'🐚','蛏':'🐚',
+  '鱼':'🐟','螺':'🐚','海带':'🌿','紫菜':'🌿',
+  /* 蔬菜 */
+  '西兰花':'🥦','花菜':'🥦','菜花':'🥦',
+  '黄瓜':'🥒','苦瓜':'🥒','丝瓜':'🥒','西葫芦':'🥒','冬瓜':'🥒','南瓜':'🎃','茄子':'🍆',
+  '圣女果':'🍅','西红柿':'🍅','番茄':'🍅',
+  '辣椒':'🌶','青椒':'🌶','彩椒':'🌶',
+  '白萝卜':'🥕','胡萝卜':'🥕','萝卜':'🥕',
+  '马铃薯':'🥔','土豆':'🥔','山药':'🥔','芋头':'🥔','地瓜':'🍠','红薯':'🍠',
+  '莲藕':'🪷','藕':'🪷',
+  '莴笋':'🥬','春笋':'🎍','冬笋':'🎍','芦笋':'🌱','笋':'🎍',
+  '洋葱':'🧅','蒜苗':'🥬','蒜':'🧄','姜':'🫚','葱':'🌿','香菜':'🌿','香椿':'🌿','豆芽':'🌱','秋葵':'🌿',
+  '玉米':'🌽','红薯叶':'🥬','蚕豆':'🫘','豌豆':'🫘','毛豆':'🫘','豆':'🫘',
+  '娃娃菜':'🥬','大白菜':'🥬','白菜':'🥬','菠菜':'🥬','生菜':'🥬','菜心':'🥬','空心菜':'🥬','苋菜':'🥬','荠菜':'🥬','韭菜':'🥬','芹菜':'🥬','油菜':'🥬','油麦菜':'🥬','茼蒿':'🥬','包菜':'🥬','圆白菜':'🥬','甘蓝':'🥬',
+  /* 菌菇豆制品 */
+  '香菇':'🍄','金针菇':'🍄','杏鲍菇':'🍄','口蘑':'🍄','平菇':'🍄','蘑菇':'🍄','木耳':'🍄','银耳':'🍄','菇':'🍄',
+  '内酯豆腐':'🧊','油豆腐':'🧊','豆腐':'🧊','豆干':'🧊','香干':'🧊','腐竹':'🧊','千张':'🧊',
+  /* 水果 */
+  '蓝莓':'🫐','草莓':'🍓','车厘子':'🍒','樱桃':'🍒','桃':'🍑','苹果':'🍎','梨':'🍐',
+  '橙子':'🍊','橘子':'🍊','桔子':'🍊','柚子':'🍊','柑':'🍊','柠檬':'🍋',
+  '香蕉':'🍌','西瓜':'🍉','提子':'🍇','葡萄':'🍇','猕猴桃':'🥝','奇异果':'🥝','芒果':'🥭','菠萝':'🍍','椰浆':'🥥','椰子':'🥥','牛油果':'🥑','哈密瓜':'🍈','甜瓜':'🍈','香瓜':'🍈',
+  '荔枝':'🍒','杨梅':'🍒','枇杷':'🍑','李子':'🍑','桑葚':'🫐','火龙果':'🌺','无花果':'🫒','石榴':'🍎','柿子':'🍊','冬枣':'🍒','甘蔗':'🎍',
+  /* 坚果主食其他 */
+  '花生':'🥜','核桃':'🌰','栗子':'🌰','芝麻':'🌰','米饭':'🍚','面条':'🍜','面包':'🍞','面粉':'🌾','燕麦':'🌾','饺子':'🥟','酸菜':'🥬','泡菜':'🥬',
+  '馒头':'🥟','包子':'🥟','花卷':'🥟','烧麦':'🥟','粽子':'🍙','年糕':'🍙','粥':'🍚','米粉':'🍜','意面':'🍝','意大利面':'🍝','荞麦面':'🍜','乌冬面':'🍜','方便面':'🍜','饼':'🫓','馄饨':'🥟','云吞':'🥟','汤圆':'🍡','月饼':'🥮','蛋糕':'🍰','披萨':'🍕','汉堡':'🍔','三明治':'🥪','薯条':'🍟','薯片':'🍟','饼干':'🍪','巧克力':'🍫'
+};
+const FOOD_EMOJI_KEYS=Object.keys(FOOD_EMOJI).sort((a,b)=>b.length-a.length);
+function foodEmoji(name,cat){
+  if(name){for(const k of FOOD_EMOJI_KEYS){if(name.includes(k))return FOOD_EMOJI[k];}}
+  return (cat&&CAT_EMOJI[cat])||'📦';
+}
+
+/* ================= 保质期系统 ================= */
+/* 常见食材冷藏保质期（天）：按名称关键词匹配（长词优先），没匹配到再按分类兜底 */
+const SHELF_DB={
+  /* 水产（最不耐放） */
+  '三文鱼':2,'金枪鱼':2,'鱿鱼':2,'章鱼':2,'八爪鱼':2,'生蚝':2,'牡蛎':2,'海蛎':2,'扇贝':2,'花蛤':1,'蛤':1,'蛏':1,'小龙虾':2,'皮皮虾':2,'虾':2,'蟹':2,'鱼':2,'螺':2,'海蜇':7,'秋刀鱼':2,
+  /* 肉类 */
+  '培根':7,'香肠':30,'火腿':30,'午餐肉':60,'肥牛':2,'牛排':3,'牛腩':3,'牛霖':3,'五花肉':3,'排骨':3,'猪蹄':3,'猪肘':3,'里脊':3,'羊肉':3,'鸡':3,'鸭':3,'鹅':3,'肉':3,
+  /* 蛋奶 */
+  '鹌鹑蛋':25,'皮蛋':90,'鸭蛋':40,'土鸡蛋':30,'鸡蛋':30,'蛋':25,
+  '牛奶':7,'酸奶':14,'奶油':14,'奶酪':45,'黄油':60,'奶':7,
+  /* 菌菇豆制品 */
+  '内酯豆腐':7,'豆腐':4,'豆干':7,'油豆腐':5,'腐竹':180,'千张':5,'香干':7,
+  '香菇':7,'金针菇':5,'杏鲍菇':7,'平菇':4,'口蘑':5,'蘑菇':5,'菇':5,'木耳':180,'银耳':180,
+  /* 叶菜（嫩的最先坏） */
+  '豆芽':2,'菠菜':4,'生菜':5,'油麦菜':4,'空心菜':3,'苋菜':3,'鸡毛菜':3,'豌豆苗':3,'韭菜':4,'茼蒿':4,'菜心':5,'油菜':4,'香菜':5,'香椿':3,'荠菜':3,'蒜苗':5,'红薯叶':4,
+  '娃娃菜':7,'大白菜':14,'白菜':10,'包菜':14,'圆白菜':14,'甘蓝':14,
+  /* 果茎瓜根 */
+  '秋葵':4,'芦笋':5,'丝瓜':5,'苦瓜':7,'黄瓜':6,'西葫芦':7,'冬瓜':20,'南瓜':60,'茄子':6,'青椒':7,'辣椒':7,'彩椒':7,'圣女果':7,'西红柿':7,'番茄':7,'白萝卜':14,'胡萝卜':20,'萝卜':14,'莴笋':10,'莲藕':10,'藕':10,'春笋':5,'冬笋':7,'笋':5,'洋葱':30,'蒜':60,'姜':30,'葱':7,
+  '土豆':30,'马铃薯':30,'红薯':30,'地瓜':30,'山药':30,'芋头':30,'玉米':5,'豌豆':5,'蚕豆':5,'毛豆':3,'四季豆':7,'荷兰豆':5,
+  /* 水果 */
+  '桑葚':2,'杨梅':2,'草莓':3,'荔枝':3,'无花果':3,'西瓜':3,'樱桃':4,'车厘子':4,'枇杷':4,'葡萄':5,'提子':5,'香蕉':5,'桃':5,'李子':5,'蓝莓':5,'龙眼':5,'菠萝':5,
+  '牛油果':5,'芒果':7,'火龙果':7,'甜瓜':7,'香瓜':7,'哈密瓜':10,'猕猴桃':10,'奇异果':10,'柿子':10,'冬枣':10,'梨':20,'石榴':20,'苹果':30,'橘子':20,'橙子':30,'柠檬':30,'柚子':60,
+  /* 主食（熟食最不耐放，干的耐存） */
+  '米饭':2,'熟米饭':2,'剩饭':2,'面条':2,'熟面条':2,'米粉':3,'年糕':7,'馒头':7,'包子':5,'花卷':5,'烧麦':4,'饺子':3,'馄饨':3,'云吞':3,'汤圆':7,'饼':5,'面包':7,'蛋糕':4,'粥':2,
+  '燕麦':180,'面粉':180,'意面':365,'意大利面':365,'荞麦面':180,'方便面':180,'米粉干':365,'粉丝':365,'挂面':365,
+  /* 干货耐存 */
+  '花生':180,'核桃':240,'栗子':60,'芝麻':365,'椰浆':540,'酸菜':30,'泡菜':30
+};
+const SHELF_KEYS=Object.keys(SHELF_DB).sort((a,b)=>b.length-a.length);
+const CAT_SHELF={'肉类':3,'水产':2,'蔬菜':5,'蛋奶':14,'菌菇豆制品':5,'主食':30,'水果':7,'其他':90};
+function guessShelfDays(name,cat){
+  if(name){for(const k of SHELF_KEYS){if(name.includes(k))return SHELF_DB[k];}}
+  return (cat&&CAT_SHELF[cat])||30;
+}
+/* 冷冻至少 90 天（肉类海鲜分装冷冻的标准保存期），耐存的干货保持原天数 */
+function zoneOf(f){return f.frozen?'freeze':(f.room?'room':'fridge');}
+const ZONE_LABEL={room:'🏠 常温',fridge:'🧊 冷藏',freeze:'❄️ 冷冻'};
+function autoShelfDays(name,cat,zone){const d=guessShelfDays(name,cat);return zone==='freeze'?Math.max(90,d):d;}
+function shelfDays(f){return (f.days==null)?autoShelfDays(f.name,f.cat,zoneOf(f)):f.days;}
+/* ================= 存放建议库 ================= */
+/* room=室温更佳（不必/不宜冷藏） noFreeze=不宜冷冻 freezeOk=适合分装冷冻 */
+const STORE_DB={
+  /* 室温更佳，冷藏反而伤 */
+  '香蕉':{room:'室温存放，冷藏会让果皮发黑、果肉冻伤发暗',noFreeze:'冷冻会让果肉软烂发黑（熟透吃不完可剥皮冻起来打奶昔）'},
+  '土豆':{room:'阴凉避光室温存放，冷藏会让淀粉转糖、发甜变黑',noFreeze:'生冻会发黑变甜，口感粉渣'},
+  '红薯':{room:'阴凉干燥通风处，冷藏易发霉、变硬芯',noFreeze:'生冻后煮不软，发硬'},
+  '山药':{room:'整根阴凉通风存放；切过的切面盖湿纸巾包膜冷藏',noFreeze:'生冻解冻后软烂'},
+  '芋头':{room:'阴凉干燥，不可沾水，沾水易烂'},
+  '洋葱':{room:'阴凉通风网袋挂存，冷藏易发软长芽'},
+  '蒜':{room:'通风干燥，冷藏易发芽发霉；剥好的蒜末可冷冻，随用随取'},
+  '姜':{room:'阴凉通风；切片/磨泥冷冻更方便，随用随取',freezeOk:'切片或磨泥分装冷冻，做菜直接下锅'},
+  '南瓜':{room:'整个不去蒂室温可放1-2个月，切开后去瓤覆膜冷藏',noFreeze:'冻后口感软烂，煮汤勉强，炒着吃不行'},
+  '冬瓜':{room:'整个室温存放，切开覆膜冷藏尽快吃',noFreeze:'冻后化水软烂，冷藏或室温即可'},
+  '蜂蜜':{room:'室温密封即可，冷藏会结晶变砂'},
+  '牛油果':{room:'未熟时室温催熟（和香蕉放一起更快），捏着微软再冷藏，尽快吃',freezeOk:'熟透的可以压泥冷冻做酱/奶昔，解冻后不再适合直接吃'},
+  '哈密瓜':{room:'未切开室温后熟更香，切开去籽覆膜冷藏'},
+  '甜瓜':{room:'未切开室温后熟，切开覆膜冷藏'},
+  '猕猴桃':{room:'未熟时室温催熟，捏着软了再冷藏'},
+  '奇异果':{room:'未熟时室温催熟，捏着软了再冷藏'},
+  '苹果':{room:'阴凉通风可放1-2周，冷藏更脆甜；和土豆分开存放（苹果乙烯会让土豆发芽）'},
+  '梨':{room:'常温后熟几天更甜，冷藏可存更久'},
+  '橙子':{room:'常温通风可放1-2周，冷藏更久；表面擦干防霉'},
+  '橘子':{room:'常温通风可放1周，冷藏更久'},
+  '柚子':{room:'阴凉通风可放1个月，去皮后冷藏'},
+  '柠檬':{room:'常温通风可放1-2周；切片冷冻泡水喝很方便',freezeOk:'切片或挤汁冻成冰格，泡水做菜随取'},
+  '石榴':{room:'阴凉干燥可放1个月，剥粒冷藏3-5天'},
+  '火龙果':{noFreeze:'冷冻后软烂出水，冷藏尽快吃'},
+  '西瓜':{noFreeze:'冻后口感沙、出水，冷藏1-2天内吃完'},
+  '草莓':{noFreeze:'冷冻解冻后化水变软，做果酱可以；冷藏洗净擦干尽快吃'},
+  '葡萄':{noFreeze:'冷冻会变冰沙口感（当冰品吃可以），冷藏洗净擦干保存'},
+  '桃':{freezeOk:'切块冷冻做冰沙/烘焙用，解冻后不再适合直接吃'},
+  '芒果':{freezeOk:'切块冷冻做冰沙/烘焙用'},
+  '菠萝':{freezeOk:'切块冷冻做冰沙/烘焙用'},
+  '蓝莓':{freezeOk:'直接冷冻不破坏营养，做酸奶、烘焙直接丢'},
+  '樱桃':{freezeOk:'冷冻可存半年，吃前无需解冻'},
+  '荔枝':{freezeOk:'冷冻成水果冰，夏天直接当冰品吃'},
+  '杨梅':{freezeOk:'冷冻成水果冰，或冻后泡酒煮汤'},
+  /* 可冷藏但不宜冷冻 */
+  '魔芋':{noFreeze:'魔芋制品（魔芋丝/魔芋凉皮/魔芋豆腐）不宜冷冻，解冻后失水变硬渣化，冷藏即可，开封后2-3天内吃完'},
+  '凉皮':{noFreeze:'不宜冷冻，冻后变硬失去筋道，冷藏保存尽快吃'},
+  '黄瓜':{noFreeze:'不宜冷冻，冻后化水软塌，冷藏保存'},
+  '生菜':{noFreeze:'沙拉叶菜不宜冷冻，冻后化水软烂，冷藏并尽快吃'},
+  '番茄':{freezeOk:'可以冷冻！整颗或切块直接冻，解冻后皮一撕就掉，做汤/炖菜/意面酱超方便，味道几乎无差；冻后口感偏软，凉拌生吃不合适。未熟的室温后熟，熟透的冷藏',room:'未熟时室温后熟，熟透后冷藏可放一周'},
+  '西红柿':{freezeOk:'可以冷冻！整颗或切块直接冻，解冻后皮一撕就掉，做汤/炖菜/意面酱超方便；冻后口感偏软，凉拌生吃不合适',room:'未熟时室温后熟，熟透后冷藏可放一周'},
+  '青椒':{freezeOk:'可以冷冻！洗净去籽切丝/切块分装，做菜直接下锅；冻后略软，不适合生吃凉拌'},
+  '彩椒':{freezeOk:'可以冷冻！洗净去籽切丝/切块分装，做菜直接下锅；冻后略软，不适合生吃凉拌'},
+  '茄子':{freezeOk:'可以冷冻！切块焯水1-2分钟沥干分装，做炖菜/烧茄子用；冻后口感偏软'},
+  '韭菜':{noFreeze:'冷冻后软塌出水、香味流失，冷藏2-3天内吃完'},
+  '芦笋':{noFreeze:'冷冻后纤维化发柴，冷藏时根部竖立在水中保鲜'},
+  '丝瓜':{noFreeze:'冷冻后化水严重，冷藏尽快吃'},
+  '苦瓜':{noFreeze:'冷冻后口感变软，冷藏尽快吃'},
+  '莴笋':{noFreeze:'冷冻后软塌出水，冷藏保存'},
+  '白萝卜':{noFreeze:'冷冻后变海绵状，冷藏或埋在阴凉沙土中'},
+  '豆芽':{noFreeze:'冷冻后完全化水，冷藏2天内吃完'},
+  '豌豆苗':{noFreeze:'嫩苗冷冻即化水，冷藏1-2天尽快吃'},
+  '鸡蛋':{noFreeze:'带壳蛋冷冻会胀裂，冷藏保存；如要冻可先打散装盒'},
+  '鸭蛋':{noFreeze:'带壳蛋冷冻会胀裂，冷藏保存'},
+  '牛奶':{noFreeze:'冷冻会油水分离结絮，冷藏保存，开封后3天内喝完'},
+  '酸奶':{noFreeze:'冷冻会破坏口感和活性菌，冷藏保存'},
+  '奶油':{noFreeze:'淡奶油冷冻后无法打发，冷藏保存尽快用'},
+  '蛋黄酱':{noFreeze:'冷冻会油水分离，冷藏保存'},
+  '沙拉酱':{noFreeze:'冷冻会油水分离，冷藏保存'},
+  '豆浆':{noFreeze:'冷冻会分层结絮，冷藏3天内喝完'},
+  '豆腐':{noFreeze:'鲜豆腐冷冻会变成蜂窝状的冻豆腐（想做冻豆腐可以冻）'},
+  '豆腐乳':{noFreeze:'腐乳要冷藏保存，冷冻会破坏发酵风味'},
+  '奶茶':{noFreeze:'奶茶冷冻会水乳分层，冷藏1-2天内喝完'},
+  '鸡精':{room:'密封干燥常温保存，防潮'},
+  '鱼露':{room:'阴凉避光常温保存，用后盖紧'},
+  '虾皮':{room:'干燥密封常温保存；冷冻也可以防潮防虫'},
+  '火腿':{noFreeze:'火腿冷冻后变干变硬，冷藏保存，开封后1周内吃完'},
+  '螃蟹':{noFreeze:'活蟹不能直接冷冻（会死掉变质），蒸熟后再冷冻，蟹肉可存1个月'},
+  '蛤':{noFreeze:'活蛤冷冻会死，吐净沙后焯水取肉再冷冻'},
+  '花蛤':{noFreeze:'活蛤冷冻会死，吐净沙后焯水取肉再冷冻'},
+  '海蜇':{noFreeze:'海蜇冷冻会变硬，用盐水浸泡冷藏保存'},
+  '粥':{noFreeze:'冻后米水分离，冷藏1-2天尽快吃完'},
+  '卤':{noFreeze:'卤味冷藏3天内吃完，冷冻后口感变柴'},
+  '蚝油':{noFreeze:'蚝油开封后必须冷藏，常温易变质发霉'},
+  '辣酱':{noFreeze:'辣酱开封后冷藏保存，表面可盖一层油防变质'},
+  '豆瓣酱':{noFreeze:'豆瓣酱开封后冷藏保存'},
+  '番茄酱':{noFreeze:'番茄酱/番茄膏开封后冷藏保存'},
+  /* 特别适合分装冷冻 */
+  '米饭':{freezeOk:'非常适合分装冷冻！按每餐一盒分装压平，吃前微波加热，比室温存放更安全'},
+  '面条':{freezeOk:'煮熟的面可以拌点油分装冷冻，吃前热水一烫即恢复'},
+  '饺子':{freezeOk:'生饺摆放不粘连冷冻，随吃随煮，无需解冻'},
+  '馄饨':{freezeOk:'生馄饨冷冻保存，随吃随煮，无需解冻'},
+  '云吞':{freezeOk:'生云吞冷冻保存，随吃随煮，无需解冻'},
+  '面包':{freezeOk:'切片分装冷冻，吃前烤一下口感如新'},
+  '馒头':{freezeOk:'分装冷冻可存1个月，吃前蒸/微波回软如新'},
+  '花卷':{freezeOk:'分装冷冻，吃前蒸一下回软'},
+  '包子':{freezeOk:'生包子冷冻随吃随蒸，无需解冻'},
+  '烧麦':{freezeOk:'生烧麦冷冻随吃随蒸'},
+  '年糕':{freezeOk:'切片分装冷冻，吃前泡软或直接煮'},
+  '汤圆':{freezeOk:'冷冻保存，煮时不需解冻'},
+  '粽子':{freezeOk:'冷冻可存3个月，吃前蒸透即可'},
+  '饼':{freezeOk:'烙好的饼放凉分装冷冻，吃前平底锅/空气炸锅回热'},
+  '意面':{freezeOk:'煮好的意面拌点橄榄油分装冷冻，吃前热水一烫'},
+  '五花肉':{freezeOk:'分装冷冻可存3个月，吃前提前一晚移冷藏解冻'},
+  '猪肉':{freezeOk:'按每餐用量分装压扁冷冻，解冻快不浪费'},
+  '牛肉':{freezeOk:'分装冷冻可存3个月；解冻不要泡热水，冷藏慢解更好'},
+  '牛排':{freezeOk:'冷冻前用保鲜膜贴紧肉面排空气，避免冻斑；吃前冷藏解冻'},
+  '羊肉':{freezeOk:'分装冷冻可存3个月，去膻解冻后照常烹饪'},
+  '排骨':{freezeOk:'分装冷冻，吃前冷藏解冻'},
+  '鸡':{freezeOk:'整鸡或切块分装冷冻，可存3个月；冷冻前擦干水分'},
+  '鸡腿':{freezeOk:'分装冷冻，吃前冷藏解冻'},
+  '鸡胸':{freezeOk:'分装冷冻，吃前冷藏解冻；煎前拍一拍更嫩'},
+  '肉馅':{freezeOk:'按每次用量分小份压扁冷冻，好掰开取用'},
+  '猪肝':{freezeOk:'冷冻可存1个月，解冻后尽快烹饪'},
+  '香肠':{freezeOk:'冷冻可存3个月，吃前无需解冻直接煎'},
+  '培根':{freezeOk:'开封后分片冷冻，用多少取多少，不会粘成一团'},
+  '鱼':{freezeOk:'清理干净后按顿分装冷冻，可存3个月；吃前冷藏解冻'},
+  '三文鱼':{freezeOk:'冷冻前吸干水分密封，-18℃可存3个月；做刺身需确认冷冻标准'},
+  '虾':{freezeOk:'冷冻前吸干水分，-18℃可存3个月'},
+  '鱿鱼':{freezeOk:'清理后分装冷冻，做菜前解冻即可'},
+  '八爪鱼':{freezeOk:'清理后分装冷冻'},
+  '扇贝':{freezeOk:'冷冻保存，吃前冷藏解冻'},
+  '西兰花':{freezeOk:'焯水30秒捞出过凉、沥干分装冷冻，可存3个月'},
+  '花菜':{freezeOk:'焯水后分装冷冻，可存3个月'},
+  '菠菜':{freezeOk:'焯水挤干水分团成球冷冻，煮汤下面直接用'},
+  '芹菜':{freezeOk:'切段焯水后冷冻，炒菜炖汤用'},
+  '蒜苔':{freezeOk:'焯水后冷冻，炒肉炒蛋用'},
+  '秋葵':{freezeOk:'整根冷冻做菜用，冻后黏液反而更多'},
+  '豆角':{freezeOk:'焯水后冷冻，炖菜焖肉用'},
+  '四季豆':{freezeOk:'焯水后冷冻，炖菜用；注意必须做熟'},
+  '荷兰豆':{freezeOk:'焯水后冷冻，清炒用'},
+  '胡萝卜':{freezeOk:'切块焯水后冷冻，炖汤炒菜用'},
+  '莲藕':{freezeOk:'切片焯水后冷冻，炖汤用'},
+  '葱':{freezeOk:'切葱花分装冷冻，用时不需解冻直接下锅'},
+  '香菜':{freezeOk:'洗净切碎冷冻，出锅前撒一把'},
+  '大白菜':{freezeOk:'焯水挤干冷冻，做炖菜/馅料用；凉拌吃的部分别冻'},
+  '娃娃菜':{freezeOk:'焯水后冷冻，炖菜用'},
+  '包菜':{freezeOk:'切丝焯水后冷冻，炒菜炖菜用'},
+  '圆白菜':{freezeOk:'切丝焯水后冷冻，炒菜炖菜用'},
+  '香菇':{freezeOk:'焯水或直接冷冻，做汤炖菜用；要鲜吃凉拌的不冻'},
+  '金针菇':{freezeOk:'冷冻后口感变韧（火锅耐煮），做汤用'},
+  '杏鲍菇':{freezeOk:'切片冷冻，煎炒炖都行'},
+  '口蘑':{freezeOk:'冷冻后做汤炖菜用'},
+  '蘑菇':{freezeOk:'焯水后冷冻，做汤炖菜用'},
+  '平菇':{freezeOk:'焯水后冷冻，做汤用'},
+  '菇':{freezeOk:'鲜菇洗净焯水后分装冷冻，做汤炖菜用；凉拌生吃的不冻'},
+  '豆腐干':{freezeOk:'冷冻后口感更紧实，可存1个月'},
+  '豆干':{freezeOk:'冷冻后口感更紧实，可存1个月'},
+  '香干':{freezeOk:'冷冻后口感更紧实，可存1个月'},
+  '油豆腐':{freezeOk:'冷冻可存1-2个月，炖菜直接下锅'},
+  '黄油':{freezeOk:'冷冻可存6-12个月，切小块分装更方便取用'},
+  '奶酪':{freezeOk:'硬质奶酪可冷冻1-2个月；软奶酪冷冻会变渣，冷藏优先'},
+  '芝士':{freezeOk:'硬质芝士可冷冻，软芝士冷藏优先'},
+  '燕麦':{room:'密封干燥常温保存，防潮防虫'},
+  '麦片':{room:'密封干燥常温保存，防潮防虫'},
+  '猪油':{freezeOk:'熬好的猪油冷藏3个月/冷冻半年，用干净勺取'},
+  /* 发酵物 */
+  '纳豆':{freezeOk:'传统保存法就是冷冻，吃前一盒移冷藏解冻'},
+  '味噌':{room:'未开封常温避光，开封后冷藏，非常耐放'},
+  '苹果醋':{room:'常温避光即可，冷藏反而会浑浊'},
+  '康普茶':{room:'未开封常温避光存放，开封后冷藏并尽快喝完'},
+  '泡菜':{noFreeze:'冷冻会冻死菌群、口感变软塌，冷藏保存越老越酸'},
+  '酸菜':{noFreeze:'冷冻会冻死发酵菌，冷藏保存，越放越酸'},
+  /* 调料干货 · 常温 */
+  '酱油':{room:'阴凉避光常温保存，用后盖紧瓶口'},
+  '生抽':{room:'阴凉避光常温保存'},
+  '老抽':{room:'阴凉避光常温保存'},
+  '醋':{room:'常温避光即可，久放会有沉淀属正常'},
+  '料酒':{room:'常温避光保存'},
+  '香油':{room:'阴凉避光，用后盖紧'},
+  '芝麻油':{room:'阴凉避光保存'},
+  '橄榄油':{room:'阴凉避光，别放灶台边受热'},
+  '椰子油':{room:'常温避光；25℃以下凝固属正常，隔水加热即化'},
+  '食用油':{room:'阴凉避光，远离灶台高温'},
+  '盐':{room:'密封干燥保存，几乎不会坏'},
+  '糖':{room:'密封干燥防潮'},
+  '淀粉':{room:'密封干燥防潮'},
+  '面粉':{room:'密封干燥防潮防虫，可放冷冻2天杀灭虫卵'},
+  '香料':{room:'密封干燥避光，香味更持久'},
+  '花椒':{room:'密封干燥避光'},
+  '八角':{room:'密封干燥避光'},
+  '咖啡':{room:'密封避光常温，冷藏容易吸味'},
+  '茶':{room:'密封避光防潮，冷藏易吸味'},
+  '可可粉':{room:'密封干燥避光'},
+  '蛋白粉':{room:'密封干燥避光，防潮结块'},
+  '坚果':{room:'密封避光防潮，夏天建议冷藏防哈喇味'},
+  '花生':{room:'密封干燥；夏天冷藏防哈喇味'},
+  '核桃':{room:'密封干燥；夏天冷藏防哈喇味，冷冻防虫'},
+  '巧克力':{room:'阴凉干燥18-20℃最佳，冷藏会起白霜（口感略差但能吃）'}
+};
+/* 分类兜底建议：保证每个食物都有存放提醒 */
+const CAT_STORE_TIP={
+  '肉类':{room:'肉类不建议常温存放，请放冷藏或冷冻',fridge:'生鲜肉冷藏 3 天内吃完；吃不完分装冷冻，可存 3 个月以上',freeze:'分装冷冻可存 3 个月以上，吃前提前一晚移冷藏解冻'},
+  '水产':{room:'水产必须冷藏/冷冻，不能常温久放',fridge:'海鲜最不耐放，冷藏当天或次日吃完',freeze:'清理干净后分装冷冻，可存 2-3 个月'},
+  '蔬菜':{room:'绿叶菜不宜常温久放，尽快冷藏',fridge:'绿叶菜用厨房纸包住冷藏，3-5 天内吃完；根茎瓜果可放久些',freeze:'多数蔬菜焯水后分装冷冻适合炖煮；凉拌生吃的不宜冻'},
+  '菌菇豆制品':{room:'干菇类常温密封即可，鲜菇要冷藏',fridge:'鲜菇用纸袋/厨房纸包住冷藏，3-5 天内吃完；豆腐类尽快吃',freeze:'菌菇焯水后可冷冻做汤用；豆腐冷冻变冻豆腐'},
+  '蛋奶':{room:'蛋奶类请冷藏，不要常温放',fridge:'蛋奶类冷藏保存，开封后尽快食用',freeze:'带壳蛋不能冻；黄油奶酪可冷冻，牛奶酸奶别冻'},
+  '主食':{room:'熟主食别常温久放（超4小时易坏），干货密封常温',fridge:'熟主食冷藏 2-3 天内吃完',freeze:'熟主食分装冷冻是标准操作，随吃随热口感如新'},
+  '水果':{room:'多数水果室温后熟后冷藏；洗过/切开的一定冷藏',fridge:'洗净擦干冷藏，尽快吃完',freeze:'切块冷冻做冰沙/烘焙可以，整颗冻会破坏口感'},
+  '其他':{room:'按包装标注存放，密封防潮避光',fridge:'开封后冷藏并尽快吃完',freeze:'能冷冻的干货可冷冻防虫，注意密封'}
+};
+const STORE_KEYS=Object.keys(STORE_DB).sort((a,b)=>b.length-a.length);
+function storeAdvice(name){
+  if(!name)return null;
+  for(const k of STORE_KEYS){if(name.includes(k))return STORE_DB[k];}
+  return null;
+}
+/* 根据存放建议推荐入库温区：有室温建议→常温；适合分装冷冻→冷冻；其余默认冷藏 */
+function suggestZone(name){
+  const a=storeAdvice(name);
+  if(a&&a.room&&!a.noFreeze)return 'room';
+  if(a&&a.freezeOk&&!a.noFreeze)return 'freeze';
+  return 'fridge';
+}
+/* 存放状态提示：返回 {t:标签文字, cls:样式, title:完整建议}，没有具体匹配时按分类兜底，保证每个食物都有提醒 */
+function storeTag(f){
+  const a=storeAdvice(f.name);
+  const z=zoneOf(f);
+  const fb=CAT_STORE_TIP[f.cat]||CAT_STORE_TIP['其他'];
+  if(a){
+    if(z==='freeze'){
+      if(a.noFreeze)return {t:'🚫 不宜冷冻',cls:'tag-bad',title:a.noFreeze};
+      if(a.freezeOk)return {t:'✅ 适合冷冻',cls:'tag-keto',title:a.freezeOk};
+      return {t:'🧊 冷冻保存',cls:'tag-exp',title:fb.freeze};
+    }
+    if(z==='room'){
+      if(a.room)return {t:'✅ 适合常温',cls:'tag-keto',title:a.room};
+      if(a.noFreeze)return {t:'❄️ 勿冷冻',cls:'tag-exp',title:a.noFreeze};
+      if(a.freezeOk)return {t:'🧊 可冷冻',cls:'tag-exp',title:a.freezeOk};
+      return {t:'🏠 常温保存',cls:'tag-exp',title:fb.room};
+    }
+    if(a.room)return {t:'🏠 室温更佳',cls:'tag-warn',title:a.room};
+    if(a.noFreeze)return {t:'❄️ 勿冷冻',cls:'tag-exp',title:a.noFreeze};
+    if(a.freezeOk)return {t:'🧊 可冷冻',cls:'tag-exp',title:a.freezeOk};
+    return {t:'🧊 冷藏保存',cls:'tag-exp',title:fb.fridge};
+  }
+  /* 分类兜底 */
+  if(z==='freeze')return {t:'🧊 冷冻保存',cls:'tag-exp',title:fb.freeze};
+  if(z==='room')return {t:'🏠 常温保存',cls:'tag-exp',title:fb.room};
+  return {t:'🧊 冷藏保存',cls:'tag-exp',title:fb.fridge};
+}
+function dateDiffDays(a,b){return Math.round((new Date(a+'T00:00:00')-new Date(b+'T00:00:00'))/86400000);}
+function daysLeft(f){return shelfDays(f)-dateDiffDays(todayStr(),f.addedAt||todayStr());}
+/* 保质期标签：lv 2=过期/今天到期 1=3天内 0=正常 */
+function expTag(f){
+  const dl=daysLeft(f);
+  if(dl<0)return {t:'⛔ 已过期 '+(-dl)+' 天',cls:'tag-bad',lv:2};
+  if(dl===0)return {t:'⚠️ 今天到期',cls:'tag-bad',lv:2};
+  if(dl<=3)return {t:'⏰ 还剩 '+dl+' 天',cls:'tag-warn',lv:1};
+  return {t:'保质剩 '+dl+' 天',cls:'tag-exp',lv:0};
+}
+/* 添加表单的实时估算提示 */
+function updateShelfHint(){
+  const name=document.getElementById('f-name').value.trim();
+  const cat=document.getElementById('f-cat').value;
+  const sv=document.getElementById('f-store').value;
+  const zone=sv.includes('冷冻')?'freeze':sv.includes('常温')?'room':'fridge';
+  const el=document.getElementById('shelfHint');
+  const storeEl=document.getElementById('storeHint');
+  const custom=document.getElementById('f-days').value;
+  if(custom){el.textContent='✍️ 已手动设置保质期';}
+  else if(!name){el.textContent='🤖 输入名称后自动估算保质期（'+ZONE_LABEL[zone].slice(2)+'）';}
+  else el.textContent='🤖 自动估算：约 '+autoShelfDays(name,cat,zone)+' 天（'+ZONE_LABEL[zone]+'）';
+  /* 存放建议实时提示 */
+  let sh='';
+  const a=storeAdvice(name);
+  if(a){
+    if(zone==='freeze'&&a.noFreeze)sh='<span style="color:var(--red);font-weight:600">🚫 '+esc(name)+' 不宜冷冻！</span> '+esc(a.noFreeze);
+    else if(zone==='freeze'&&a.freezeOk)sh='✅ <b>'+esc(name)+' 适合冷冻：</b>'+esc(a.freezeOk);
+    else if(zone==='room'&&a.room)sh='✅ <b>'+esc(name)+' 室温存放正合适：</b>'+esc(a.room);
+    else if(a.freezeOk)sh='🧊 '+esc(a.freezeOk);
+    else if(a.noFreeze)sh='❄️ '+esc(a.noFreeze);
+    else if(a.room)sh='🏠 <b>'+esc(name)+' 室温存放更佳：</b>'+esc(a.room)+'<br><span style="color:var(--sub)">（建议把上方「存储」切换为 🏠 常温）</span>';
+  }
+  /* 无具体建议时按分类兜底，保证每个食物都有提醒 */
+  if(!sh&&name){
+    const fb=CAT_STORE_TIP[cat]||CAT_STORE_TIP['其他'];
+    sh='ℹ️ '+esc(fb[zone]);
+  }
+  if(storeEl)storeEl.innerHTML=sh;
+}
+/* 温区互转：room=常温 fridge=冷藏 freeze=冷冻 */
+function moveFood(id,zone){
+  const f=state.foods.find(x=>x.id===id);if(!f)return;
+  const from=zoneOf(f);
+  if(zone===from)return;
+  if(zone==='freeze'){
+    const a=storeAdvice(f.name);
+    if(a&&a.noFreeze){
+      if(!confirm('⚠️ 「'+f.name+'」不宜冷冻：\n\n'+a.noFreeze+'\n\n确定还要冷冻吗？'))return;
+    }
+    f.frozen=true;f.room=false;f.days=null;
+  }else if(zone==='room'){
+    f.frozen=false;f.room=true;f.days=null;
+  }else{
+    f.frozen=false;f.room=false;
+    f.days=(from==='freeze')?2:null; // 解冻后建议2天内吃完
+  }
+  f.addedAt=todayStr(); // 按转入当天重新估算
+  save();renderFridge();renderMealPick();
+  const msgs={room:'已转常温存放',fridge:(from==='freeze'?'已解冻移入冷藏，建议2天内吃完':'已移入冷藏'),freeze:'已转入冷冻长期保存'};
+  toast(ZONE_LABEL[from]+'→'+ZONE_LABEL[zone]+' 「'+f.name+'」'+msgs[zone]);
+}
+/* 点击标签修改保质期 */
+function editDays(id){
+  const f=state.foods.find(x=>x.id===id);if(!f)return;
+  const v=prompt('设置「'+f.name+'」的保质期（天）：\n\n· 留空 = 按存储方式自动（当前约 '+autoShelfDays(f.name,f.cat,zoneOf(f))+' 天）\n· 数字 = 手动天数（如 1095 ≈ 3年）',f.days==null?'':f.days);
+  if(v===null)return;
+  if(v.trim()===''){f.days=null;}
+  else{const n=parseInt(v);if(isNaN(n)||n<0){toast('请输入有效的天数');return;}f.days=n;}
+  save();renderFridge();renderMealPick();
+  toast('⏰ 已更新「'+f.name+'」的保质期');
+}
+/* 冰箱页顶部临期预警条 */
+function renderExpAlert(){
+  const wrap=document.getElementById('expAlert');if(!wrap)return;
+  const act=state.foods.filter(f=>f.qty>0&&daysLeft(f)<=3);
+  if(!act.length){wrap.innerHTML='';return;}
+  const bad=act.filter(f=>daysLeft(f)<0),soon=act.filter(f=>daysLeft(f)>=0);
+  let html='';
+  if(bad.length)html+='<div class="exp-alert">⛔ <b>'+bad.length+' 种已过期：</b>'+bad.map(f=>esc(f.name)+'（'+(-daysLeft(f))+'天前到期）').join('、')+'<br>建议尽快处理或丢弃</div>';
+  if(soon.length)html+='<div class="exp-alert warn">⏰ <b>'+soon.length+' 种即将到期：</b>'+soon.map(f=>esc(f.name)+'（剩'+daysLeft(f)+'天）').join('、')+'<br>优先安排吃掉，别浪费</div>';
+  wrap.innerHTML=html;
+}
+
+/* 别名匹配：菜谱食材名 -> 库存名关键词 */
+const ALIAS={'牛肉':['牛排','肥牛','牛腩','牛肉'],'猪肉':['五花肉','排骨','瘦肉','里脊','猪蹄','猪肘','猪肉'],'鸡肉':['鸡腿','鸡胸','鸡翅','整鸡','土鸡','鸡肉'],
+'鱼':['鲈鱼','带鱼','三文鱼','鳕鱼','草鱼','黑鱼','黄花鱼','鱼'],'虾':['基围虾','鲜虾','虾仁','海虾','虾'],'蛋':['鸡蛋','土鸡蛋','鹌鹑蛋']};
+
+/* ================= 菜谱库（低碳生酮向） ================= */
+const RECIPES=[
+ {n:'香煎牛排',t:'10分钟',tag:'meat',keto:2,carb:'约0.5g',ings:[['牛排','1块'],['黄油','适量']],steps:'1. 牛排回温，厨房纸吸干水分，两面撒盐和黑胡椒\n2. 平底锅烧到冒烟，下牛排每面煎1-2分钟\n3. 转小火加黄油，不断淋油约30秒\n4. 静置5分钟再切，锁住肉汁'},
+ {n:'回锅肉',t:'25分钟',tag:'meat',keto:2,carb:'约4g',ings:[['五花肉','300克'],['青椒','1个'],['蒜苗','2根']],steps:'1. 五花肉整块冷水下锅煮20分钟，晾凉切薄片\n2. 中火煸炒肉片至微微卷曲出油\n3. 加一勺豆瓣酱炒出红油\n4. 下青椒和蒜苗段，断生即可出锅'},
+ {n:'白切鸡',t:'40分钟',tag:'meat',keto:2,carb:'约0g',ings:[['鸡肉','1只(或鸡腿4个)'],['姜','3片'],['葱','2根']],steps:'1. 整鸡冷水下锅，加姜葱，水开后转微火浸煮25分钟\n2. 捞出立即泡冰水，皮爽肉滑\n3. 斩件装盘，蘸姜蓉或沙姜豉油'},
+ {n:'蒜泥白肉',t:'30分钟',tag:'meat',keto:2,carb:'约3g',ings:[['五花肉','300克'],['黄瓜','1根'],['蒜','4瓣']],steps:'1. 五花肉煮熟晾凉切薄片\n2. 黄瓜切薄片垫底，肉片码在上面\n3. 蒜泥+生抽+醋+少许糖(代糖)+辣椒油调汁淋上'},
+ {n:'香菇蒸滑鸡',t:'30分钟',tag:'meat',keto:2,carb:'约4g',ings:[['鸡肉','400克'],['香菇','5朵']],steps:'1. 鸡块用生抽、蚝油、少许淀粉腌制20分钟\n2. 香菇切片铺盘底，鸡块铺上\n3. 水开后蒸15分钟，撒葱花'},
+ {n:'咖喱椰浆鸡(无土豆)',t:'25分钟',tag:'meat',keto:1,carb:'约6g',ings:[['鸡肉','400克'],['洋葱','半个'],['椰浆','100毫升']],steps:'1. 鸡块煎至微黄，下洋葱炒香\n2. 加水没过鸡肉，煮15分钟\n3. 倒入椰浆和咖喱粉，小火煮至浓稠\n4. 不加土豆，可以加西兰花或菜花代替'},
+ {n:'番茄炒蛋',t:'10分钟',tag:'egg',keto:1,carb:'约8g',ings:[['鸡蛋','3个'],['番茄','2个']],steps:'1. 鸡蛋加少许盐打散，热油炒成大块盛出\n2. 番茄切块下锅炒出汁(番茄适量，生酮可减量)\n3. 回锅鸡蛋翻匀，加盐调味'},
+ {n:'韭菜炒蛋',t:'8分钟',tag:'egg',keto:2,carb:'约4g',ings:[['韭菜','1把'],['鸡蛋','3个']],steps:'1. 鸡蛋打散，韭菜切段\n2. 热油炒蛋至凝固盛出\n3. 下韭菜大火炒30秒，回锅鸡蛋加盐翻匀'},
+ {n:'虾仁滑蛋',t:'10分钟',tag:'egg',keto:2,carb:'约2g',ings:[['虾仁','150克'],['鸡蛋','3个']],steps:'1. 虾仁焯水30秒捞出\n2. 蛋液加少许水和盐打匀，倒入虾仁\n3. 温油小火推炒至半凝固即出锅'},
+ {n:'清蒸鲈鱼',t:'15分钟',tag:'fish',keto:2,carb:'约1g',ings:[['鲈鱼','1条'],['姜','3片'],['葱','2根']],steps:'1. 鱼身两面划刀，铺姜葱，水开后蒸8分钟\n2. 倒掉蒸出的汤汁，换新葱姜丝\n3. 淋蒸鱼豉油和热油'},
+ {n:'干煎带鱼',t:'20分钟',tag:'fish',keto:2,carb:'约3g',ings:[['带鱼','1条'],['姜','3片']],steps:'1. 带鱼切段，用姜片、料酒、盐腌15分钟(不用淀粉)\n2. 厨房纸吸干，中小火慢煎至两面金黄'},
+ {n:'香煎三文鱼',t:'10分钟',tag:'fish',keto:2,carb:'约0g',ings:[['三文鱼','1块'],['柠檬','半个']],steps:'1. 三文鱼吸干水分，撒盐和黑胡椒\n2. 皮朝下入冷锅，中小火煎至皮酥脆\n3. 翻面煎1分钟，挤柠檬汁出锅'},
+ {n:'白灼虾',t:'8分钟',tag:'fish',keto:2,carb:'约1g',ings:[['虾','500克'],['姜','3片']],steps:'1. 水开加姜片和料酒，下虾煮2分钟变红即捞\n2. 过冰水更弹牙\n3. 蘸生抽+姜丝'},
+ {n:'蒜蓉粉丝蒸扇贝(免粉丝)',t:'15分钟',tag:'fish',keto:2,carb:'约2g',ings:[['扇贝','6个'],['蒜','5瓣']],steps:'1. 蒜剁蓉，一半炸金黄一半生蒜拌一起\n2. 铺在扇贝肉上，水开蒸5分钟\n3. 淋少许蒸鱼豉油，撒葱花'},
+ {n:'蒜蓉西兰花',t:'8分钟',tag:'veg',keto:2,carb:'约4g',ings:[['西兰花','1颗'],['蒜','4瓣']],steps:'1. 西兰花掰小朵，焯水1分钟\n2. 热油爆香蒜末\n3. 下西兰花大火翻炒，加盐出锅'},
+ {n:'蚝油生菜',t:'5分钟',tag:'veg',keto:2,carb:'约3g',ings:[['生菜','1颗'],['蒜','3瓣']],steps:'1. 生菜洗净，水开烫20秒捞出装盘\n2. 蒜末爆香，加蚝油、生抽、少许水煮开\n3. 淋在生菜上'},
+ {n:'凉拌黄瓜',t:'8分钟',tag:'veg',keto:2,carb:'约3g',ings:[['黄瓜','2根'],['蒜','4瓣']],steps:'1. 黄瓜拍裂切块，蒜切末\n2. 加醋、生抽、香油、少许代糖拌匀\n3. 冷藏10分钟更爽口'},
+ {n:'白灼芦笋',t:'5分钟',tag:'veg',keto:2,carb:'约3g',ings:[['芦笋','1把']],steps:'1. 芦笋去老根，水开加少许盐和油烫90秒\n2. 捞出过冰水\n3. 蘸生抽或蛋黄酱都很好'},
+ {n:'清炒菠菜',t:'5分钟',tag:'veg',keto:2,carb:'约2g',ings:[['菠菜','1把'],['蒜','3瓣']],steps:'1. 菠菜焯水10秒去草酸\n2. 蒜末爆香，下菠菜大火翻炒\n3. 加盐立刻出锅'},
+ {n:'麻婆豆腐(低碳版)',t:'15分钟',tag:'veg',keto:1,carb:'约5g',ings:[['豆腐','1块'],['猪肉','100克']],steps:'1. 肉末煸香，加豆瓣酱炒出红油\n2. 加水下豆腐块，煮5分钟\n3. 生抽调味，轻推匀，收汁撒葱花花椒面'},
+ {n:'芦笋炒培根',t:'10分钟',tag:'meat',keto:2,carb:'约3g',ings:[['芦笋','1把'],['培根','3片']],steps:'1. 培根切段小火煸出油\n2. 下芦笋段转大火炒2分钟\n3. 培根自带咸味，少许盐即可'},
+ {n:'肥牛金针菇卷',t:'15分钟',tag:'meat',keto:1,carb:'约6g',ings:[['肥牛','200克'],['金针菇','1把']],steps:'1. 金针菇去蒂分小束，用肥牛片卷起\n2. 平底锅少油煎至四面变色\n3. 生抽+蚝油+代糖+水调汁收浓'},
+ {n:'冬瓜排骨汤',t:'60分钟',tag:'meat',keto:2,carb:'约5g',ings:[['排骨','500克'],['冬瓜','500克'],['姜','3片']],steps:'1. 排骨冷水下锅焯水洗净\n2. 重新加水、姜片，炖40分钟\n3. 下冬瓜块再炖15分钟，加盐'},
+ {n:'酸菜鱼',t:'30分钟',tag:'fish',keto:2,carb:'约3g',ings:[['鱼','1条'],['酸菜','1包'],['姜','3片']],steps:'1. 鱼肉片下，鱼骨煎香后加水煮出白汤\n2. 下酸菜煮5分钟调味\n3. 鱼片最后下，变白即关火，泼热油'},
+ {n:'酸辣大白菜',t:'8分钟',tag:'veg',keto:2,carb:'约4g',ings:[['白菜','半颗'],['干辣椒','3个']],steps:'1. 白菜帮叶分开切块\n2. 干辣椒花椒爆香，下白菜帮炒1分钟再下叶\n3. 沿锅边淋醋，加盐和代糖翻匀'},
+ {n:'椒盐虾',t:'15分钟',tag:'fish',keto:2,carb:'约3g',ings:[['虾','500克'],['蒜','4瓣']],steps:'1. 虾开背去线，吸干水分\n2. 中火煎炸至壳酥脆\n3. 蒜末葱花爆香，倒虾撒椒盐翻匀'},
+ {n:'黄油煎杏鲍菇',t:'8分钟',tag:'veg',keto:2,carb:'约5g',ings:[['杏鲍菇','2根'],['黄油','1小块']],steps:'1. 杏鲍菇切厚片，划十字花刀\n2. 黄油融化，小火煎至两面金黄\n3. 撒盐和黑胡椒，口感似鲍鱼'},
+ {n:'椰浆咖喱牛肉',t:'50分钟',tag:'meat',keto:1,carb:'约6g',ings:[['牛肉','400克'],['洋葱','半个'],['椰浆','100毫升']],steps:'1. 牛腩焯水后炖40分钟至软\n2. 下洋葱和咖喱粉炒香\n3. 倒入椰浆小火煮10分钟，盐调味'},
+ {n:'烤五花肉(空气炸锅)',t:'25分钟',tag:'meat',keto:2,carb:'约1g',ings:[['五花肉','300克']],steps:'1. 五花肉切条，用生抽、蚝油、代糖、五香粉腌1小时\n2. 空气炸锅180度15分钟，翻面再8分钟\n3. 出锅撒辣椒面和熟芝麻'}
+];
+
+/* ================= 应季食材库 ================= */
+const SEASONAL={
+1:[['羊肉','肉类','keto','数九寒天涮羊肉'],['牛肉','肉类','keto','冬令进补'],
+   ['大白菜','蔬菜','keto','当季最甜'],['菠菜','蔬菜','keto','冬季补叶酸'],['白萝卜','蔬菜','keto','炖汤水灵'],['冬笋','蔬菜','mid','鲜但碳水稍高'],['莲藕','蔬菜','mid','生酮适量'],['茼蒿','蔬菜','keto','涮火锅必备'],['山药','蔬菜','mid','碳水中等注意量'],['西兰花','蔬菜','keto','冬季当家菜'],
+   ['带鱼','水产','keto','冬至前后最肥'],['鲈鱼','水产','keto','肥美'],['牡蛎','水产','keto','冬季最肥，高锌'],['鲫鱼','水产','keto','冬鲫炖汤奶白'],
+   ['柚子','水果','mid','低卡相对友好'],['猕猴桃','水果','mid','维C之王，适量'],['苹果','水果','mid','冬季苹果正当时'],['草莓','水果','mid','冬春大棚草莓上市']],
+2:[['羊肉','肉类','keto','倒春寒吃羊暖身'],['鸡肉','肉类','keto','春季温和进补'],
+   ['大白菜','蔬菜','keto',''],['菠菜','蔬菜','keto',''],['芹菜','蔬菜','keto','平肝降压'],['韭菜','蔬菜','keto','早春头刀韭最香'],['莴笋','蔬菜','keto','脆嫩多汁'],['白萝卜','蔬菜','keto','仍当季'],['茼蒿','蔬菜','keto',''],
+   ['鲈鱼','水产','keto',''],['黄花鱼','水产','keto','春季汛期临近'],
+   ['橙子','水果','mid','维C高，适量吃'],['草莓','水果','mid','']],
+3:[['鸡肉','肉类','keto','春补首选'],
+   ['韭菜','蔬菜','keto','头刀韭香'],['芦笋','蔬菜','keto','3月起上市，生酮明星蔬菜'],['豌豆苗','蔬菜','keto',''],['荠菜','蔬菜','keto','包馄饨一绝'],['春笋','蔬菜','mid','碳水中等，适量'],['菠菜','蔬菜','keto',''],['莴笋','蔬菜','keto',''],
+   ['鲫鱼','水产','keto','春鲫最肥'],['鳜鱼','水产','keto','桃花流水鳜鱼肥'],['螺蛳','水产','keto','清明螺赛肥鹅'],
+   ['草莓','水果','mid','春季草莓最甜'],['菠萝','水果','mid','春菠萝上市，糖高适量'],['牛油果','水果','keto','秘鲁产季开始，全年可买']],
+4:[['鸭肉','肉类','keto','春鸭滋阴'],
+   ['芦笋','蔬菜','keto','当季最佳'],['莴笋','蔬菜','keto',''],['豌豆','蔬菜','mid','碳水偏高注意量'],['蚕豆','蔬菜','high','生酮不推荐'],['香椿','蔬菜','keto','香椿炒蛋'],['荠菜','蔬菜','keto',''],['荷兰豆','蔬菜','mid','脆甜适量'],['鸡毛菜','蔬菜','keto','春菜最嫩'],
+   ['黄花鱼','水产','keto','春季洄游'],['河虾','水产','keto',''],['鳜鱼','水产','keto','春天正肥'],['螺蛳','水产','keto','清明前最肥'],
+   ['芒果','水果','mid','早熟芒果上市'],['菠萝','水果','mid',''],['牛油果','水果','keto','秘鲁牛油果季']],
+5:[['鸭肉','肉类','keto','夏日将至，鸭肉性凉'],
+   ['黄瓜','蔬菜','keto','初夏上市'],['番茄','蔬菜','keto',''],['生菜','蔬菜','keto',''],['苋菜','蔬菜','keto',''],['空心菜','蔬菜','keto',''],['蒜苔','蔬菜','keto','春季收尾'],['西葫芦','蔬菜','keto',''],
+   ['鲅鱼','水产','keto','春鲅最肥'],['皮皮虾','水产','keto','五一前后满黄'],['黄花鱼','水产','keto','端午前大黄鱼'],
+   ['樱桃','水果','mid','国产车厘子季，适量'],['枇杷','水果','mid','润肺但糖分不低'],['芒果','水果','mid',''],['牛油果','水果','keto','正当季，价格最好']],
+6:[['鸭肉','肉类','keto','夏鸭滋阴'],
+   ['空心菜','蔬菜','keto',''],['黄瓜','蔬菜','keto',''],['番茄','蔬菜','keto',''],['茄子','蔬菜','keto',''],['毛豆','蔬菜','mid','下酒别贪多'],['四季豆','蔬菜','mid','适量'],['苋菜','蔬菜','keto','红苋菜正嫩'],
+   ['小龙虾','水产','keto','高蛋白'],['带鱼','水产','keto',''],['黄花鱼','水产','keto','端午大黄鱼'],['花蛤','水产','keto','夏季肥美'],
+   ['杨梅','水果','mid','酸甜但糖分不低'],['桃','水果','mid','早桃上市'],['荔枝','水果','high','糖分炸弹，浅尝即止'],['牛油果','水果','keto','产季尾，抓紧买']],
+7:[['鸭肉','肉类','keto','苦夏吃鸭'],
+   ['苦瓜','蔬菜','keto','清热'],['丝瓜','蔬菜','keto',''],['冬瓜','蔬菜','keto','煮汤'],['空心菜','蔬菜','keto',''],['茄子','蔬菜','keto',''],['红薯叶','蔬菜','keto','叶子低碳，别错过'],
+   ['草鱼','水产','keto',''],['鳝鱼','水产','keto','小暑黄鳝赛人参'],['泥鳅','水产','keto','夏天泥鳅最肥'],['花蛤','水产','keto',''],
+   ['西瓜','水果','high','糖高，生酮慎吃'],['桃','水果','mid',''],['葡萄','水果','high','糖分高'],['蓝莓','水果','mid','莓果里相对友好'],['火龙果','水果','mid','红心更甜注意量']],
+8:[['鸭肉','肉类','keto','秋前吃鸭'],
+   ['秋葵','蔬菜','keto',''],['苦瓜','蔬菜','keto',''],['丝瓜','蔬菜','keto',''],['冬瓜','蔬菜','keto',''],['红薯叶','蔬菜','keto',''],['四季豆','蔬菜','mid',''],
+   ['梭子蟹','水产','keto','开渔季'],['扇贝','水产','keto','肥美'],['鱿鱼','水产','keto','开渔后鲜鱿'],
+   ['蓝莓','水果','mid','国产蓝莓尾季'],['葡萄','水果','high',''],['桃','水果','mid','晚桃最甜'],['无花果','水果','mid','糖分浓缩，一两颗解馋'],['西瓜','水果','high','']],
+9:[['鸭肉','肉类','keto','秋燥吃鸭润'],
+   ['莲藕','蔬菜','mid','秋藕最粉糯'],['茭白','蔬菜','keto',''],['芋头','蔬菜','high','生酮慎吃'],['花菜','蔬菜','keto','秋季开始上量'],['生菜','蔬菜','keto',''],
+   ['秋刀鱼','水产','keto','秋肥'],['大闸蟹','水产','keto','九雌十雄'],['鲅鱼','水产','keto','秋鲅也肥'],
+   ['葡萄','水果','high',''],['石榴','水果','mid','适量'],['柚子','水果','mid','早柚上市'],['无花果','水果','mid','']],
+10:[['羊肉','肉类','keto','秋末开始吃羊'],
+   ['白萝卜','蔬菜','keto',''],['大白菜','蔬菜','keto','霜打后更甜'],['莲藕','蔬菜','mid',''],['南瓜','蔬菜','mid','贝贝南瓜碳水高注意'],['山药','蔬菜','mid',''],['花菜','蔬菜','keto',''],['芋头','蔬菜','high',''],
+   ['大闸蟹','水产','keto','公蟹膏满'],['鲈鱼','水产','keto','秋风起鲈鱼肥'],
+   ['柚子','水果','mid','正当季'],['橙子','水果','mid','早橙上市'],['柿子','水果','high','糖分很高慎吃'],['苹果','水果','mid',''],['梨','水果','mid','秋梨润燥']],
+11:[['羊肉','肉类','keto','立冬进补吃羊肉'],
+   ['白萝卜','蔬菜','keto',''],['大白菜','蔬菜','keto',''],['菠菜','蔬菜','keto',''],['莴笋','蔬菜','keto',''],['西兰花','蔬菜','keto','冬季当家'],['山药','蔬菜','mid',''],['花菜','蔬菜','keto',''],
+   ['牡蛎','水产','keto','冬蛎最肥'],['带鱼','水产','keto','开始肥了'],['青鱼','水产','keto','腌青鱼的时候'],['草鱼','水产','keto','冬鱼肥美'],
+   ['柚子','水果','mid',''],['橙子','水果','mid','当季主打'],['猕猴桃','水果','mid','国产季'],['苹果','水果','mid',''],['梨','水果','mid','']],
+12:[['羊肉','肉类','keto','冬至羊肉汤'],
+   ['白萝卜','蔬菜','keto','炖羊汤绝配'],['大白菜','蔬菜','keto',''],['菠菜','蔬菜','keto',''],['冬瓜','蔬菜','keto',''],['西兰花','蔬菜','keto',''],['茼蒿','蔬菜','keto','火锅季'],['山药','蔬菜','mid',''],
+   ['带鱼','水产','keto','冬至带鱼最肥'],['鳕鱼','水产','keto','深海鱼冬季肥'],['牡蛎','水产','keto',''],['鲫鱼','水产','keto','冬鲫奶汤'],
+   ['橙子','水果','mid',''],['猕猴桃','水果','mid',''],['苹果','水果','mid',''],['草莓','水果','mid','冬草莓开始'],['甘蔗','水果','high','纯糖，别碰']]
+};
+
+/* ================= 页签切换 ================= */
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  document.getElementById('view-'+t.dataset.v).classList.add('active');
+  window.scrollTo(0,0);
+  if(t.dataset.v==='meal')renderMealPick();
+  if(t.dataset.v==='recipe')renderRecipes();
+});
+
+/* ================= 库存 ================= */
+function addFood(){
+  const name=document.getElementById('f-name').value.trim();
+  const qty=parseFloat(document.getElementById('f-qty').value)||0;
+  const unit=document.getElementById('f-unit').value;
+  const cat=document.getElementById('f-cat').value;
+  const note=document.getElementById('f-note').value.trim();
+  const sv=document.getElementById('f-store').value;
+  const zone=sv.includes('冷冻')?'freeze':sv.includes('常温')?'room':'fridge';
+  const frozen=zone==='freeze';
+  if(!name){toast('先给食物起个名字吧');return;}
+  const adv=storeAdvice(name);
+  if(frozen&&adv&&adv.noFreeze){
+    if(!confirm('⚠️ 「'+name+'」不宜冷冻：\n\n'+adv.noFreeze+'\n\n确定还是按冷冻存放吗？'))return;
+  }
+  // 自填保质期：按单位换算成天数
+  const rawD=document.getElementById('f-days').value;
+  const dUnit=document.getElementById('f-days-unit').value;
+  let days=null;
+  if(rawD!==''){
+    let n=parseFloat(rawD);
+    if(!isNaN(n)&&n>=0){
+      if(dUnit==='月')n=Math.round(n*30.4);
+      else if(dUnit==='年')n=Math.round(n*365);
+      days=Math.round(n);
+    }
+  }
+  // 同名同单位同温区直接累加（补充新货，保质期按新货重算）
+  const exist=state.foods.find(f=>f.name===name&&f.unit===unit&&zoneOf(f)===zone);
+  if(exist){exist.qty=+(exist.qty+qty).toFixed(2);exist.addedAt=todayStr();if(days!=null)exist.days=days;if(note)exist.note=note;}
+  else state.foods.unshift({id:uid(),name,cat,unit,qty,note,addedAt:todayStr(),days,frozen:zone==='freeze',room:zone==='room'});
+  save();renderFridge();
+  document.getElementById('f-name').value='';document.getElementById('f-note').value='';
+  document.getElementById('f-qty').value=1;document.getElementById('f-days').value='';
+  updateShelfHint();
+  toast('已放入'+ZONE_LABEL[zone]+'：'+name+' '+qty+unit);
+}
+function delFood(id){
+  if(!confirm('确定从冰箱里删除这个食物吗？'))return;
+  state.foods=state.foods.filter(f=>f.id!==id);save();renderFridge();renderMealPick();
+}
+function adjustQty(id,d){
+  const f=state.foods.find(x=>x.id===id);if(!f)return;
+  f.qty=+Math.max(0,(f.qty+d)).toFixed(2);
+  if(f.qty<=0){
+    const name=f.name;
+    state.foods=state.foods.filter(x=>x.id!==id);
+    save();renderFridge();renderMealPick();renderRecipes();
+    toast('🗑️ 「'+name+'」已用完，自动移出冰箱');
+    return;
+  }
+  save();renderFridge();renderMealPick();
+}
+function renderFridge(){
+  const wrap=document.getElementById('foodList');
+  document.getElementById('fridgeCount').textContent='🧊 冰箱里共 '+state.foods.length+' 种食物';
+  if(!state.foods.length){
+    wrap.innerHTML='<div class="empty"><div class="big">🧊</div>冰箱还是空的～<br>先添加一些食物吧</div>';renderExpAlert();return;
+  }
+  const cats=['肉类','水产','蔬菜','菌菇豆制品','蛋奶','主食','水果','其他'];
+  let html='';
+  /* 常温区在前（耐放），冷藏区居中，冷冻区在后 */
+  const ZONE_DESC={room:'阴凉通风存放 · 不占冰箱空间',fridge:'',freeze:'分装冷冻长期保存 · 吃前点「解冻」提前一晚移入冷藏'};
+  [['🏠 常温区','room'],['🧊 冷藏区','fridge'],['❄️ 冷冻区','freeze']].forEach(([zoneLabel,z])=>{
+    const pool=state.foods.filter(f=>zoneOf(f)===z);
+    if(!pool.length)return;
+    html+='<div class="section-title"'+(z!=='room'?' style="margin-top:22px"':'')+'><span>'+zoneLabel+'</span><span style="font-size:11px">'+pool.length+' 种</span></div>';
+    if(ZONE_DESC[z])html+='<p style="font-size:11px;color:var(--sub);margin:-4px 4px 8px">'+ZONE_DESC[z]+'</p>';
+    cats.forEach(c=>{
+      const items=pool.filter(f=>f.cat===c);
+      if(!items.length)return;
+      items.sort((a,b)=>daysLeft(a)-daysLeft(b)); // 快过期的排前面
+      html+='<div class="section-title"><span>'+CAT_EMOJI[c]+' '+c+'</span><span style="font-size:11px">'+items.length+' 种</span></div>';
+      html+=items.map(f=>{
+        const cl=carbLevel(f.name);
+        const et=f.qty>0?expTag(f):null;
+        const st=f.qty>0?storeTag(f):null;
+        const stock=f.qty>0?'':'<span class="tag tag-stockout">已吃完</span>';
+        const step=(f.unit==='斤'||f.unit==='份')?0.5:1;
+        const kd=CARB_LABEL[cl];
+        let moveBtns='';
+        if(z==='freeze')moveBtns='<button class="btn btn-ghost btn-sm" style="padding:5px 8px" title="移入冷藏解冻" onclick="moveFood(\''+f.id+'\',\'fridge\')">解冻</button>';
+        else if(z==='fridge')moveBtns='<button class="btn btn-ghost btn-sm" style="padding:5px 8px" title="转入冷冻长期保存" onclick="moveFood(\''+f.id+'\',\'freeze\')">❄️</button>';
+        else moveBtns='<button class="btn btn-ghost btn-sm" style="padding:5px 8px" title="移入冷藏" onclick="moveFood(\''+f.id+'\',\'fridge\')">🧊</button>'+
+          '<button class="btn btn-ghost btn-sm" style="padding:5px 8px" title="转入冷冻长期保存" onclick="moveFood(\''+f.id+'\',\'freeze\')">❄️</button>';
+        return '<div class="food-item">'+
+          '<div class="emoji">'+foodEmoji(f.name,f.cat)+'</div>'+
+          '<div class="info"><div class="name">'+esc(f.name)+'</div>'+
+          '<div class="meta">'+(kd[0]?'<span class="tag '+kd[1]+'">'+kd[0]+'</span>':'')+
+          (et?'<span class="tag '+et.cls+'" style="cursor:pointer" title="点击修改保质期" onclick="editDays(\''+f.id+'\')">'+et.t+'</span>':'')+
+          (st?'<span class="tag '+st.cls+'" style="cursor:help" title="'+esc(st.title)+'" onclick="toast(\''+esc(st.title).replace(/'/g,"\\'")+'\')">'+st.t+'</span>':'')+
+          (f.note?'<span>'+esc(f.note)+'</span>':'')+stock+'</div></div>'+
+          '<div class="qty-box"><button class="qty-btn" onclick="adjustQty(\''+f.id+'\',-'+step+')">−</button>'+
+          '<div class="num">'+f.qty+'<small> '+f.unit+'</small></div>'+
+          '<button class="qty-btn" onclick="adjustQty(\''+f.id+'\','+step+')">＋</button></div>'+
+          moveBtns+
+          '<button class="btn btn-danger btn-sm" onclick="delFood(\''+f.id+'\')">🗑</button>'+
+        '</div>';
+      }).join('');
+    });
+  });
+  wrap.innerHTML=html;
+  renderExpAlert();
+}
+
+/* ================= 饮食记录 ================= */
+document.querySelectorAll('#mealTypePick .mt').forEach(m=>m.onclick=()=>{
+  document.querySelectorAll('#mealTypePick .mt').forEach(x=>x.classList.remove('sel'));
+  m.classList.add('sel');ui.mealType=m.dataset.t;
+});
+function renderMealPick(){
+  const wrap=document.getElementById('mealPickList');
+  if(!state.foods.length){wrap.innerHTML='<div class="empty">冰箱空空的，先去「冰箱」页添加食物吧</div>';return;}
+  const zoneRank=f=>f.frozen?2:(f.room?1:0);
+  wrap.innerHTML=state.foods.slice().sort((a,b)=>zoneRank(a)-zoneRank(b)||daysLeft(a)-daysLeft(b)).map(f=>{
+    const sel=ui.picked[f.id];
+    const et=f.qty>0?expTag(f):null;
+    return '<div class="pick-item'+(sel?' sel':'')+'" onclick="togglePick(\''+f.id+'\')">'+
+      '<div class="ck">'+(sel?'✓':'')+'</div>'+
+      '<div style="flex:1;min-width:0"><div class="name" style="font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+foodEmoji(f.name,f.cat)+' '+esc(f.name)+'</div>'+
+      '<div style="font-size:11px;color:var(--sub);margin-top:2px">库存 '+f.qty+' '+f.unit+
+      (f.frozen?' · <span style="color:#4a90d9;font-weight:600">❄️ 冷冻中·先解冻</span>':'')+
+      (f.room?' · <span style="color:#b97821;font-weight:600">🏠 常温存放</span>':'')+
+      (et&&et.lv>0&&!f.frozen?' · <span style="color:'+(et.lv>=2?'var(--red)':'#b97821')+';font-weight:600">'+et.t+'</span>':'')+'</div></div>'+
+      (sel?'<div class="amt" onclick="event.stopPropagation()"><input type="number" min="0" step="any" value="'+sel.qty+'" oninput="setPickQty(\''+f.id+'\',this.value)"></div>':'')+
+    '</div>';
+  }).join('');
+}
+function togglePick(id){
+  const f=state.foods.find(x=>x.id===id);if(!f)return;
+  if(ui.picked[id]){delete ui.picked[id];}
+  else{ui.picked[id]={qty:1,unit:f.unit};}
+  renderMealPick();
+}
+function setPickQty(id,v){
+  if(ui.picked[id])ui.picked[id].qty=parseFloat(v)||0;
+}
+function logMeal(){
+  const ids=Object.keys(ui.picked);
+  if(!ids.length){toast('先勾选这一餐吃了什么');return;}
+  const items=[];const usedUp=[];
+  ids.forEach(id=>{
+    const f=state.foods.find(x=>x.id===id);if(!f)return;
+    const q=ui.picked[id].qty;
+    if(q<=0)return;
+    items.push({name:f.name,qty:q,unit:f.unit,zone:zoneOf(f)});
+    f.qty=+Math.max(0,f.qty-q).toFixed(2);
+    if(f.qty<=0)usedUp.push(f.name);
+  });
+  if(!items.length){toast('数量要大于0哦');return;}
+  state.meals.unshift({id:uid(),date:todayStr(),type:ui.mealType,time:new Date().toTimeString().slice(0,5),items});
+  // 自动移除用完的食物（数量归零）
+  if(usedUp.length)state.foods=state.foods.filter(f=>f.qty>0);
+  save();ui.picked={};renderMealPick();renderFridge();renderMealHistory();renderRecipes();
+  toast('✅ 已记录并扣减库存'+(usedUp.length?' · 已用完：'+usedUp.join('、'):''));
+}
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function renderMealHistory(){
+  const wrap=document.getElementById('mealHistory');
+  const today=state.meals.filter(m=>m.date===todayStr());
+  const past=state.meals.filter(m=>m.date!==todayStr()).slice(0,15);
+  let html='';
+  if(today.length){
+    html+='<div class="section-title"><span>今天</span></div>';
+    html+=today.map(m=>mealHtml(m)).join('');
+  }
+  if(past.length){
+    html+='<div class="section-title"><span>更早</span></div>';
+    html+=past.map(m=>mealHtml(m)).join('');
+  }
+  if(!state.meals.length)html='<div class="empty"><div class="big">🍽️</div>还没有饮食记录<br>吃了什么，记一笔</div>';
+  wrap.innerHTML=html;
+}
+function mealHtml(m){
+  return '<div class="meal-log"><span class="mt-tag">'+m.type+' '+m.time+'</span>'+
+    '<div class="items">'+m.items.map(i=>'· '+foodEmoji(i.name)+' '+esc(i.name)+' × '+i.qty+' '+i.unit).join('<br>')+'</div>'+
+    '<div class="time">'+m.date+' <a href="javascript:void(0)" style="color:var(--red)" onclick="undoMeal(\''+m.id+'\')">撤回</a></div></div>';
+}
+/* 撤回一餐：删除记录并把吃掉的食材按原温区返还回冰箱 */
+function undoMeal(id){
+  const m=state.meals.find(x=>x.id===id);if(!m)return;
+  const summary=m.items.map(i=>'· '+foodEmoji(i.name)+' '+i.name+' × '+i.qty+i.unit).join('\n');
+  if(!confirm('撤回这一餐（'+m.type+' '+m.time+'）？\n\n'+summary+'\n\n这些食物会按原存放位置返还回冰箱。'))return;
+  m.items.forEach(i=>{
+    const zone=i.zone||'fridge'; // 老记录没有温区时默认冷藏
+    const exist=state.foods.find(f=>f.name===i.name&&f.unit===i.unit&&zoneOf(f)===zone);
+    if(exist)exist.qty=+(exist.qty+i.qty).toFixed(2);
+    else state.foods.unshift({id:uid(),name:i.name,cat:guessCat(i.name),unit:i.unit,qty:i.qty,note:'',addedAt:todayStr(),days:null,frozen:zone==='freeze',room:zone==='room'});
+  });
+  state.meals=state.meals.filter(x=>x.id!==id);
+  save();renderFridge();renderMealHistory();renderMealPick();renderRecipes();
+  toast('↩️ 已撤回这一餐，食物已返还冰箱');
+}
+
+/* ================= 菜谱推荐 ================= */
+function ingMatch(ingName){
+  // 返回库存中匹配且有货的食物
+  const iname=ingName[0];
+  return state.foods.find(f=>{
+    if(f.qty<=0)return false;
+    if(f.name.includes(iname)||iname.includes(f.name))return true;
+    for(const base in ALIAS){
+      if(iname.includes(base)||iname===base){
+        return ALIAS[base].some(a=>f.name.includes(a));
+      }
+    }
+    return false;
+  });
+}
+document.querySelectorAll('#recipeFilter .chip').forEach(c=>c.onclick=()=>{
+  document.querySelectorAll('#recipeFilter .chip').forEach(x=>x.classList.remove('sel'));
+  c.classList.add('sel');ui.recipeFilter=c.dataset.f;renderRecipes();
+});
+function renderRecipes(){
+  const kw=(document.getElementById('recipeSearch').value||'').trim();
+  const wrap=document.getElementById('recipeList');
+  let list=RECIPES.map(r=>{
+    const matched=r.ings.map(g=>({g,got:!!ingMatch(g)}));
+    const miss=matched.filter(x=>!x.got).length;
+    return {r,matched,miss};
+  });
+  list.sort((a,b)=>a.miss-b.miss);
+  if(ui.recipeFilter==='keto')list=list.filter(x=>x.r.keto===2);
+  else if(ui.recipeFilter!=='all')list=list.filter(x=>x.r.tag===ui.recipeFilter);
+  else if(ui.recipeFilter==='fast')list=list.filter(x=>parseInt(x.r.t)<=15);
+  if(ui.recipeFilter==='fast')list=list.filter(x=>parseInt(x.r.t)<=15);
+  if(kw)list=list.filter(x=>x.r.n.includes(kw)||x.matched.some(m=>m.g[0].includes(kw)));
+  if(!list.length){wrap.innerHTML='<div class="empty">没有符合条件的菜谱</div>';return;}
+  wrap.innerHTML=list.map((x,idx)=>{
+    const {r,matched,miss}=x;
+    const pill=miss===0?'<span class="match-pill match-yes">✓ 现在就能做</span>':miss<=2?'<span class="match-pill match-near">差 '+miss+' 样</span>':'<span class="match-pill match-no">缺 '+miss+' 样</span>';
+    return '<div class="recipe-card" id="rc'+idx+'">'+
+      '<div class="r-head"><div><div class="r-name">'+r.n+' '+(r.keto===2?'<span class="tag tag-keto">🥑 生酮</span>':'<span class="tag tag-warn">适量</span>')+'</div>'+
+      '<div class="r-sub">⏱ '+r.t+' · 净碳水'+r.carb+'</div></div>'+pill+'</div>'+
+      '<div class="r-ings">'+matched.map(m=>'<span class="ing '+((m.got&&state.foods.length)?'ok':'miss')+'">'+esc(m.g[0])+' '+esc(m.g[1])+'</span>').join('')+'</div>'+
+      '<div style="margin-top:10px"><button class="btn btn-ghost btn-sm" onclick="document.getElementById(\'rc'+idx+'\').classList.toggle(\'open\')">👀 看做法</button></div>'+
+      '<div class="r-detail">'+r.steps+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+/* ================= 食物地图（野兽生活·鸡侠） ================= */
+/* g=绿灯推荐 y=黄灯限量 r=红灯不推荐；条目 [名称, 说明] */
+const FOOD_MAP=[
+ {sec:'油脂类',icon:'🫗',note:'绿灯油脂大胆吃，精炼种子油全部避开',
+  g:[['猪油','稳定耐高温，炒菜首选'],['牛油','煎牛排的标配'],['黄油','草饲更佳，煎蛋收尾淋一勺'],['椰子油','含MCT，给身体和大脑快速供能'],['牛油果油','耐高温，适合给不接受动物油的家人过渡'],['橄榄油','凉拌、低温炒，别爆炒'],['MCT','快速生酮供能，新手从少量开始加'],['亚麻籽油','只能凉拌，不耐高温'],['棕榈仁油','MCT的原料来源']],
+  y:[],
+  r:[['调和油','omega-6 超标'],['菜籽油','精炼过程已氧化'],['玉米油','精炼种子油'],['大豆油','omega-6 超标'],['花生油','建议避开'],['葵花籽油','建议避开']]},
+ {sec:'肉蛋类',icon:'🥩',note:'鸡侠：多吃肉蛋菜。鸡蛋不用计算随便吃，营养大头在蛋黄；动物内脏维生素密度远超蔬果',
+  g:[['五花肉','肥瘦相间自带脂肪，生酮肉类标杆'],['肥牛','煎烤涮都行，选肥一点的部位'],['牛排','草饲更佳'],['带皮鸡腿','皮下脂肪别去掉，皮脆肉嫩'],['羊排','草饲羊肉炖烤都香'],['猪蹄','胶原蛋白满满'],['鸡蛋','鸡侠原话：不用计算，随便吃'],['鸭蛋','营养密度同样很高'],['猪肝','动物内脏的维生素密度远超蔬菜水果，每周1-2次'],['牛骨髓','地球上营养密度最高的食物之一'],['脑花','重庆吃法，生酮友好'],['猪蹄筋/牛筋','胶原蛋白']],
+  y:[['香肠腊肉','看配料：含糖含淀粉的避开'],['培根','挑配料表只有肉和盐的']],
+  r:[['火腿肠','大多含淀粉和糖，配料表必查']]},
+ {sec:'海产类',icon:'🦞',note:'基本全是绿灯，放心吃',
+  g:[['三文鱼','omega-3 抗炎，每周2-3次'],['金枪鱼'],['巴沙鱼'],['带鱼'],['鲈鱼'],['黑虎虾'],['基围虾'],['皮皮虾'],['扇贝'],['蛏子'],['花甲'],['龙虾'],['螃蟹'],['鲍鱼'],['鱿鱼'],['生蚝','高锌'],['章鱼']],
+  y:[],
+  r:[]},
+ {sec:'蔬菜类',icon:'🥬',note:'绿叶菜随便吃；淀粉类根茎（土豆/红薯/山药等）已列在主食类黄灯',
+  g:[['菠菜','补镁补钾，正好补上生酮容易缺的电解质'],['生菜','几乎零碳水，包肉吃绝配'],['油麦菜'],['空心菜'],['芹菜'],['韭菜'],['西兰花','十字花科明星'],['菜花'],['黄瓜'],['冬瓜'],['丝瓜'],['苦瓜'],['芦笋','生酮明星蔬菜'],['白萝卜'],['菌菇'],['海带'],['紫菜']],
+  y:[['番茄'],['洋葱'],['胡萝卜','碳水稍高'],['彩椒'],['豌豆','碳水偏高注意量'],['四季豆']],
+  r:[]},
+ {sec:'水果类',icon:'🫐',note:'严格生酮建议不碰水果；低碳水可选低糖莓果少量吃',
+  g:[['牛油果','优质植物脂肪+钾，生酮的招牌水果'],['橄榄'],['柠檬']],
+  y:[['草莓'],['树莓'],['黑莓'],['蔓越莓'],['蓝莓'],['西梅'],['桑葚'],['杨桃'],['杨梅'],['木瓜'],['百香果']],
+  r:[['苹果'],['梨'],['香蕉','高糖水果，明确不推荐'],['西瓜'],['哈密瓜'],['芒果'],['荔枝'],['龙眼'],['葡萄'],['提子'],['菠萝'],['榴莲'],['菠萝蜜'],['桃子'],['李子'],['杏'],['枇杷'],['奇异果'],['橙子'],['芦柑'],['柑橘'],['车厘子'],['樱桃'],['番石榴'],['石榴'],['山竹'],['火龙果'],['柿子'],['枣'],['甘蔗','纯糖，别碰']]},
+ {sec:'奶制品类',icon:'🧀',note:'选高脂发酵款，警惕牛奶里的乳糖',
+  g:[['奶油奶酪'],['干酪'],['芝士片'],['淡奶油'],['酸奶油'],['硬奶酪','几乎零碳水，加餐神器']],
+  y:[['无糖酸奶','一定看清配料无添加糖'],['希腊酸奶','选无糖版']],
+  r:[['全脂牛奶','乳糖就是糖'],['低脂牛奶'],['脱脂牛奶'],['零乳糖牛奶'],['含糖乳饮料'],['含糖酸奶']]},
+ {sec:'坚果种子类',icon:'🌰',note:'坚果虽好碳水不低，黄灯也别放开吃，每天一小把',
+  g:[['巴西坚果','补硒神器'],['南瓜子'],['夏威夷果','碳水最低的坚果']],
+  y:[['无糖椰子片'],['碧根果'],['杏仁'],['核桃'],['榛子'],['花生'],['松子'],['葵花籽'],['西瓜子'],['芝麻']],
+  r:[['腰果','坚果里碳水偏高'],['开心果'],['栗子','淀粉含量高']]},
+ {sec:'主食类',icon:'🍚',note:'这是生酮的主战场：米面糖全部红灯，想吃主食用绿灯替代',
+  g:[['魔芋丝','近乎零碳水，切记不能冷冻'],['亚麻籽仁'],['奇亚籽'],['椰子面粉','低碳烘焙'],['杏仁粉','低碳烘焙'],['亚麻籽粉']],
+  y:[['玉米'],['芋头'],['红薯'],['紫薯'],['山药'],['南瓜'],['土豆']],
+  r:[['大米'],['糯米'],['小米'],['玉米面'],['面条'],['米粉'],['粉丝'],['包子'],['馒头'],['面包'],['饼干','配料表全是精制碳水']]},
+];
+function mapChips(arr,light){
+  return arr.map(x=>{
+    const nm=esc(x[0]).replace(/'/g,"\\'");
+    const tip=x[1]?esc(x[1]):'';
+    const clk=light!=='r';
+    return '<span class="map-chip mc-'+light+(clk?' clk':'')+'"'+(clk?' onclick="addShopFromSeason(\''+nm+'\',\'其他\')"':'')+(tip?' title="'+tip+'"':'')+'>'+foodEmoji(x[0],guessCat(x[0]))+' '+esc(x[0])+'</span>';
+  }).join('');
+}
+/* 发酵食物：[名称, 说明, 生酮友好度, 存放提示] */
+const FERMENTS=[
+ ['泡菜','乳酸菌发酵，肠道益生菌；选无糖腌制的','keto','冷藏，越老越酸'],
+ ['酸菜','炖白肉绝配，吃前冲一冲盐分','keto','冷藏约1个月'],
+ ['无糖希腊酸奶','蛋白+益生菌双料，一定看清配料无添加糖','keto','冷藏，开封尽快吃'],
+ ['开菲尔','菌种比酸奶更杂的发酵奶，选无糖版','keto','冷藏'],
+ ['纳豆','发酵大豆，维生素K2 丰富，拌生酮餐正好','keto','冷冻保存，吃前解冻一盒'],
+ ['味噌','发酵豆酱，味噌汤和调味提鲜','mid','含少量碳水，调味量无妨；开封后冷藏'],
+ ['康普茶','发酵气泡茶饮，选无糖低糖款','mid','未开封常温避光，开封后冷藏'],
+ ['苹果醋','凉拌调味，餐前兑水喝有助平稳血糖','keto','常温避光可放很久'],
+ ['酸黄瓜','解腻配肉，认准无糖配方','keto','开封后冷藏'],
+ ['腐乳','少量抹着吃调味可以','mid','冷藏很耐放'],
+ ['硬奶酪','发酵乳制品，几乎零碳水，加餐神器','keto','冷藏，切块可冷冻'],
+];
+/* 半成品：[名称, 说明, 生酮友好度, 存放提示] */
+const SEMIS=[
+ ['培根','煎蛋的黄金搭档，挑配料表只有肉和盐的','keto','冷藏，开封尽快吃'],
+ ['原切腌制牛排','买腌好的，解冻直接下锅','keto','冷冻90天，前一晚移冷藏'],
+ ['腌制鸡腿','省去腌的功夫，注意腌料是否含糖','keto','冷冻；冷藏3天内烤掉'],
+ ['卤牛肉','即食高蛋白，切片就是一道菜','keto','冷藏3-5天，整块可冷冻'],
+ ['溏心蛋','即食，加餐和配餐都好','keto','冷藏一周内'],
+ ['纯肉烤肠','看配料：纯肉的低碳水，含淀粉的避开','mid','冷冻随取随烤'],
+ ['川味香肠','比广式含糖少，但还是看配料表','mid','阴凉通风或冷藏'],
+ ['蛋饺','皮是蛋液掺淀粉，选纯蛋皮的更好','mid','冷冻，吃前无需解冻'],
+ ['火锅丸子','大多掺淀粉和肥膘，配料表必查','bad','冷冻'],
+ ['冻豆腐','用鲜豆腐自己冻就行，吸汤汁一绝','keto','冷冻，解冻后尽快吃'],
+ ['魔芋丝','近乎零碳水，饱腹感强','keto','切记不能冷冻！冷藏，开封2-3天吃完'],
+];
+function ketoRow(x){
+  const lv=x[2]==='keto'?'<span class="tag tag-keto">🥑 生酮友好</span>':x[2]==='mid'?'<span class="tag tag-warn">适量</span>':'<span class="tag tag-bad">慎选</span>';
+  const storeTip=x[3]?' · <span style="color:#8a9a95">📦 '+esc(x[3])+'</span>':'';
+  const nm=esc(x[0]).replace(/'/g,"\\'");
+  return '<div class="season-food"><div style="font-size:22px">'+foodEmoji(x[0],guessCat(x[0]))+'</div>'+
+    '<div class="sf-info"><div class="sf-name">'+esc(x[0])+'</div><div class="sf-note">'+lv+(x[1]?' · '+esc(x[1]):'')+storeTip+'</div></div>'+
+    '<button class="btn btn-ghost btn-sm" onclick="addShopFromSeason(\''+nm+'\',\'其他\')">＋清单</button></div>';
+}
+function renderKeto(){
+  let html='';
+  FOOD_MAP.forEach(m=>{
+    html+='<div class="section-title"><span>'+m.icon+' '+m.sec+'</span></div>';
+    if(m.note)html+='<p style="font-size:11px;color:var(--sub);margin:-4px 4px 6px">'+esc(m.note)+'</p>';
+    if(m.g.length)html+='<div class="map-row"><b class="mr-g">🟢 推荐</b><div class="map-chips">'+mapChips(m.g,'g')+'</div></div>';
+    if(m.y.length)html+='<div class="map-row"><b class="mr-y">🟡 限量</b><div class="map-chips">'+mapChips(m.y,'y')+'</div></div>';
+    if(m.r.length)html+='<div class="map-row"><b class="mr-r">🔴 少碰</b><div class="map-chips">'+mapChips(m.r,'r')+'</div></div>';
+  });
+  html+='<div class="section-title" style="margin-top:18px"><span>🥬 发酵食物 · 肠道好朋友</span></div>'+FERMENTS.map(ketoRow).join('');
+  html+='<div class="section-title"><span>🍱 半成品 · 省时囤货</span></div>'+SEMIS.map(ketoRow).join('');
+  document.getElementById('ketoList').innerHTML=html;
+}
+/* 隐藏页入口：点顶部徽章进入，点任意标签或返回按钮退出 */
+function openKeto(){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.getElementById('view-keto').classList.add('active');
+  window.scrollTo(0,0);
+  renderKeto();
+}
+function backToMain(){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.getElementById('view-fridge').classList.add('active');
+  window.scrollTo(0,0);
+}
+
+/* ================= 数据同步 ================= */
+function openSync(){document.getElementById('syncModal').classList.add('show');}
+function closeSync(){document.getElementById('syncModal').classList.remove('show');}
+function exportData(){
+  try{
+    const code=btoa(encodeURIComponent(JSON.stringify(state)));
+    const box=document.getElementById('exportBox');
+    box.value=code;
+    box.select();
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(code).then(()=>toast('✅ 同步码已生成并复制到剪贴板')).catch(()=>{box.select();toast('✅ 同步码已生成，请手动复制');});
+    }else{box.select();toast('✅ 同步码已生成，请手动复制');}
+  }catch(e){toast('导出失败：'+e.message);}
+}
+function importData(){
+  const code=document.getElementById('importBox').value.trim();
+  if(!code){toast('请先粘贴同步码');return;}
+  try{
+    const data=JSON.parse(decodeURIComponent(atob(code)));
+    if(!data.foods||!Array.isArray(data.foods))throw new Error('数据格式不正确');
+    if(!confirm('导入后将覆盖当前所有数据（冰箱库存、饮食记录、购物清单），确定吗？'))return;
+    state=data;
+    save();
+    renderFridge();renderMealHistory();renderSeasonal();renderShopping();renderRecipes();renderMealPick();
+    closeSync();
+    toast('✅ 数据导入成功');
+  }catch(e){toast('导入失败：同步码无效');}
+}
+
+/* ================= 应季食材 ================= */
+function renderSeasonal(){
+  const now=new Date().getMonth()+1;
+  if(!ui.seasonMonth)ui.seasonMonth=now;
+  const strip=document.getElementById('monthStrip');
+  strip.innerHTML=Array.from({length:12},(_,i)=>{
+    const m=i+1;
+    return '<div class="month-btn'+(m===ui.seasonMonth?' cur':'')+'" onclick="setMonth('+m+')"><b>'+m+'月</b><span style="font-size:10px">'+(m===now?'本月':'')+'</span></div>';
+  }).join('');
+  strip.querySelector('.cur')&&strip.querySelector('.cur').scrollIntoView({inline:'center',block:'nearest'});
+  const data=SEASONAL[ui.seasonMonth];
+  const cats=['蔬菜','肉类','水产','水果'];
+  let html='';
+  cats.forEach(c=>{
+    const items=data.filter(x=>x[1]===c);
+    if(!items.length)return;
+    html+='<div class="section-title"><span>'+CAT_EMOJI[c]+' 当季'+c+'</span></div>';
+    html+=items.map(x=>{
+      const lv=x[2]==='keto'?'<span class="tag tag-keto">🥑 生酮友好</span>':x[2]==='mid'?'<span class="tag tag-warn">适量</span>':'<span class="tag tag-bad">高碳慎吃</span>';
+      return '<div class="season-food"><div style="font-size:22px">'+foodEmoji(x[0],c)+'</div>'+
+        '<div class="sf-info"><div class="sf-name">'+esc(x[0])+'</div><div class="sf-note">'+lv+(x[3]?' · '+esc(x[3]):'')+'</div></div>'+
+        '<button class="btn btn-ghost btn-sm" onclick="addShopFromSeason(\''+esc(x[0]).replace(/'/g,"\\'")+'\',\''+c+'\')">＋清单</button></div>';
+    }).join('');
+  });
+  document.getElementById('seasonList').innerHTML=html;
+}
+function setMonth(m){ui.seasonMonth=m;renderSeasonal();}
+
+/* ================= 购物清单 ================= */
+function addShop(){
+  const v=document.getElementById('shop-input').value.trim();
+  if(!v)return;
+  state.shopping.push({id:uid(),name:v,done:false});save();
+  document.getElementById('shop-input').value='';renderShopping();toast('🛒 已加入清单：'+v);
+}
+function addShopFromSeason(name){
+  if(state.shopping.some(s=>!s.done&&s.name===name)){toast('清单里已经有了');return;}
+  state.shopping.push({id:uid(),name,done:false});save();renderShopping();toast('🛒 已加入清单：'+name);
+}
+function toggleShop(id){
+  const s=state.shopping.find(x=>x.id===id);s.done=!s.done;save();renderShopping();
+}
+function delShop(id){state.shopping=state.shopping.filter(s=>s.id!==id);save();renderShopping();}
+function shopToAll(){
+  const undones=state.shopping.filter(s=>!s.done);
+  if(!undones.length){toast('没有待购买的食材');return;}
+  if(!confirm('把清单里 '+undones.length+' 种食材按默认 1 份放入冰箱？\n\n将按存放建议自动归类：\n🏠 香蕉/土豆等 → 常温\n🧊 肉类/蔬菜等 → 冷藏\n❄️ 米饭/饺子等 → 冷冻\n\n（保质期也会自动按温区估算好）'))return;
+  undones.forEach(s=>{
+    const cat=guessCat(s.name);
+    const zone=suggestZone(s.name);
+    const exist=state.foods.find(f=>f.name===s.name&&f.unit==='份'&&zoneOf(f)===zone);
+    if(exist){exist.qty++;exist.addedAt=todayStr();}
+    else state.foods.unshift({id:uid(),name:s.name,cat,unit:'份',qty:1,note:'',addedAt:todayStr(),days:null,frozen:zone==='freeze',room:zone==='room'});
+  });
+  state.shopping=state.shopping.filter(s=>s.done);
+  save();renderShopping();renderFridge();renderRecipes();
+  toast('🧊 已入库 '+undones.length+' 种食材（按建议自动归类）');
+}
+function guessCat(name){
+  /* 调料干货优先归「其他」 */
+  if(/鸡精|鱼露|蚝油|酱油|生抽|老抽|醋|料酒|香油|芝麻油|橄榄油|食用油|菜籽油|玉米油|大豆油|葵花籽油|调和油|猪油|淀粉|辣椒粉|花椒粉|孜然粉|咖喱粉|可可粉|咖啡|茶|蛋白粉|盐|糖|冰糖|红糖|蜂蜜|坚果|花生|核桃|瓜子|巧克力|酒/.test(name))return '其他';
+  if(/鱼(?!露)|虾|蟹|贝|蚝/.test(name))return '水产';
+  if(/肉|排骨|培根|牛(?!油|奶)|羊|鸡(?![蛋精])|鸭(?!蛋)|鹅(?!蛋)|五花|肥牛/.test(name))return '肉类';
+  if(/蛋|奶(?!茶)|奶酪|奶油|黄油/.test(name))return '蛋奶';
+  if(/菇|豆腐|木耳|豆干|腐竹|千张/.test(name))return '菌菇豆制品';
+  if(/饭|面|粉(?!末)|粥|饺|馄饨|馒头|包子|面包|燕麦|麦片|饼|糕|粽|汤圆|年糕|意面|凉皮|魔芋|玉米/.test(name))return '主食';
+  if(/莓|果|瓜(?!子)|橙|柚|柠|桃|梨|蕉|葡萄|提子|橘|枣|柿|榴|荔枝|龙眼|桂圆|杨梅|枇杷|桑葚|樱桃|车厘子|菠萝|甘蔗|梅/.test(name))return '水果';
+  if(/菜|笋|卜|瓜|茄|椒|葱|姜|蒜|藕|茼蒿|海带|紫菜|豆芽|豌豆|毛豆|豆角|四季豆|荷兰豆|豇豆|西葫芦|西兰花|花菜|菜花|秋葵/.test(name))return '蔬菜';
+  return '其他';
+}
+function renderShopping(){
+  const wrap=document.getElementById('shopList');
+  if(!state.shopping.length){wrap.innerHTML='<div class="empty"><div class="big">🛒</div>清单是空的<br>去「应季」页挑点当季食材加入吧</div>';return;}
+  const undone=state.shopping.filter(s=>!s.done),done=state.shopping.filter(s=>s.done);
+  let html='';
+  if(undone.length){
+    html+='<button class="btn btn-primary btn-block" style="margin-bottom:10px" onclick="shopToAll()">🧊 采购完成，全部放入冰箱（1份/种）</button>';
+    html+=undone.map(s=>shopHtml(s)).join('');
+  }
+  if(done.length){
+    html+='<div class="section-title"><span>已买 ✅</span></div>';
+    html+=done.map(s=>shopHtml(s)).join('');
+  }
+  wrap.innerHTML=html;
+}
+function shopHtml(s){
+  return '<div class="shop-item'+(s.done?' done':'')+'">'+
+    '<div style="font-size:22px">'+foodEmoji(s.name)+'</div>'+
+    '<div class="cb'+(s.done?' on':'')+'" onclick="toggleShop(\''+s.id+'\')">'+(s.done?'✓':'')+'</div>'+
+    '<div class="sf-info" style="flex:1"><div class="sf-name">'+esc(s.name)+'</div></div>'+
+    '<button class="btn btn-danger btn-sm" onclick="delShop(\''+s.id+'\')">🗑</button></div>';
+}
+
+/* ================= 初始化 ================= */
+(function init(){
+  const d=new Date(),wd='日一二三四五六'[d.getDay()];
+  document.getElementById('todayText').textContent=d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日 · 星期'+wd;
+  // 旧数据迁移：没有入库日期的食物视为今天入库，保质期自动估算
+  let migrated=false;
+  state.foods.forEach(f=>{if(!f.addedAt){f.addedAt=todayStr();migrated=true;}});
+  if(migrated)save();
+  updateShelfHint();
+  renderFridge();renderMealHistory();renderSeasonal();renderShopping();renderRecipes();renderKeto();
+})();
+</script>
 </body>
 </html>
