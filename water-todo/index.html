@@ -1,0 +1,3257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>喝水助手 · 水杯/待办/日记</title>
+  <meta name="theme-color" content="#3498db">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="喝水助手">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    :root {
+      --primary: #3498db;
+      --primary-light: #5dade2;
+      --primary-dark: #2471a3;
+      --primary-bg: #ebf5fb;
+      --accent: #2ecc71;
+      --warning: #f39c12;
+      --danger: #e74c3c;
+      --bg: #f0f4f8;
+      --card: #ffffff;
+      --text: #2c3e50;
+      --text-secondary: #7f8c8d;
+      --border: #ecf0f1;
+      --shadow: 0 2px 12px rgba(52, 152, 219, 0.1);
+      --radius: 16px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 520px;
+      margin: 0 auto;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* ===== Header ===== */
+    .header {
+      background: linear-gradient(135deg, #3498db 0%, #5dade2 100%);
+      color: #fff;
+      padding: 50px 20px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -20px; left: -10%;
+      width: 120%; height: 40px;
+      background: var(--bg);
+      border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    }
+    .header-title { font-size: 22px; font-weight: 700; }
+    .header-sub { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+
+    /* ===== Pages ===== */
+    .page { display: none; padding: 16px 16px 100px; }
+    .page.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ===== Water Hero ===== */
+    .water-hero {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 24px 20px 20px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .water-hero::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 120px; height: 120px;
+      background: radial-gradient(circle, rgba(52,152,219,0.06) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    /* ===== 水杯 SVG ===== */
+    .cup-wrap { position: relative; width: 170px; height: 235px; margin: 0 auto; cursor: pointer; }
+    .cup-wrap:active { transform: scale(0.97); }
+    .cup-wrap svg { width: 100%; height: 100%; overflow: visible; }
+
+    .water-fill { transition: y 0.8s cubic-bezier(0.4, 0, 0.2, 1), height 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+
+    .wave {
+      animation: waveMove 3s linear infinite;
+      transition: y 0.8s cubic-bezier(0.4, 0, 0.2, 1), height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @keyframes waveMove {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-40px); }
+    }
+
+    .bubble {
+      animation: bubbleRise 3s ease-in infinite;
+      opacity: 0;
+    }
+    @keyframes bubbleRise {
+      0% { transform: translateY(0); opacity: 0.6; }
+      100% { transform: translateY(-30px); opacity: 0; }
+    }
+
+    .cup-glow {
+      animation: cupGlow 2s ease-in-out infinite;
+    }
+    @keyframes cupGlow {
+      0%, 100% { filter: drop-shadow(0 6px 16px rgba(52,152,219,0.25)); }
+      50% { filter: drop-shadow(0 6px 24px rgba(52,152,219,0.45)); }
+    }
+
+    .cup-full {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 56px;
+      opacity: 0;
+      transition: opacity 0.5s;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .cup-full.show { opacity: 1; animation: popIn 0.6s ease; }
+    @keyframes popIn {
+      0% { transform: translate(-50%, -50%) scale(0.3); }
+      60% { transform: translate(-50%, -50%) scale(1.15); }
+      100% { transform: translate(-50%, -50%) scale(1); }
+    }
+
+    .cup-info { margin-top: 8px; }
+    .cup-info .num { font-size: 26px; font-weight: 700; color: var(--primary); }
+    .cup-info .label { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+    .cup-info .total { color: var(--primary-dark); }
+
+    .water-hero-info {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 6px;
+      padding: 8px 12px;
+      background: var(--primary-bg);
+      border-radius: 20px;
+      display: inline-block;
+    }
+    .water-hero-info strong { color: var(--primary); }
+    .water-hero-info.sync-status { background: #eafaf1; color: var(--accent); }
+    .water-hero-info.sync-status.off { background: #fef9e7; color: var(--warning); }
+
+    /* ===== 下一杯 ===== */
+    .water-next {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--card);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+    .water-next-icon {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: #fff;
+      animation: pulse 2s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.3); }
+      50% { transform: scale(1.05); box-shadow: 0 0 0 8px rgba(52, 152, 219, 0); }
+    }
+    .water-next-text { flex: 1; }
+    .water-next-text .t { font-size: 15px; font-weight: 700; }
+    .water-next-text .s { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+    /* ===== Section ===== */
+    .section-title {
+      font-size: 16px; font-weight: 700;
+      margin: 0 4px 12px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .section-title::before {
+      content: ''; width: 4px; height: 16px;
+      background: var(--primary); border-radius: 2px;
+    }
+
+    /* ===== 时段分组 ===== */
+    .period-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .period-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(90deg, var(--primary-bg) 0%, transparent 100%);
+    }
+    .period-icon { font-size: 18px; }
+    .period-name { font-size: 15px; font-weight: 700; flex: 1; }
+    .period-range { font-size: 12px; color: var(--text-secondary); }
+    .period-progress { font-size: 12px; font-weight: 700; color: var(--primary); margin-left: 8px; }
+    .period-progress.done { color: var(--accent); }
+
+    .water-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+    .water-item:last-child { border-bottom: none; }
+    .water-item:active { background: var(--primary-bg); }
+    .water-check {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.3s;
+      cursor: pointer;
+      background: transparent;
+    }
+    .water-check.done {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+    .water-check.done::after {
+      content: '✓'; color: #fff; font-size: 14px; font-weight: 700;
+    }
+    .water-time { font-size: 16px; font-weight: 600; width: 52px; }
+    .water-status { flex: 1; font-size: 13px; color: var(--text-secondary); }
+    .water-status.done { color: var(--accent); font-weight: 600; }
+    .water-status.missed { color: var(--danger); font-weight: 600; }
+    .water-status.current { color: var(--warning); font-weight: 600; }
+    .water-cup-btn {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: var(--primary-bg);
+      border: none;
+      font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .water-cup-btn:active { transform: scale(0.9); }
+    .water-cup-btn.done { background: var(--primary); color: #fff; }
+
+    /* ===== Todo ===== */
+    .todo-stats { display: flex; gap: 12px; margin-bottom: 16px; }
+    .todo-stat {
+      flex: 1;
+      background: var(--card);
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .todo-stat .num { font-size: 24px; font-weight: 700; }
+    .todo-stat .label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .todo-stat.pending .num { color: var(--warning); }
+    .todo-stat.done .num { color: var(--accent); }
+    .todo-stat.soon-stat .num { color: var(--danger); }
+
+    .todo-list { margin-bottom: 16px; }
+    .todo-item {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin-bottom: 12px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s;
+    }
+    .todo-item:active { transform: scale(0.98); }
+    .todo-item.completed { opacity: 0.6; }
+    .todo-item.completed .todo-title { text-decoration: line-through; }
+    .todo-item .left-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+    .todo-item.urgent .left-bar { background: var(--danger); }
+    .todo-item.soon .left-bar { background: var(--warning); }
+    .todo-item.normal .left-bar { background: var(--primary); }
+    .todo-item.completed .left-bar { background: var(--accent); }
+
+    .todo-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+    .todo-check {
+      width: 24px; height: 24px;
+      border-radius: 6px;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      margin-top: 1px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .todo-check.done { background: var(--accent); border-color: var(--accent); }
+    .todo-check.done::after { content: '✓'; color: #fff; font-size: 14px; font-weight: 700; }
+    .todo-body { flex: 1; min-width: 0; }
+    .todo-title { font-size: 16px; font-weight: 600; word-break: break-word; }
+    .todo-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .todo-tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+    .todo-tag.time { background: var(--primary-bg); color: var(--primary-dark); }
+    .todo-tag.remind { background: #fef9e7; color: var(--warning); }
+    .todo-tag.overdue { background: #fdedec; color: var(--danger); }
+    .todo-tag.done-tag { background: #eafaf1; color: var(--accent); }
+
+    .todo-actions {
+      display: flex; gap: 8px;
+      margin-top: 10px; padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .todo-btn {
+      flex: 1; padding: 6px 12px;
+      border: none; border-radius: 8px;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .todo-btn:active { opacity: 0.7; }
+    .todo-btn.toggle { background: var(--primary-bg); color: var(--primary-dark); }
+    .todo-btn.delete { background: #fdedec; color: var(--danger); }
+
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-state .text { font-size: 15px; line-height: 1.8; }
+
+    /* ===== FAB ===== */
+    .fab {
+      position: fixed;
+      bottom: 90px;
+      right: calc(50% - 195px);
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      font-size: 28px;
+      box-shadow: 0 4px 16px rgba(52, 152, 219, 0.4);
+      cursor: pointer;
+      z-index: 100;
+      transition: transform 0.2s;
+      display: none;
+      align-items: center; justify-content: center;
+    }
+    .fab:active { transform: scale(0.9); }
+    @media (max-width: 430px) { .fab { right: 20px; } }
+
+    /* ===== Tab Bar ===== */
+    .tab-bar {
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 430px;
+      background: var(--card);
+      display: flex;
+      padding: 8px 0 calc(8px + var(--safe-bottom));
+      box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+      z-index: 99;
+    }
+    .tab-item {
+      flex: 1;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      padding: 6px 0;
+      cursor: pointer;
+      border: none;
+      background: none;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .tab-item .icon { font-size: 24px; line-height: 1; }
+    .tab-item .label { font-size: 11px; color: var(--text-secondary); }
+    .tab-item.active .icon { transform: scale(1.1); }
+    .tab-item.active .label { color: var(--primary); font-weight: 600; }
+    .badge {
+      display: inline-flex;
+      align-items: center; justify-content: center;
+      min-width: 18px; height: 18px;
+      border-radius: 9px;
+      background: var(--danger);
+      color: #fff;
+      font-size: 10px; font-weight: 700;
+      padding: 0 5px;
+      position: absolute;
+      top: 0; right: 50%;
+      transform: translateX(18px);
+    }
+
+    /* ===== Modal ===== */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 200;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.show { display: flex; animation: fadeIn 0.2s; }
+    .modal {
+      background: var(--card);
+      width: 100%; max-width: 430px;
+      border-radius: 24px 24px 0 0;
+      padding: 24px 20px calc(24px + var(--safe-bottom));
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal-handle {
+      width: 36px; height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 0 auto 20px;
+    }
+    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; text-align: center; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; display: block; }
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+    .form-input:focus, .form-textarea:focus { border-color: var(--primary); }
+    .form-textarea { resize: none; min-height: 60px; }
+    .form-row { display: flex; gap: 12px; }
+    .form-row .form-group { flex: 1; }
+    .repeat-type-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .repeat-type-btn {
+      flex: 0 1 calc(33.33% - 6px); padding: 9px 0; border: 1.5px solid var(--border);
+      border-radius: 10px; background: var(--bg); color: var(--text-secondary);
+      font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .repeat-type-btn.active {
+      border-color: var(--primary); background: var(--primary-bg); color: var(--primary-dark);
+    }
+    .weekday-row { display: flex; gap: 6px; }
+    .weekday-btn {
+      flex: 1; padding: 8px 0; border: 1.5px solid var(--border);
+      border-radius: 8px; background: var(--bg); color: var(--text-secondary);
+      font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    }
+    .weekday-btn.active {
+      border-color: var(--primary); background: var(--primary); color: #fff;
+    }
+    .custom-date-row { display: flex; gap: 8px; align-items: center; }
+    .custom-date-row .form-input { flex: 1; min-width: 0; }
+    .custom-date-add {
+      flex: 0 0 auto; padding: 10px 16px; border: none; border-radius: 10px;
+      background: var(--primary); color: #fff; font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    .custom-date-add:active { opacity: 0.7; }
+    .custom-date-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .custom-date-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 5px 10px; border-radius: 8px; background: var(--primary-bg);
+      color: var(--primary-dark); font-size: 12px; font-weight: 600;
+    }
+    .custom-date-chip .del { cursor: pointer; opacity: 0.55; font-size: 14px; line-height: 1; padding: 0 2px; }
+    .custom-date-chip .del:active { opacity: 1; }
+    .todo-tag.repeat { background: #eaf2fd; color: var(--primary-dark); }
+    .modal-actions { display: flex; gap: 12px; margin-top: 8px; }
+    .btn {
+      flex: 1; padding: 14px;
+      border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .btn:active { opacity: 0.7; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-cancel { background: var(--bg); color: var(--text-secondary); }
+
+    /* ===== Settings ===== */
+    .settings-group {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .settings-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .settings-item:last-child { border-bottom: none; }
+    .settings-label { font-size: 15px; font-weight: 500; }
+    .settings-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .settings-value { font-size: 14px; color: var(--text-secondary); font-weight: 600; }
+
+    .toggle {
+      width: 48px; height: 28px;
+      border-radius: 14px;
+      background: #ddd;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+      border: none;
+      flex-shrink: 0;
+    }
+    .toggle.on { background: var(--primary); }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.3s;
+    }
+    .toggle.on::after { transform: translateX(20px); }
+
+    .interval-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 2px solid var(--border);
+      font-size: 13px; font-weight: 600;
+      cursor: pointer;
+      background: none;
+      transition: all 0.2s;
+    }
+    .pill.active { border-color: var(--primary); background: var(--primary-bg); color: var(--primary); }
+
+    .notify-log {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .notify-log-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+    .notify-log-item {
+      display: flex; gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .notify-log-item:last-child { border-bottom: none; }
+    .notify-log-item .time { color: var(--text-secondary); flex-shrink: 0; width: 48px; }
+    .notify-log-item .msg { flex: 1; }
+
+    /* ===== 弹窗提示 ===== */
+    .toast {
+      position: fixed;
+      top: 60px; left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: rgba(44, 62, 80, 0.95);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      z-index: 300;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s;
+      max-width: 90%;
+      text-align: center;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ===== 日记 ===== */
+    .diary-modules {
+      display: flex; gap: 10px; overflow-x: auto;
+      padding: 4px 2px 12px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .diary-modules::-webkit-scrollbar { display: none; }
+    .module-chip {
+      flex-shrink: 0;
+      display: flex; align-items: center; gap: 8px;
+      background: var(--card);
+      border-radius: 16px;
+      padding: 8px 12px;
+      box-shadow: var(--shadow);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .module-chip.active { border-color: var(--primary); background: var(--primary-bg); }
+    .module-chip .logo {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; color: #fff; flex-shrink: 0;
+      overflow: hidden; background-size: cover; background-position: center;
+    }
+    .module-chip .name { font-size: 14px; font-weight: 600; max-width: 84px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .module-chip .cnt { font-size: 11px; color: var(--text-secondary); }
+    .module-chip .edit-btn {
+      position: absolute; top: -6px; right: -6px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--primary); color: #fff;
+      font-size: 11px; line-height: 20px; text-align: center;
+      display: none; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .module-chip:hover .edit-btn, .module-chip.active .edit-btn { display: block; }
+    .module-add {
+      flex-shrink: 0;
+      width: 88px; height: 48px;
+      border-radius: 16px;
+      border: 2px dashed var(--border);
+      background: none;
+      color: var(--text-secondary);
+      font-size: 13px; font-weight: 600;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .module-add:active { background: var(--primary-bg); border-color: var(--primary); color: var(--primary); }
+    .module-add .plus { font-size: 18px; line-height: 1; }
+
+    .diary-empty {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px 20px;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+    .diary-empty .icon { font-size: 40px; margin-bottom: 8px; }
+    .diary-empty .btn {
+      margin-top: 12px; max-width: 200px;
+      margin-left: auto; margin-right: auto;
+    }
+
+    .diary-composer {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .composer-head { font-size: 15px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+    .mood-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .mood-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: none;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .mood-btn.active { border-color: var(--primary); background: var(--primary-bg); transform: scale(1.15); }
+    .diary-textarea { min-height: 120px; line-height: 1.6; }
+
+    .diary-entry {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin-bottom: 12px;
+      border-left: 4px solid var(--primary);
+    }
+    .diary-entry .top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .diary-entry .logo {
+      width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; color: #fff; flex-shrink: 0;
+      overflow: hidden; background-size: cover; background-position: center;
+    }
+    .diary-entry .meta { flex: 1; min-width: 0; }
+    .diary-entry .mname { font-size: 13px; font-weight: 700; }
+    .diary-entry .date { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+    .diary-entry .mood { font-size: 20px; flex-shrink: 0; }
+    .diary-entry .content {
+      font-size: 14px; line-height: 1.7;
+      white-space: pre-wrap; word-break: break-word;
+      color: var(--text);
+    }
+    .diary-entry .del {
+      margin-top: 10px;
+      background: none; border: none;
+      color: var(--danger); font-size: 12px;
+      cursor: pointer; padding: 2px 0;
+      opacity: 0.7;
+    }
+    .diary-entry .del:active { opacity: 1; }
+
+    /* ===== 日记：置顶 / 安全 / 复盘 ===== */
+    .diary-entry.pinned { border-left-color: var(--warning); box-shadow: 0 2px 14px rgba(243,156,18,0.18); }
+    .pin-badge { font-size: 11px; padding: 1px 8px; border-radius: 10px; background: #fef9e7; color: var(--warning); font-weight: 600; margin-left: 6px; }
+    .diary-entry .actions { display: flex; gap: 14px; margin-top: 10px; align-items: center; }
+    .diary-entry .act-btn { background: none; border: none; font-size: 12px; cursor: pointer; padding: 2px 0; opacity: 0.75; }
+    .diary-entry .act-btn:active { opacity: 1; }
+    .diary-entry .act-btn.pin-on { color: var(--warning); font-weight: 700; opacity: 1; }
+    .diary-entry .act-btn.del { color: var(--danger); margin-left: auto; opacity: 0.7; }
+
+    .diary-subtabs { display: flex; gap: 8px; margin-bottom: 14px; }
+    .diary-subtab {
+      flex: 1; padding: 10px 0; border: none; border-radius: 12px;
+      background: var(--card); box-shadow: var(--shadow);
+      font-size: 14px; font-weight: 600; color: var(--text-secondary);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .diary-subtab.active { background: var(--primary); color: #fff; }
+
+    .diary-lock {
+      background: var(--card); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 44px 26px; text-align: center;
+    }
+    .diary-lock .lock-icon { font-size: 52px; margin-bottom: 12px; }
+    .diary-lock .lock-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+    .diary-lock .lock-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.7; }
+    .diary-lock .lock-input {
+      width: 100%; padding: 12px 14px; border: 2px solid var(--border);
+      border-radius: 12px; font-size: 15px; text-align: center;
+      margin-bottom: 12px; outline: none; transition: border-color 0.2s;
+    }
+    .diary-lock .lock-input:focus { border-color: var(--primary); }
+
+    .form-note { font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin: 4px 0 12px; background: #fef9e7; padding: 8px 10px; border-radius: 8px; }
+
+    .review-periods { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    .review-period {
+      padding: 7px 16px; border: 2px solid var(--border); border-radius: 20px;
+      background: none; font-size: 13px; font-weight: 600;
+      color: var(--text-secondary); cursor: pointer; transition: all 0.2s;
+    }
+    .review-period.active { border-color: var(--primary); background: var(--primary-bg); color: var(--primary); }
+    .review-range { font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; text-align: center; }
+    .review-stats { display: flex; gap: 10px; margin-bottom: 14px; }
+    .review-stat {
+      flex: 1; background: var(--card); border-radius: 12px;
+      padding: 14px 8px; text-align: center; box-shadow: var(--shadow);
+    }
+    .review-stat .num { font-size: 22px; font-weight: 700; color: var(--primary); }
+    .review-stat .label { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
+    .review-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; margin-bottom: 14px; }
+    .review-card .rc-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+    .review-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; font-size: 12px; }
+    .review-bar-row .rb-label { width: 60px; color: var(--text-secondary); flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .review-bar-row .rb-track { flex: 1; height: 14px; background: var(--bg); border-radius: 7px; overflow: hidden; }
+    .review-bar-row .rb-fill { display: block; height: 100%; border-radius: 7px; background: linear-gradient(90deg, var(--primary), var(--primary-light)); min-width: 2px; transition: width 0.4s ease; }
+    .review-bar-row .rb-num { width: 38px; text-align: right; color: var(--text-secondary); flex-shrink: 0; }
+    .review-day-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+    .review-day-cell { text-align: center; font-size: 11px; color: var(--text-secondary); }
+    .review-day-cell .d { font-size: 11px; margin-bottom: 3px; }
+    .review-day-cell .bar { height: 34px; border-radius: 6px; background: var(--bg); position: relative; overflow: hidden; }
+    .review-day-cell .bar i { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, var(--primary-light), var(--primary)); border-radius: 6px 6px 0 0; }
+    .review-day-cell .v { font-size: 10px; margin-top: 2px; color: var(--text-secondary); }
+
+    /* 模块 logo 弹窗 */
+    .logo-type-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+    .logo-type-tab {
+      flex: 1; padding: 8px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      background: none;
+      font-size: 13px; font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .logo-type-tab.active { border-color: var(--primary); color: var(--primary); background: var(--primary-bg); }
+    .emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+    .emoji-opt {
+      aspect-ratio: 1;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: none;
+      font-size: 22px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .emoji-opt.active { border-color: var(--primary); background: var(--primary-bg); transform: scale(1.08); }
+    .text-logo-row { display: flex; align-items: center; gap: 12px; }
+    .text-logo-preview {
+      width: 56px; height: 56px; border-radius: 50%;
+      color: #fff; font-size: 24px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .img-logo-preview {
+      width: 56px; height: 56px; border-radius: 50%;
+      background-size: cover; background-position: center;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+    }
+    .logo-upload-btn {
+      padding: 10px 14px;
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      background: none;
+      color: var(--text-secondary);
+      font-size: 13px; font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex: 1;
+    }
+    .logo-upload-btn:active { border-color: var(--primary); color: var(--primary); }
+    .danger-btn { background: var(--danger) !important; color: #fff !important; }
+  </style>
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<div class="header">
+  <div class="header-title">💧 喝水助手</div>
+  <div class="header-sub" id="headerDate">监督你每天按时喝水</div>
+</div>
+
+<!-- ===== Water Page ===== -->
+<div class="page active" id="page-water">
+  <div class="water-hero">
+    <div class="cup-wrap" id="cupWrap" onclick="toggleWaterNow()">
+      <svg viewBox="0 0 200 260" id="cupSvg">
+        <defs>
+          <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#5dade2"/>
+            <stop offset="100%" stop-color="#2471a3"/>
+          </linearGradient>
+          <linearGradient id="cupShine" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.4)"/>
+            <stop offset="30%" stop-color="rgba(255,255,255,0.05)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0.25)"/>
+          </linearGradient>
+          <clipPath id="cupClip">
+            <path d="M43,34 L157,34 L142,232 Q142,248 126,248 L74,248 Q58,248 58,232 Z"/>
+          </clipPath>
+        </defs>
+
+        <!-- 桌面阴影 -->
+        <ellipse cx="100" cy="252" rx="50" ry="7" fill="rgba(52,152,219,0.12)"/>
+
+        <g class="cup-glow">
+          <!-- 杯体玻璃 -->
+          <path d="M43,34 L157,34 L142,232 Q142,248 126,248 L74,248 Q58,248 58,232 Z"
+                fill="rgba(255,255,255,0.35)" stroke="#a9cce3" stroke-width="3" stroke-linejoin="round"/>
+
+          <!-- 杯内水面（裁剪） -->
+          <g clip-path="url(#cupClip)">
+            <!-- 水主体 -->
+            <rect id="waterRect" class="water-fill" x="40" y="248" width="120" height="0" fill="url(#waterGrad)" rx="4"/>
+            <!-- 水波 -->
+            <path id="wavePath" class="wave" d="M40,248 L160,248 L160,248 L40,248 Z" fill="url(#waterGrad)" opacity="0.7"/>
+            <!-- 气泡 -->
+            <circle class="bubble" cx="85" cy="210" r="3.5" fill="rgba(255,255,255,0.55)" style="animation-delay:0s;"/>
+            <circle class="bubble" cx="115" cy="225" r="2.5" fill="rgba(255,255,255,0.45)" style="animation-delay:1s;"/>
+            <circle class="bubble" cx="98" cy="235" r="4" fill="rgba(255,255,255,0.35)" style="animation-delay:2s;"/>
+          </g>
+
+          <!-- 杯身高光 -->
+          <path d="M50,40 L58,40" stroke="rgba(255,255,255,0.8)" stroke-width="4" stroke-linecap="round"/>
+          <path d="M51,52 L56,52" stroke="rgba(255,255,255,0.5)" stroke-width="3" stroke-linecap="round"/>
+          <path d="M50,62 L57,62" stroke="rgba(255,255,255,0.35)" stroke-width="2.5" stroke-linecap="round"/>
+
+          <!-- 杯口 -->
+          <ellipse cx="100" cy="34" rx="57" ry="7" fill="rgba(255,255,255,0.25)" stroke="#a9cce3" stroke-width="2.5"/>
+        </g>
+      </svg>
+      <div class="cup-full" id="cupFull">🎉</div>
+    </div>
+
+    <div class="cup-info">
+      <div><span class="num" id="waterCount">0</span><span class="total"> / <span id="waterTotal">0</span> 杯</span></div>
+      <div class="label">今日已喝水，点击水杯打卡</div>
+    </div>
+    <div class="water-hero-info">
+      目标 <strong id="goalCount">9</strong> 杯 · 已完成 <strong id="doneCount">0</strong> 杯
+    </div>
+    <div class="water-hero-info sync-status" id="syncStatus" style="display:none; margin-top:8px;"></div>
+  </div>
+
+  <div class="water-next" id="waterNextBox">
+    <div class="water-next-icon">⏰</div>
+    <div class="water-next-text">
+      <div class="t" id="nextWaterTime">--:--</div>
+      <div class="s" id="nextWaterDesc">下一次喝水提醒</div>
+    </div>
+  </div>
+
+  <div class="section-title">今日喝水计划</div>
+  <div id="waterList"></div>
+</div>
+
+<!-- ===== Todo Page ===== -->
+<div class="page" id="page-todo">
+  <div class="todo-stats">
+    <div class="todo-stat pending">
+      <div class="num" id="statPending">0</div>
+      <div class="label">待办中</div>
+    </div>
+    <div class="todo-stat soon-stat">
+      <div class="num" id="statSoon">0</div>
+      <div class="label">即将到期</div>
+    </div>
+    <div class="todo-stat done">
+      <div class="num" id="statDone">0</div>
+      <div class="label">已完成</div>
+    </div>
+  </div>
+
+  <div class="section-title">待办事项</div>
+  <div class="todo-list" id="todoList"></div>
+</div>
+
+<!-- ===== Diary Page ===== -->
+<div class="page" id="page-diary">
+  <div id="diaryLock" style="display:none;"></div>
+
+  <div id="diaryBody">
+    <div class="diary-subtabs">
+      <button class="diary-subtab active" id="diarySubWrite" onclick="switchDiarySub('write')">📝 写日记</button>
+      <button class="diary-subtab" id="diarySubReview" onclick="switchDiarySub('review')">📊 复盘</button>
+    </div>
+
+    <div id="diaryWriteView">
+      <div class="todo-stats">
+        <div class="todo-stat pending">
+          <div class="num" id="diaryStatModules">0</div>
+          <div class="label">日记本</div>
+        </div>
+        <div class="todo-stat soon-stat">
+          <div class="num" id="diaryStatToday">0</div>
+          <div class="label">今日篇数</div>
+        </div>
+        <div class="todo-stat done">
+          <div class="num" id="diaryStatTotal">0</div>
+          <div class="label">总篇数</div>
+        </div>
+      </div>
+
+      <div class="section-title">📒 我的日记本</div>
+      <div class="diary-modules" id="diaryModules"></div>
+
+      <div class="diary-composer">
+        <div class="composer-head">✍️ 写一篇日记</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">日记本</label>
+            <select class="form-input" id="diaryModuleSel"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">日期</label>
+            <input type="date" class="form-input" id="diaryDate">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">心情</label>
+          <div class="mood-row" id="diaryMoods"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">内容</label>
+          <textarea class="form-textarea diary-textarea" id="diaryContent" placeholder="今天发生了什么？写下此刻的想法吧…" maxlength="2000"></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="addDiaryEntry()">保存日记</button>
+      </div>
+
+      <div class="section-title" id="diaryListTitle">📖 日记列表</div>
+      <div id="diaryList"></div>
+    </div>
+
+    <div id="diaryReviewView" style="display:none;">
+      <div class="review-periods" id="reviewPeriods"></div>
+      <div class="review-range" id="reviewRange"></div>
+      <div class="review-stats" id="reviewStats"></div>
+      <div id="reviewContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Settings Page ===== -->
+<div class="page" id="page-settings">
+  <div class="settings-group">
+    <div class="settings-item">
+      <div>
+        <div class="settings-label">通知提醒</div>
+        <div class="settings-desc">开启后将在提醒时间推送通知</div>
+      </div>
+      <button class="toggle" id="toggleNotify" onclick="toggleNotifications()"></button>
+    </div>
+    <div class="settings-item">
+      <div>
+        <div class="settings-label">提醒声音</div>
+        <div class="settings-desc">提醒时播放提示音</div>
+      </div>
+      <button class="toggle on" id="toggleSound" onclick="toggleSound()"></button>
+    </div>
+  </div>
+
+  <div class="settings-group">
+    <div class="settings-item">
+      <div>
+        <div class="settings-label">喝水提醒时段</div>
+        <div class="settings-desc">上午 / 下午两个时段定点提醒</div>
+      </div>
+      <div class="settings-value" id="timeRangeText">09:00-11:30 / 14:00-17:30</div>
+    </div>
+    <div class="settings-item" style="flex-direction: column; align-items: stretch;">
+      <div style="margin-bottom: 8px;">
+        <div class="settings-label">提醒间隔</div>
+        <div class="settings-desc">每隔多久提醒一次喝水</div>
+      </div>
+      <div class="interval-pills" id="intervalPills">
+        <button class="pill" data-interval="30" onclick="setInterval2(30)">30分钟</button>
+        <button class="pill active" data-interval="60" onclick="setInterval2(60)">1小时</button>
+        <button class="pill" data-interval="90" onclick="setInterval2(90)">1.5小时</button>
+        <button class="pill" data-interval="120" onclick="setInterval2(120)">2小时</button>
+      </div>
+    </div>
+    <div class="settings-item">
+      <div>
+        <div class="settings-label">每杯水量</div>
+        <div class="settings-desc">建议每次 200-250ml</div>
+      </div>
+      <div class="settings-value" id="cupSizeText">200ml</div>
+    </div>
+  </div>
+
+  <div class="settings-group">
+    <div class="settings-item" onclick="resetToday()" style="cursor: pointer;">
+      <div>
+        <div class="settings-label">重置今日喝水记录</div>
+        <div class="settings-desc">清空今天的喝水打卡</div>
+      </div>
+      <span style="color: var(--danger); font-size: 20px;">›</span>
+    </div>
+    <div class="settings-item" onclick="clearAllTodos()" style="cursor: pointer;">
+      <div>
+        <div class="settings-label">清空所有待办</div>
+        <div class="settings-desc">删除全部待办事项</div>
+      </div>
+      <span style="color: var(--danger); font-size: 20px;">›</span>
+    </div>
+  </div>
+
+  <div class="settings-group">
+    <div class="settings-item" onclick="openPwdModal()" style="cursor: pointer;">
+      <div>
+        <div class="settings-label">🔒 日记密码</div>
+        <div class="settings-desc" id="diaryLockDesc">未设置 · 日记明文保存</div>
+      </div>
+      <span style="color: var(--primary); font-size: 20px;">›</span>
+    </div>
+  </div>
+
+  <div class="notify-log">
+    <div class="notify-log-title">📋 提醒记录</div>
+    <div id="notifyLogList">
+      <div style="text-align: center; color: var(--text-secondary); font-size: 13px; padding: 12px 0;">暂无提醒记录</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FAB ===== -->
+<button class="fab" id="fabAdd" onclick="openTodoModal()">+</button>
+
+<!-- ===== Tab Bar ===== -->
+<div class="tab-bar">
+  <button class="tab-item active" data-page="water" onclick="switchPage('water')">
+    <span class="icon">💧</span>
+    <span class="label">喝水</span>
+  </button>
+  <button class="tab-item" data-page="todo" onclick="switchPage('todo')">
+    <span class="icon">📋</span>
+    <span class="label">待办</span>
+    <span class="badge" id="todoBadge" style="display:none;"></span>
+  </button>
+  <button class="tab-item" data-page="diary" onclick="switchPage('diary')">
+    <span class="icon">📖</span>
+    <span class="label">日记</span>
+    <span class="badge" id="diaryBadge" style="display:none;"></span>
+  </button>
+  <button class="tab-item" data-page="settings" onclick="switchPage('settings')">
+    <span class="icon">⚙️</span>
+    <span class="label">设置</span>
+  </button>
+</div>
+
+<!-- ===== Todo Modal ===== -->
+<div class="modal-overlay" id="todoModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">新增待办</div>
+    <div class="form-group">
+      <label class="form-label">事项名称</label>
+      <input type="text" class="form-input" id="todoInput" placeholder="例如：完成项目报告" maxlength="50">
+    </div>
+    <div class="form-group">
+      <label class="form-label">备注（可选）</label>
+      <textarea class="form-textarea" id="todoNote" placeholder="添加备注..." maxlength="200"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">办结日期</label>
+        <input type="date" class="form-input" id="todoDate">
+      </div>
+      <div class="form-group">
+        <label class="form-label">办结时间</label>
+        <input type="time" class="form-input" id="todoTime">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">事项类型</label>
+      <div class="repeat-type-row">
+        <button type="button" class="repeat-type-btn active" data-repeat="" onclick="setRepeatType('')">单日待办</button>
+        <button type="button" class="repeat-type-btn" data-repeat="daily" onclick="setRepeatType('daily')">每天重复</button>
+        <button type="button" class="repeat-type-btn" data-repeat="weekly" onclick="setRepeatType('weekly')">每周重复</button>
+        <button type="button" class="repeat-type-btn" data-repeat="workday" onclick="setRepeatType('workday')">工作日</button>
+        <button type="button" class="repeat-type-btn" data-repeat="custom" onclick="setRepeatType('custom')">自定义</button>
+      </div>
+      <div class="type-hint" id="typeHint" style="margin-top:6px;font-size:12px;color:var(--text-secondary);"></div>
+    </div>
+    <div class="form-group" id="weekdayGroup" style="display:none;">
+      <label class="form-label">重复日（可多选）</label>
+      <div class="weekday-row">
+        <button type="button" class="weekday-btn" data-wd="1" onclick="toggleWeekday(1)">一</button>
+        <button type="button" class="weekday-btn" data-wd="2" onclick="toggleWeekday(2)">二</button>
+        <button type="button" class="weekday-btn" data-wd="3" onclick="toggleWeekday(3)">三</button>
+        <button type="button" class="weekday-btn" data-wd="4" onclick="toggleWeekday(4)">四</button>
+        <button type="button" class="weekday-btn" data-wd="5" onclick="toggleWeekday(5)">五</button>
+        <button type="button" class="weekday-btn" data-wd="6" onclick="toggleWeekday(6)">六</button>
+        <button type="button" class="weekday-btn" data-wd="7" onclick="toggleWeekday(7)">日</button>
+      </div>
+    </div>
+    <div class="form-group" id="customDateGroup" style="display:none;">
+      <label class="form-label">指定日期（可多选）</label>
+      <div class="custom-date-row">
+        <input type="date" class="form-input" id="customDateInput">
+        <button type="button" class="custom-date-add" onclick="addCustomDate()">＋添加</button>
+      </div>
+      <div class="custom-date-chips" id="customDateChips"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeTodoModal()">取消</button>
+      <button class="btn btn-primary" onclick="addTodo()">添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 日记本模块 Modal ===== -->
+<div class="modal-overlay" id="moduleModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="moduleModalTitle">新建日记本</div>
+
+    <div class="form-group">
+      <label class="form-label">日记本名称</label>
+      <input type="text" class="form-input" id="moduleNameInput" placeholder="例如：马伯庸日记" maxlength="12">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">小 Logo 图标</label>
+      <div class="logo-type-tabs">
+        <button class="logo-type-tab active" data-ltype="emoji" onclick="switchLogoType('emoji')">😀 Emoji</button>
+        <button class="logo-type-tab" data-ltype="text" onclick="switchLogoType('text')">🔤 文字</button>
+        <button class="logo-type-tab" data-ltype="img" onclick="switchLogoType('img')">🖼️ 图片</button>
+      </div>
+
+      <div id="logoPaneEmoji">
+        <div class="emoji-grid" id="emojiGrid"></div>
+      </div>
+
+      <div id="logoPaneText" style="display:none;">
+        <div class="text-logo-row">
+          <div class="text-logo-preview" id="textLogoPreview">记</div>
+          <input type="text" class="form-input" id="moduleTextInput" placeholder="1-2 个字符" maxlength="2" style="flex:1;">
+        </div>
+      </div>
+
+      <div id="logoPaneImg" style="display:none;">
+        <div class="text-logo-row">
+          <div class="img-logo-preview" id="imgLogoPreview"></div>
+          <button class="logo-upload-btn" onclick="document.getElementById('logoFileInput').click()">
+            📁 选择图片（自动裁剪为圆形小图标）
+          </button>
+          <input type="file" id="logoFileInput" accept="image/*" style="display:none;" onchange="onLogoFile(this)">
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModuleModal()">取消</button>
+      <button class="btn btn-primary" id="moduleSaveBtn" onclick="saveModule()">保存</button>
+    </div>
+    <div class="modal-actions" id="moduleDelRow" style="display:none; margin-top: 8px;">
+      <button class="btn danger-btn" onclick="deleteModule()">删除此日记本</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 日记密码 Modal ===== -->
+<div class="modal-overlay" id="pwdModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="pwdModalTitle">设置日记密码</div>
+    <div class="form-group" id="pwdCurGroup" style="display:none;">
+      <label class="form-label">当前密码</label>
+      <input type="password" class="form-input" id="pwdCurInput" placeholder="输入当前密码" maxlength="32">
+    </div>
+    <div class="form-group">
+      <label class="form-label">新密码</label>
+      <input type="password" class="form-input" id="pwdNewInput" placeholder="4-32 位字符" maxlength="32">
+    </div>
+    <div class="form-group">
+      <label class="form-label">确认新密码</label>
+      <input type="password" class="form-input" id="pwdNew2Input" placeholder="再输入一次" maxlength="32">
+    </div>
+    <div class="form-note">⚠️ 设置后日记内容将以密码加密保存；<b>忘记密码将无法找回</b>已加密的日记。</div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closePwdModal()">取消</button>
+      <button class="btn btn-primary" id="pwdSaveBtn" onclick="savePwdModal()">确定</button>
+    </div>
+    <div class="modal-actions" id="pwdDisableRow" style="display:none; margin-top: 8px;">
+      <button class="btn danger-btn" onclick="disableDiaryLock()">关闭密码（转为明文保存）</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 全局提示 ===== -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ========================================
+   数据层
+======================================== */
+const STORAGE_KEY = 'water_todo_app_v2';
+const defaultSettings = {
+  morningStart: '09:00',
+  morningEnd: '11:30',
+  afternoonStart: '14:00',
+  afternoonEnd: '17:30',
+  interval: 60,
+  cupSize: 200,
+  notifyEnabled: false,
+  soundEnabled: true
+};
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { settings: { ...defaultSettings }, todos: [], waterLog: {}, notifyLog: [], diary: { modules: [], entries: [] } };
+    const data = JSON.parse(raw);
+    data.settings = { ...defaultSettings, ...(data.settings || {}) };
+    data.todos = data.todos || [];
+    data.waterLog = data.waterLog || {};
+    data.notifyLog = data.notifyLog || [];
+    data.diary = data.diary || { modules: [], entries: [] };
+    data.diary.modules = data.diary.modules || [];
+    data.diary.entries = data.diary.entries || [];
+    if (data.settings.diaryLock) {
+      // 已开启密码加密：不加载明文日记，等待解锁后从密文解密
+      data.diary = { modules: [], entries: [] };
+    }
+    return data;
+  } catch (e) {
+    return { settings: { ...defaultSettings }, todos: [], waterLog: {}, notifyLog: [], diary: { modules: [], entries: [] } };
+  }
+}
+
+let appData = loadData();
+
+function saveData() {
+  const lockOn = !!(appData.settings && appData.settings.diaryLock);
+  const store = Object.assign({}, appData);
+  if (lockOn) {
+    // 加密状态下：明文日记绝不落盘，改动时同步加密写回密文
+    store.diary = { modules: [], entries: [] };
+    if (diaryKey && (appData.diary.entries.length || appData.diary.modules.length)) {
+      encryptDiaryToStorage(diaryKey, appData.diary).catch(() => {});
+    }
+  }
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+  } catch (e) {
+    console.warn('save failed:', e);
+  }
+  syncTodosToBackend();
+  syncWaterToBackend();
+  queuePushAppSettings();   // 跨端设置同步（间隔/日记密码/密文）
+}
+
+/* ========================================
+   喝水打卡同步到本地后台（悬浮球共享数据）
+   三端共享同一份 drink_log.json：
+   - 「小程序」窗口（8199 PWA / 非本机地址）= 权威端 app：推送时以它为准覆盖日期
+   - 桌面网页（8653 工作台）= 网页端 web：并集合并，悬浮球单条点击不丢
+   - 悬浮球：单条追加
+   网页打开时把后台记录合并回来，保证三端一致。
+======================================== */
+function deviceSrc() {
+  // 小程序（权威端）：从 8199 PWA 窗口打开，或通过局域网/其他地址访问
+  if (location.port === '8199') return 'app';
+  const hn = location.hostname;
+  if (hn !== '127.0.0.1' && hn !== 'localhost') return 'app';
+  return 'web';
+}
+
+function syncWaterToBackend() {
+  if (!('fetch' in window)) return;
+  fetch('/api/drink', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ waterLog: appData.waterLog, src: deviceSrc() })
+  }).catch(() => {});
+}
+
+function loadBackendWater() {
+  if (!('fetch' in window)) return;
+  fetch('/api/drink')
+    .then(r => r.json())
+    .then(d => {
+      if (!d || !d.waterLog || typeof d.waterLog !== 'object') return;
+      let changed = false;
+      for (const [date, times] of Object.entries(d.waterLog)) {
+        if (!Array.isArray(times) || !times.length) continue;
+        const cur = appData.waterLog[date] || (appData.waterLog[date] = []);
+        for (const t of times) {
+          if (!cur.includes(t)) { cur.push(t); changed = true; }
+        }
+        if (cur.length) cur.sort();
+      }
+      if (changed) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); } catch (e) {}
+        if (typeof renderWaterPage === 'function') renderWaterPage();
+      }
+      const st = document.getElementById('syncStatus');
+      if (st) {
+        const today = d.today && d.today.length ? d.today.length : 0;
+        st.className = 'water-hero-info sync-status';
+        st.style.display = 'inline-block';
+        st.textContent = '☁️ 已同步 · 后台共 ' + today + ' 杯' + (deviceSrc() === 'app' ? '（小程序为准）' : '');
+      }
+    })
+    .catch(() => {
+      const st = document.getElementById('syncStatus');
+      if (st) {
+        st.className = 'water-hero-info sync-status off';
+        st.style.display = 'inline-block';
+        st.textContent = '⚠️ 后台未连接，暂时只在本窗口记录';
+      }
+    });
+}
+
+/* ========================================
+   跨端设置同步（喝水间隔 / 日记密码 / 加密日记）
+   - 8199 小程序 与 8653 工作台是不同 origin，localStorage 互相隔离；
+   - 统一经 /api/appsettings 落盘到桌面后台 config.json，以 updatedAt 较新者为准。
+   - 明文日记绝不落盘：只同步 AES-GCM 密文（diaryEnc），解锁后在本端解密。
+======================================== */
+let appSyncTimer = null;
+
+function persistAppData() {
+  // 脱敏落盘（lockOn 时明文日记不入 localStorage），不触发同步，避免循环
+  const lockOn = !!(appData.settings && appData.settings.diaryLock);
+  const store = Object.assign({}, appData);
+  if (lockOn) store.diary = { modules: [], entries: [] };
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); } catch (e) {}
+}
+
+function itemTs(x) {
+  // 条目更新时间戳（ms）：updatedAt 优先，回退 createdAt
+  if (x && x.updatedAt) return Number(x.updatedAt) || 0;
+  if (x && x.createdAt) {
+    const n = Date.parse(x.createdAt);
+    if (!isNaN(n)) return n;
+  }
+  return 0;
+}
+
+function mergeById(localList, remoteList) {
+  // 按 id 并集合并，updatedAt 较新者胜；local 在前（同时间戳时本端优先）
+  const map = new Map();
+  [...(localList || []), ...(remoteList || [])].forEach(x => {
+    if (!x || x.id === undefined || x.id === null) return;
+    const key = String(x.id);
+    const prev = map.get(key);
+    if (!prev || itemTs(x) >= itemTs(prev)) map.set(key, x);
+  });
+  return Array.from(map.values());
+}
+
+function diaryDataTs() {
+  // 本端日记数据最大更新时间
+  let ts = 0;
+  appData.diary.modules.forEach(m => { ts = Math.max(ts, itemTs(m)); });
+  appData.diary.entries.forEach(e => { ts = Math.max(ts, itemTs(e)); });
+  return ts;
+}
+
+function mergeDiarySnapshots(local, remote) {
+  if (!local || !remote) return null;
+  return {
+    modules: mergeById(local.modules || [], remote.modules || []),
+    entries: mergeById(local.entries || [], remote.entries || [])
+  };
+}
+
+function currentAppSettingsPayload() {
+  const s = appData.settings;
+  const lockOn = !!(s && s.diaryLock);
+  let diaryEnc = null;
+  if (lockOn) {
+    try {
+      const raw = localStorage.getItem(DIARY_ENC_KEY);
+      if (raw) diaryEnc = JSON.parse(raw);
+    } catch (e) {}
+  }
+  const payload = {
+    interval: s.interval,
+    morningStart: s.morningStart,
+    morningEnd: s.morningEnd,
+    afternoonStart: s.afternoonStart,
+    afternoonEnd: s.afternoonEnd,
+    diaryLock: s.diaryLock || null,
+    diaryEnc: diaryEnc,
+    updatedAt: Date.now()
+  };
+  // 未设密码：明文日记（含删除墓碑）随设置同步到本机后台，跨端共享
+  // 设了密码：明文绝不落盘，只同步 AES-GCM 密文（diaryEnc）
+  if (!lockOn) {
+    payload.diary = {
+      modules: appData.diary.modules,
+      entries: appData.diary.entries,
+      updatedAt: diaryDataTs()
+    };
+  }
+  return payload;
+}
+
+async function pushAppSettingsToBackend() {
+  if (!('fetch' in window)) return;
+  const lockOn = !!(appData.settings && appData.settings.diaryLock);
+  if (lockOn && diaryKey && (appData.diary.entries.length || appData.diary.modules.length)) {
+    // 确保最新密文已生成（异步加密后 localStorage 的 DIARY_ENC_KEY 会被更新）
+    try { await encryptDiaryToStorage(diaryKey, appData.diary); } catch (e) {}
+  }
+  const payload = currentAppSettingsPayload();
+  appData.settings.syncTs = payload.updatedAt;
+  persistAppData();
+  fetch('/api/appsettings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).catch(() => {});
+}
+
+function queuePushAppSettings() {
+  if (!('fetch' in window)) return;
+  if (appSyncTimer) clearTimeout(appSyncTimer);
+  appSyncTimer = setTimeout(pushAppSettingsToBackend, 500);
+}
+
+function applyServerAppSettings(s) {
+  if (!s || typeof s !== 'object') return;
+  const st = appData.settings;
+  const keys = ['interval', 'morningStart', 'morningEnd', 'afternoonStart', 'afternoonEnd'];
+  let changed = false;
+  keys.forEach(k => {
+    if (s[k] !== undefined && s[k] !== null && s[k] !== st[k]) { st[k] = s[k]; changed = true; }
+  });
+  const prevLock = st.diaryLock || null;
+  const newLock = s.diaryLock || null;
+  st.diaryLock = newLock;
+  st.syncTs = s.updatedAt || Date.now();
+  if (s.diaryEnc) {
+    try { localStorage.setItem(DIARY_ENC_KEY, JSON.stringify(s.diaryEnc)); } catch (e) {}
+  } else if (!prevLock && !newLock) {
+    try { localStorage.removeItem(DIARY_ENC_KEY); } catch (e) {}
+  }
+  persistAppData();
+  if (changed) {
+    renderSettings();
+    renderWaterPage();
+  }
+  // 锁状态变化：重置会话，重新进入锁定/解锁流程
+  if (!!prevLock !== !!newLock) {
+    diaryKey = null;
+    diaryUnlocked = false;
+    try { sessionStorage.removeItem(DIARY_SESSION_KEY); } catch (e) {}
+    initDiarySecurity();
+    return;
+  }
+  // 已解锁会话收到另一端写的新密文 → 重新解密刷新日记
+  if (s.diaryEnc && diaryUnlocked && diaryKey) {
+    decryptDiaryFromStorage(diaryKey).then(d => {
+      if (d) { appData.diary = d; renderDiaryPage(); }
+    }).catch(() => {});
+  }
+  // 未设密码：合并另一端同步来的明文日记（按条目并集，updatedAt 较新者胜）
+  if (!newLock && s.diary && typeof s.diary === 'object' && (s.diary.updatedAt || 0) > diaryDataTs()) {
+    const merged = mergeDiarySnapshots(appData.diary, s.diary);
+    if (merged) {
+      const before = JSON.stringify(appData.diary);
+      appData.diary = merged;
+      if (before !== JSON.stringify(appData.diary)) {
+        persistAppData();
+        renderDiaryPage();
+      }
+    }
+  }
+}
+
+function loadAppSettingsFromBackend() {
+  if (!('fetch' in window)) return;
+  fetch('/api/appsettings')
+    .then(r => r.json())
+    .then(d => {
+      const server = d && d.appSettings;
+      const localTs = appData.settings.syncTs || 0;
+      const serverTs = (server && server.updatedAt) || 0;
+      if (serverTs && serverTs > localTs) {
+        applyServerAppSettings(server);
+      } else if (!serverTs || localTs > serverTs) {
+        // 服务端无数据或本地更新 → 把本地设置推上去（含历史存量设置，如已设的 30 分钟间隔）
+        pushAppSettingsToBackend();
+      }
+    })
+    .catch(() => {});
+}
+
+/* ========================================
+   待办同步到本地后台（关网页也能提醒）
+   网页待办经 /api/todos 落盘 todos.json，由后台程序轮询到期提醒；
+   网页重新打开时合并后台的提醒标记，避免重复提醒。
+======================================== */
+function syncTodosToBackend() {
+  if (!('fetch' in window)) return;
+  fetch('/api/todos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ todos: appData.todos })
+  }).catch(() => {});
+}
+
+function loadBackendTodos() {
+  if (!('fetch' in window)) return;
+  fetch('/api/todos')
+    .then(r => r.json())
+    .then(d => {
+      if (!d || !Array.isArray(d.todos)) return;
+      const remote = d.todos;
+      // 内容合并：按 id 并集，updatedAt 较新者胜（另一端新增/修改/删除都会带过来）
+      const merged = mergeById(appData.todos, remote);
+      // 提醒标记兜底：后台轮询线程已触发的标记（reminded30 等）补到本端，避免重复提醒
+      const byId = new Map(remote.map(t => [String(t.id), t]));
+      merged.forEach(t => {
+        const b = byId.get(String(t.id));
+        if (b) for (const k of ['reminded30', 'remindedDue', 'remindedOverdue5']) {
+          if (b[k] && !t[k]) t[k] = true;
+        }
+      });
+      if (JSON.stringify(merged) !== JSON.stringify(appData.todos)) {
+        appData.todos = merged;
+        saveData();
+        renderTodoPage();
+      }
+    })
+    .catch(() => {});
+}
+
+/* ========================================
+   工具函数
+======================================== */
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function pad2(n) { return String(n).padStart(2, '0'); }
+function nowTimeStr() {
+  const d = new Date();
+  return pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+}
+function timeToMinutes(t) {
+  const parts = t.split(':');
+  return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+}
+function minutesToTime(m) {
+  return pad2(Math.floor(m/60)) + ':' + pad2(m%60);
+}
+
+/* ========================================
+   喝水计划生成（双时段）
+======================================== */
+function getPeriods() {
+  const s = appData.settings;
+  return [
+    { name: '上午', icon: '🌅', start: s.morningStart, end: s.morningEnd },
+    { name: '下午', icon: '🌤️', start: s.afternoonStart, end: s.afternoonEnd }
+  ];
+}
+
+function generatePeriodTimes(startStr, endStr) {
+  const s = appData.settings;
+  const start = timeToMinutes(startStr);
+  const end = timeToMinutes(endStr);
+  const times = [];
+  for (let t = start; t < end; t += s.interval) {
+    const ts = minutesToTime(t);
+    if (!times.includes(ts)) times.push(ts);
+  }
+  if (!times.includes(endStr)) times.push(endStr);
+  return times;
+}
+
+function generateWaterSchedule() {
+  const times = [];
+  getPeriods().forEach(p => {
+    generatePeriodTimes(p.start, p.end).forEach(t => times.push(t));
+  });
+  return times;
+}
+
+function getTodayWaterLog() {
+  const ts = todayStr();
+  if (!appData.waterLog[ts]) appData.waterLog[ts] = [];
+  return appData.waterLog[ts];
+}
+
+/* ========================================
+   水杯渲染
+======================================== */
+// 杯内可容纳区域：上 y=38，下 y=246（考虑杯口椭圆偏移）
+const CUP_TOP = 38, CUP_BOTTOM = 246;
+
+function renderCup(progress) {
+  const p = Math.max(0, Math.min(1, progress));
+  const waterTop = CUP_BOTTOM - (CUP_BOTTOM - CUP_TOP) * p;
+  const waterHeight = CUP_BOTTOM - waterTop;
+  const waterRect = document.getElementById('waterRect');
+  const wavePath = document.getElementById('wavePath');
+
+  if (waterRect) {
+    waterRect.setAttribute('y', waterTop);
+    waterRect.setAttribute('height', waterHeight + 4);
+  }
+  if (wavePath) {
+    // 波浪位于水面顶部，高度约 14
+    const waveY = waterTop - 2;
+    const waveBottom = waterTop + 16;
+    wavePath.setAttribute('d',
+      `M40,${waveY} Q55,${waveY - 6} 70,${waveY} T100,${waveY} T130,${waveY} T160,${waveY} ` +
+      `L160,${waveBottom} L40,${waveBottom} Z`
+    );
+    wavePath.style.display = p > 0.01 ? 'block' : 'none';
+  }
+
+  // 满杯庆祝
+  const cupFull = document.getElementById('cupFull');
+  if (p >= 0.999) {
+    cupFull.classList.add('show');
+  } else {
+    cupFull.classList.remove('show');
+  }
+
+  // 气泡只在有水时显示
+  document.querySelectorAll('.bubble').forEach(b => {
+    b.style.display = p > 0.05 ? 'block' : 'none';
+  });
+}
+
+/* ========================================
+   喝水页面渲染
+======================================== */
+function renderWaterPage() {
+  const schedule = generateWaterSchedule();
+  const log = getTodayWaterLog();
+  // 以计划勾选为准：只统计与计划时间点精确匹配的记录，
+  // 悬浮球/同步进来的计划外时间（如 14:06）不重复计入杯数
+  const doneCount = schedule.filter(t => log.includes(t)).length;
+  const total = schedule.length;
+
+  document.getElementById('waterCount').textContent = doneCount;
+  document.getElementById('waterTotal').textContent = total;
+  document.getElementById('goalCount').textContent = total;
+  document.getElementById('doneCount').textContent = doneCount;
+
+  // 渲染水杯
+  renderCup(total > 0 ? doneCount / total : 0);
+
+  // 下一杯提醒
+  const nowMin = timeToMinutes(nowTimeStr());
+  let nextTime = null, nextPeriod = null;
+  for (const p of getPeriods()) {
+    const times = generatePeriodTimes(p.start, p.end);
+    for (const t of times) {
+      if (!log.includes(t) && timeToMinutes(t) >= nowMin) {
+        nextTime = t; nextPeriod = p;
+        break;
+      }
+    }
+    if (nextTime) break;
+  }
+
+  if (nextTime) {
+    document.getElementById('nextWaterTime').textContent = nextTime;
+    const diff = timeToMinutes(nextTime) - nowMin;
+    if (diff <= 0) {
+      document.getElementById('nextWaterDesc').textContent = '该喝水啦！';
+    } else if (diff < 60) {
+      document.getElementById('nextWaterDesc').textContent = diff + ' 分钟后提醒（' + nextPeriod.name + '）';
+    } else {
+      document.getElementById('nextWaterDesc').textContent =
+        Math.floor(diff/60) + ' 小时 ' + (diff%60) + ' 分钟后（' + nextPeriod.name + '）';
+    }
+  } else {
+    if (total > 0 && doneCount >= total) {
+      document.getElementById('nextWaterTime').textContent = '已完成 ✓';
+      document.getElementById('nextWaterDesc').textContent = '今日喝水目标已达成，太棒了！';
+    } else {
+      document.getElementById('nextWaterTime').textContent = '今日结束';
+      document.getElementById('nextWaterDesc').textContent = '今天的提醒时段已过';
+    }
+  }
+
+  // 渲染时段分组列表
+  const listEl = document.getElementById('waterList');
+  listEl.innerHTML = '';
+
+  getPeriods().forEach(p => {
+    const times = generatePeriodTimes(p.start, p.end);
+    if (times.length === 0) return;
+
+    const periodDone = times.filter(t => log.includes(t)).length;
+    const card = document.createElement('div');
+    card.className = 'period-card';
+
+    const header = document.createElement('div');
+    header.className = 'period-header';
+    header.innerHTML = `
+      <span class="period-icon">${p.icon}</span>
+      <span class="period-name">${p.name}</span>
+      <span class="period-range">${p.start} - ${p.end}</span>
+      <span class="period-progress ${periodDone === times.length ? 'done' : ''}">
+        ${periodDone}/${times.length}
+      </span>
+    `;
+    card.appendChild(header);
+
+    times.forEach(time => {
+      const isDone = log.includes(time);
+      const timeMin = timeToMinutes(time);
+      const isPast = timeMin < nowMin;
+
+      let statusText, statusClass;
+      if (isDone) { statusText = '已喝水 ✓'; statusClass = 'done'; }
+      else if (isPast) { statusText = '未完成'; statusClass = 'missed'; }
+      else if (timeMin - nowMin <= appData.settings.interval && timeMin >= nowMin) { statusText = '即将提醒'; statusClass = 'current'; }
+      else { statusText = '待提醒'; statusClass = 'upcoming'; }
+
+      const item = document.createElement('div');
+      item.className = 'water-item';
+      item.innerHTML = `
+        <div class="water-check ${isDone ? 'done' : ''}" onclick="toggleWater('${time}')"></div>
+        <div class="water-time">${time}</div>
+        <div class="water-status ${statusClass}">${statusText}</div>
+        <button class="water-cup-btn ${isDone ? 'done' : ''}" onclick="toggleWater('${time}')">
+          ${isDone ? '✓' : '🥤'}
+        </button>
+      `;
+      card.appendChild(item);
+    });
+
+    listEl.appendChild(card);
+  });
+}
+
+function toggleWater(time) {
+  const log = getTodayWaterLog();
+  const idx = log.indexOf(time);
+  if (idx >= 0) {
+    log.splice(idx, 1);
+    showToast('已取消 ' + time + ' 的喝水打卡');
+  } else {
+    log.push(time);
+    log.sort();
+    if (appData.settings.soundEnabled) playSound();
+    showToast('💧 完成 ' + time + ' 喝水打卡！');
+    addNotifyLog('💧 喝水打卡 ' + time, '完成第 ' + generateWaterSchedule().filter(t => log.includes(t)).length + ' 杯水');
+  }
+  saveData();
+  renderWaterPage();
+}
+
+// 点击水杯快速打卡最近一杯
+function toggleWaterNow() {
+  const schedule = generateWaterSchedule();
+  const log = getTodayWaterLog();
+  const nowMin = timeToMinutes(nowTimeStr());
+
+  // 找最近的待喝水时间：优先已过去但未喝的，其次即将到来的
+  let target = null;
+  for (let i = schedule.length - 1; i >= 0; i--) {
+    const t = schedule[i];
+    if (!log.includes(t) && timeToMinutes(t) <= nowMin + 10) {
+      target = t;
+      break;
+    }
+  }
+  if (!target) {
+    // 全部完成或还没到时间，找下一杯
+    for (const t of schedule) {
+      if (!log.includes(t)) { target = t; break; }
+    }
+  }
+  if (!target) {
+    showToast('今日喝水目标已全部完成 🎉');
+    return;
+  }
+  toggleWater(target);
+}
+
+/* ========================================
+   待办页面渲染
+======================================== */
+function renderTodoPage() {
+  const todos = appData.todos.filter(t => !t.deleted && todoActive(t));  // 墓碑与今天不生效的重复事项不渲染
+  const now = new Date();
+  let pending = 0, soon = 0, done = 0;
+
+  todos.forEach(t => {
+    if (isDoneToday(t)) { done++; }
+    else {
+      pending++;
+      const due = todoDueToday(t);
+      if (due) {
+        const diff = (due - now) / 60000;
+        if (diff <= 30 && diff > -60) soon++;
+      }
+    }
+  });
+
+  document.getElementById('statPending').textContent = pending;
+  document.getElementById('statSoon').textContent = soon;
+  document.getElementById('statDone').textContent = done;
+
+  const badge = document.getElementById('todoBadge');
+  if (pending > 0) {
+    badge.textContent = pending;
+    badge.style.display = 'inline-flex';
+  } else {
+    badge.style.display = 'none';
+  }
+
+  const listEl = document.getElementById('todoList');
+  if (todos.length === 0) {
+    listEl.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📝</div>
+        <div class="text">暂无待办事项<br>点击右下角 + 添加</div>
+      </div>`;
+    return;
+  }
+
+  const sorted = [...todos].sort((a, b) => {
+    if (isDoneToday(a) !== isDoneToday(b)) return isDoneToday(a) ? 1 : -1;
+    const da = todoDueToday(a), db = todoDueToday(b);
+    if (!da) return 1;
+    if (!db) return -1;
+    return da - db;
+  });
+
+  listEl.innerHTML = '';
+  sorted.forEach(todo => {
+    const doneToday = isDoneToday(todo);
+    let itemClass = 'normal';
+    let tags = '';
+    const rep = repeatLabel(todo);
+
+    if (doneToday) {
+      itemClass = 'completed';
+      tags += `<span class="todo-tag done-tag">✓ ${rep ? '今天已完成' : '已完成'}</span>`;
+    } else if (todo.dueTime) {
+      const due = todoDueToday(todo);
+      const diff = (due - now) / 60000;
+      if (diff < 0) {
+        itemClass = 'urgent';
+        tags += `<span class="todo-tag overdue">⏰ 已超时 ${Math.abs(Math.round(diff))}分钟</span>`;
+      } else if (diff <= 30) {
+        itemClass = 'urgent';
+        tags += `<span class="todo-tag overdue">🔥 即将到期 ${Math.round(diff)}分钟</span>`;
+      } else if (diff <= 60) {
+        itemClass = 'soon';
+        tags += `<span class="todo-tag remind">⏰ ${Math.round(diff)}分钟后到期</span>`;
+      } else {
+        itemClass = 'soon';
+        tags += `<span class="todo-tag remind">⏰ 提前30分钟提醒</span>`;
+      }
+      const dueDateStr = rep ? rep + ' ' + pad2(due.getHours()) + ':' + pad2(due.getMinutes())
+                             : formatDateTime(due);
+      tags = `<span class="todo-tag time">${rep ? '🔁' : '📅'} ${dueDateStr}</span>` + tags;
+    } else {
+      tags += `<span class="todo-tag time">${rep ? '🔁 ' + rep : '无截止时间'}</span>`;
+    }
+
+    const item = document.createElement('div');
+    item.className = 'todo-item ' + itemClass;
+    item.innerHTML = `
+      <div class="left-bar"></div>
+      <div class="todo-top">
+        <div class="todo-check ${doneToday ? 'done' : ''}" onclick="toggleTodo(${todo.id})"></div>
+        <div class="todo-body">
+          <div class="todo-title">${escapeHtml(todo.title)}</div>
+          ${todo.note ? `<div style="font-size:13px;color:var(--text-secondary);margin-top:4px;">${escapeHtml(todo.note)}</div>` : ''}
+          <div class="todo-meta">${tags}</div>
+        </div>
+      </div>
+      <div class="todo-actions">
+        <button class="todo-btn toggle" onclick="toggleTodo(${todo.id})">
+          ${doneToday ? '重新打开' : '标记完成'}
+        </button>
+        <button class="todo-btn delete" onclick="deleteTodo(${todo.id})">删除</button>
+      </div>
+    `;
+    listEl.appendChild(item);
+  });
+}
+
+function formatDateTime(d) {
+  const now = new Date();
+  const isToday = d.toDateString() === now.toDateString();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(now.getDate() + 1);
+  const isTomorrow = d.toDateString() === tomorrow.toDateString();
+  const timeStr = pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+  if (isToday) return '今天 ' + timeStr;
+  if (isTomorrow) return '明天 ' + timeStr;
+  return (d.getMonth()+1) + '月' + d.getDate() + '日 ' + timeStr;
+}
+
+function escapeHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+/* ========================================
+   待办操作
+======================================== */
+let repeatType = '';            // '' 单日 | 'daily' 每天 | 'weekly' 每周 | 'workday' 工作日(含调休) | 'custom' 自定义
+let weekDaysSel = new Set();    // 每周重复选中的周几（1-7）
+let customDatesSel = new Set(); // 自定义选中的日期（YYYY-MM-DD）
+
+const TYPE_HINTS = {
+  '': '仅在所选日期当天生效',
+  'daily': '每天都会出现，完成状态按天记录',
+  'weekly': '每周的指定星期几出现',
+  'workday': '仅工作日出现（自动识别法定节假日与调休补班）',
+  'custom': '仅在勾选的指定日期出现，可跨月多选'
+};
+
+function setRepeatType(t) {
+  repeatType = t;
+  document.querySelectorAll('.repeat-type-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.repeat === t);
+  });
+  const hint = document.getElementById('typeHint');
+  if (hint) hint.textContent = TYPE_HINTS[t] || '';
+  const showWeek = t === 'weekly';
+  const showCustom = t === 'custom';
+  document.getElementById('weekdayGroup').style.display = showWeek ? '' : 'none';
+  document.getElementById('customDateGroup').style.display = showCustom ? '' : 'none';
+  if (!showWeek) {
+    weekDaysSel.clear();
+    document.querySelectorAll('.weekday-btn').forEach(b => b.classList.remove('active'));
+  }
+  if (!showCustom) {
+    customDatesSel.clear();
+    const chips = document.getElementById('customDateChips');
+    if (chips) chips.innerHTML = '';
+  } else {
+    renderCustomDateChips();
+  }
+}
+
+function toggleWeekday(wd) {
+  if (weekDaysSel.has(wd)) weekDaysSel.delete(wd);
+  else weekDaysSel.add(wd);
+  const btn = document.querySelector(`.weekday-btn[data-wd="${wd}"]`);
+  if (btn) btn.classList.toggle('active');
+}
+
+function addCustomDate() {
+  const v = document.getElementById('customDateInput').value;
+  if (!v) { showToast('请先选择日期'); return; }
+  if (customDatesSel.has(v)) { showToast('该日期已在列表中'); return; }
+  customDatesSel.add(v);
+  renderCustomDateChips();
+}
+
+function removeCustomDate(v) {
+  customDatesSel.delete(v);
+  renderCustomDateChips();
+}
+
+function renderCustomDateChips() {
+  const el = document.getElementById('customDateChips');
+  if (!el) return;
+  const arr = Array.from(customDatesSel).sort();
+  el.innerHTML = arr.map(d => {
+    const wd = new Date(d + 'T00:00:00').getDay() || 7;
+    const names = ['一', '二', '三', '四', '五', '六', '日'];
+    return `<span class="custom-date-chip">${d.slice(5)} 周${names[wd - 1]}<span class="del" onclick="removeCustomDate('${d}')">×</span></span>`;
+  }).join('');
+}
+
+/* ========================================
+   工作日判定（法定节假日 + 调休）
+======================================== */
+let HOLIDAY_DATA = null;   // {holidays:{date:..}, workdays:{date:..}}，来自本地 holiday.json
+let HOLIDAY_LOADED = false;
+
+async function loadHolidayData() {
+  try {
+    const res = await fetch('./holiday.json', { cache: 'no-cache' });
+    const data = await res.json();
+    HOLIDAY_DATA = data;
+    HOLIDAY_LOADED = true;
+    localStorage.setItem('holidayData', JSON.stringify(data));
+  } catch (e) {
+    // 离线/失败兜底：用上次缓存
+    try {
+      const cached = localStorage.getItem('holidayData');
+      if (cached) { HOLIDAY_DATA = JSON.parse(cached); HOLIDAY_LOADED = true; }
+    } catch (e2) { /* 无缓存则按周一至周五兜底 */ }
+  }
+  renderTodoPage();
+}
+
+// 中国工作日判定：法定放假不算工作日、调休补班算工作日，默认周一至周五
+function isWorkday(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  if (isNaN(d.getTime())) return false;
+  if (HOLIDAY_DATA) {
+    if (HOLIDAY_DATA.holidays && HOLIDAY_DATA.holidays[dateStr]) return false; // 法定放假
+    if (HOLIDAY_DATA.workdays && HOLIDAY_DATA.workdays[dateStr]) return true;  // 调休补班
+  }
+  const wd = d.getDay();
+  return wd >= 1 && wd <= 5;
+}
+
+function isWorkdayToday() {
+  return isWorkday(todayStr());
+}
+
+// 该待办今天是否有效：单日=今天或过期（过期仍显示可补办/删除）；每天=每天；每周=今天在 weekDays 内；
+// 工作日=今天为工作日（含调休）；自定义=今天在 customDates 内（全部日期已过仍显示供清理）
+function todoActive(t) {
+  if (!t || t.deleted) return false;
+  if (t.repeat === 'daily') return true;
+  if (t.repeat === 'weekly') {
+    const wd = new Date().getDay() || 7; // 周日=7
+    return (t.weekDays || []).map(Number).includes(wd);
+  }
+  if (t.repeat === 'workday') return isWorkdayToday();
+  if (t.repeat === 'custom') {
+    const dates = (t.customDates || []).map(String).sort();
+    if (!dates.length) return false;
+    const today = todayStr();
+    if (dates.includes(today)) return true;
+    return dates[dates.length - 1] < today; // 全部日期已过 → 显示供补办/删除
+  }
+  if (!t.dueTime) return true;
+  return t.dueTime.slice(0, 10) <= todayStr();
+}
+
+// “今天已完成”：重复事项按天计（跨天自动回到未完成）；单日完成即完成
+function isDoneToday(t) {
+  if (!t.completed) return false;
+  if (t.repeat) return String(t.completedDate || '') === todayStr();
+  return true;
+}
+
+// 重复事项“今天”的截止时间点（单日直接返回 dueTime）
+function todoDueToday(t) {
+  if (!t.dueTime) return null;
+  if (t.repeat) {
+    const hm = (t.dueTime.slice(11, 16) || '09:00');
+    return new Date(todayStr() + 'T' + hm + ':00');
+  }
+  return new Date(t.dueTime);
+}
+
+function repeatLabel(t) {
+  if (t.repeat === 'daily') return '每天';
+  if (t.repeat === 'weekly') {
+    const names = ['一', '二', '三', '四', '五', '六', '日'];
+    const ds = (t.weekDays || []).map(Number).sort((a, b) => a - b);
+    if (!ds.length) return '每周';
+    if (ds.length === 7) return '每天';
+    return '每周' + ds.map(d => names[d - 1]).join('');
+  }
+  if (t.repeat === 'workday') return '工作日';
+  if (t.repeat === 'custom') {
+    const ds = (t.customDates || []).map(String).sort();
+    if (!ds.length) return '自定义';
+    if (ds.length > 3) return '自定义' + ds.length + '天';
+    return '自定义 ' + ds.map(x => x.slice(5)).join('、');
+  }
+  return '';
+}
+
+function openTodoModal() {
+  document.getElementById('todoInput').value = '';
+  document.getElementById('todoNote').value = '';
+  setRepeatType('');  // 默认单日待办
+  const now = new Date();
+  now.setHours(now.getHours() + 1);
+  now.setMinutes(0);
+  document.getElementById('todoDate').value =
+    now.getFullYear() + '-' + pad2(now.getMonth()+1) + '-' + pad2(now.getDate());
+  document.getElementById('todoTime').value = pad2(now.getHours()) + ':00';
+  document.getElementById('todoModal').classList.add('show');
+  setTimeout(() => document.getElementById('todoInput').focus(), 300);
+}
+
+function closeTodoModal() {
+  document.getElementById('todoModal').classList.remove('show');
+}
+
+function addTodo() {
+  const title = document.getElementById('todoInput').value.trim();
+  const note = document.getElementById('todoNote').value.trim();
+  const date = document.getElementById('todoDate').value;
+  const time = document.getElementById('todoTime').value;
+
+  if (!title) {
+    document.getElementById('todoInput').style.borderColor = 'var(--danger)';
+    setTimeout(() => document.getElementById('todoInput').style.borderColor = '', 1500);
+    return;
+  }
+
+  let dueTime = null;
+  if (date && time) dueTime = date + 'T' + time + ':00';
+  else if (date) dueTime = date + 'T23:59:00';
+
+  const todo = {
+    id: Date.now(),
+    title: title,
+    note: note,
+    dueTime: dueTime,
+    completed: false,
+    reminded30: false,
+    remindedDue: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: Date.now()
+  };
+  if (repeatType === 'daily') {
+    todo.repeat = 'daily';
+    if (!dueTime) todo.dueTime = todayStr() + 'T23:59:00';
+  } else if (repeatType === 'weekly') {
+    if (weekDaysSel.size === 0) {
+      showToast('请选择重复日（至少一天）');
+      return;
+    }
+    todo.repeat = 'weekly';
+    todo.weekDays = Array.from(weekDaysSel).sort((a, b) => a - b);
+    if (!dueTime) todo.dueTime = todayStr() + 'T23:59:00';
+  } else if (repeatType === 'workday') {
+    todo.repeat = 'workday';
+    if (!dueTime) todo.dueTime = todayStr() + 'T23:59:00';
+  } else if (repeatType === 'custom') {
+    if (customDatesSel.size === 0) {
+      showToast('请至少选择一个日期');
+      return;
+    }
+    todo.repeat = 'custom';
+    todo.customDates = Array.from(customDatesSel).sort();
+    if (!dueTime) todo.dueTime = todayStr() + 'T23:59:00';
+  }
+
+  appData.todos.push(todo);
+  saveData();
+  closeTodoModal();
+  renderTodoPage();
+  switchPage('todo');
+
+  if (dueTime) {
+    const due = new Date(dueTime);
+    addNotifyLog('📋 新增待办', title + ' · 截止 ' + formatDateTime(due));
+  } else {
+    addNotifyLog('📋 新增待办', title);
+  }
+  showToast('已添加待办：' + title);
+}
+
+function toggleTodo(id) {
+  // id 可能是数字（本端新建 Date.now()）或字符串（后端 str() 转换后经同步回传），
+  // 用 String() 统一比较，避免 number!==string 导致找不到、点击完成/删除静默失效。
+  const todo = appData.todos.find(t => String(t.id) === String(id));
+  if (!todo) return;
+  todo.completed = !todo.completed;
+  todo.updatedAt = Date.now();
+  if (todo.completed) {
+    todo.completedDate = todayStr();
+    todo.completedAt = new Date().toISOString();
+    todo.reminded30 = true;
+    todo.remindedDue = true;
+    addNotifyLog('✅ 完成待办', todo.title);
+    if (appData.settings.soundEnabled) playSound();
+    showToast('✅ 已完成：' + todo.title);
+  } else {
+    delete todo.completedDate;  // 重新打开：今天不再算完成
+  }
+  saveData();
+  renderTodoPage();
+}
+
+function deleteTodo(id) {
+  if (confirm('确认删除这条待办吗？')) {
+    const t = appData.todos.find(x => String(x.id) === String(id));
+    if (t) { t.deleted = true; t.updatedAt = Date.now(); }  // 墓碑标记，同步到另一端后一起消失
+    saveData();
+    renderTodoPage();
+  }
+}
+
+function clearAllTodos() {
+  if (appData.todos.length === 0) {
+    showToast('暂无待办事项');
+    return;
+  }
+  if (confirm('确认清空所有待办事项吗？此操作不可撤销。')) {
+    appData.todos.forEach(t => { t.deleted = true; t.updatedAt = Date.now(); });
+    saveData();
+    renderTodoPage();
+  }
+}
+
+/* ========================================
+   设置
+======================================== */
+function renderSettings() {
+  const s = appData.settings;
+  document.getElementById('toggleNotify').className = 'toggle ' + (s.notifyEnabled ? 'on' : '');
+  document.getElementById('toggleSound').className = 'toggle ' + (s.soundEnabled ? 'on' : '');
+  document.getElementById('timeRangeText').textContent =
+    `${s.morningStart}-${s.morningEnd} / ${s.afternoonStart}-${s.afternoonEnd}`;
+  document.getElementById('cupSizeText').textContent = s.cupSize + 'ml';
+
+  document.querySelectorAll('.pill').forEach(p => {
+    p.classList.toggle('active', parseInt(p.dataset.interval) === s.interval);
+  });
+  renderDiaryLockStatus();
+  renderNotifyLog();
+}
+
+function toggleNotifications() {
+  if (!appData.settings.notifyEnabled) {
+    if ('Notification' in window) {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          appData.settings.notifyEnabled = true;
+          saveData();
+          renderSettings();
+          new Notification('💧 喝水助手', { body: '通知已开启，将按时提醒你喝水！' });
+        } else {
+          alert('请在浏览器设置中允许通知权限');
+        }
+      });
+    } else {
+      alert('当前浏览器不支持通知功能');
+    }
+  } else {
+    appData.settings.notifyEnabled = false;
+    saveData();
+    renderSettings();
+  }
+}
+
+function toggleSound() {
+  appData.settings.soundEnabled = !appData.settings.soundEnabled;
+  saveData();
+  renderSettings();
+}
+
+function setInterval2(min) {
+  appData.settings.interval = min;
+  saveData();
+  renderSettings();
+  renderWaterPage();
+}
+
+function resetToday() {
+  if (confirm('确认重置今日喝水记录吗？')) {
+    const ts = todayStr();
+    appData.waterLog[ts] = [];
+    saveData();
+    renderWaterPage();
+    showToast('已重置今日喝水记录');
+  }
+}
+
+/* ========================================
+   提醒记录 & Toast
+======================================== */
+function addNotifyLog(title, body) {
+  const now = new Date();
+  const timeStr = pad2(now.getHours()) + ':' + pad2(now.getMinutes());
+  appData.notifyLog.unshift({ time: timeStr, title: title, body: body, ts: Date.now() });
+  if (appData.notifyLog.length > 50) appData.notifyLog = appData.notifyLog.slice(0, 50);
+  saveData();
+  renderNotifyLog();
+}
+
+function renderNotifyLog() {
+  const el = document.getElementById('notifyLogList');
+  if (appData.notifyLog.length === 0) {
+    el.innerHTML = '<div style="text-align:center;color:var(--text-secondary);font-size:13px;padding:12px 0;">暂无提醒记录</div>';
+    return;
+  }
+  el.innerHTML = '';
+  appData.notifyLog.forEach(log => {
+    const item = document.createElement('div');
+    item.className = 'notify-log-item';
+    item.innerHTML = `<span class="time">${log.time}</span><span class="msg"><strong>${log.title}</strong> ${log.body}</span>`;
+    el.appendChild(item);
+  });
+}
+
+let toastTimer = null;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+/* ========================================
+   页面切换
+======================================== */
+function switchPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.tab-item[data-page="${page}"]`).classList.add('active');
+
+  document.getElementById('fabAdd').style.display = page === 'todo' ? 'flex' : 'none';
+
+  if (page === 'water') renderWaterPage();
+  if (page === 'todo') renderTodoPage();
+  if (page === 'diary') renderDiaryPage();
+  if (page === 'settings') renderSettings();
+}
+
+/* ========================================
+   提醒引擎
+======================================== */
+function playSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.15);
+    osc.frequency.setValueAtTime(1320, ctx.currentTime + 0.3);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.6);
+  } catch (e) {}
+}
+
+function sendNotification(title, body) {
+  if (appData.settings.notifyEnabled && 'Notification' in window && Notification.permission === 'granted') {
+    new Notification(title, { body: body, tag: title + Date.now() });
+  }
+  if (appData.settings.soundEnabled) playSound();
+  addNotifyLog(title, body);
+}
+
+function checkReminders() {
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const nowDate = todayStr();
+
+  // ===== 喝水提醒（双时段） =====
+  const schedule = generateWaterSchedule();
+  const log = getTodayWaterLog();
+
+  for (const time of schedule) {
+    if (log.includes(time)) continue;
+    const timeMin = timeToMinutes(time);
+
+    // 到点提醒
+    if (timeMin === nowMin && now.getSeconds() < 2) {
+      const cupNum = schedule.filter(t => log.includes(t)).length + 1;
+      sendNotification('💧 喝水时间到！', `现在是 ${time}，该喝第 ${cupNum} 杯水了（约${appData.settings.cupSize}ml）`);
+    }
+    // 过点5分钟未喝，催一次
+    if (timeMin === nowMin - 5 && !log.includes(time)) {
+      sendNotification('💧 别忘了喝水！', `已过喝水时间 ${time} 5分钟，快去喝水吧！`);
+    }
+  }
+
+  // ===== 待办提醒 =====
+  for (const todo of appData.todos) {
+    if (todo.deleted || !todoActive(todo) || isDoneToday(todo) || !todo.dueTime) continue;
+    // 自定义待办：仅当今天在所选日期内才提醒（全部日期已过只显示供清理，不提醒）
+    if (todo.repeat === 'custom' && !(todo.customDates || []).map(String).includes(todayStr())) continue;
+    // 重复事项新的一天：重置昨天留下的提醒标记，让今天的提醒重新计算
+    if (todo.repeat && (todo.reminded30 || todo.remindedDue || todo.remindedOverdue5)) {
+      todo.reminded30 = false;
+      todo.remindedDue = false;
+      todo.remindedOverdue5 = false;
+      saveData();
+    }
+    const due = todoDueToday(todo);
+    const diffMin = (due - now) / 60000;
+
+    // 提前30分钟提醒
+    if (!todo.reminded30 && diffMin <= 30 && diffMin > 29) {
+      todo.reminded30 = true;
+      sendNotification('⏰ 待办即将到期', `「${todo.title}」还有30分钟到期，请抓紧处理！`);
+      saveData();
+      renderTodoPage();
+    }
+
+    // 到期提醒
+    if (!todo.remindedDue && diffMin <= 0 && diffMin > -1) {
+      todo.remindedDue = true;
+      sendNotification('🔥 待办已到期', `「${todo.title}」已到截止时间！`);
+      saveData();
+      renderTodoPage();
+    }
+
+    // 超时5分钟再催一次
+    if (todo.remindedDue && !todo.remindedOverdue5 && diffMin <= -5 && diffMin > -6) {
+      todo.remindedOverdue5 = true;
+      sendNotification('⚠️ 待办超时提醒', `「${todo.title}」已超时5分钟，请尽快处理！`);
+      saveData();
+    }
+  }
+
+  // 每分钟刷新当前页
+  const activePage = document.querySelector('.page.active')?.id;
+  if (activePage === 'page-water') renderWaterPage();
+  if (activePage === 'page-todo') renderTodoPage();
+}
+
+/* ========================================
+   日记安全：密码锁 + AES-GCM 内容加密
+   原理：密码经 PBKDF2 派生密钥，日记用 AES-GCM 加密后单独存放；
+   加密状态下 localStorage 中不落任何明文日记。
+======================================== */
+const DIARY_ENC_KEY = 'water_todo_diary_enc_v1';
+const DIARY_SESSION_KEY = 'water_todo_diary_unlocked';  // sessionStorage：会话内免密，关窗即锁
+let diaryKey = null;        // 解锁后的 AES-GCM 密钥（仅内存）
+let diaryUnlocked = false;  // 本会话是否已解锁
+
+function lockEnabled() { return !!(appData.settings && appData.settings.diaryLock); }
+
+function b64FromBytes(buf) {
+  const u = new Uint8Array(buf);
+  let s = '';
+  for (let i = 0; i < u.length; i += 0x8000) {
+    s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
+  }
+  return btoa(s);
+}
+function bytesFromB64(s) {
+  const b = atob(s);
+  const u = new Uint8Array(b.length);
+  for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i);
+  return u;
+}
+function randBytes(n) { const a = new Uint8Array(n); crypto.getRandomValues(a); return a; }
+
+async function deriveDiaryKey(pwd, saltB64, iter) {
+  const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pwd), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: bytesFromB64(saltB64), iterations: iter, hash: 'SHA-256' },
+    km, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+}
+async function diaryKeyHash(key) {
+  const raw = await crypto.subtle.exportKey('raw', key);
+  const h = await crypto.subtle.digest('SHA-256', raw);
+  return b64FromBytes(h);
+}
+async function encryptDiaryToStorage(key, diary) {
+  const iv = randBytes(12);
+  const ct = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv }, key,
+    new TextEncoder().encode(JSON.stringify(diary)));
+  localStorage.setItem(DIARY_ENC_KEY, JSON.stringify({ iv: b64FromBytes(iv), data: b64FromBytes(ct) }));
+}
+async function decryptDiaryFromStorage(key) {
+  const raw = localStorage.getItem(DIARY_ENC_KEY);
+  if (!raw) return { modules: [], entries: [] };
+  try {
+    const blob = JSON.parse(raw);
+    const pt = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: bytesFromB64(blob.iv) }, key, bytesFromB64(blob.data));
+    const d = JSON.parse(new TextDecoder().decode(pt));
+    d.modules = d.modules || [];
+    d.entries = d.entries || [];
+    return d;
+  } catch (e) {
+    return null;  // 密码错误或数据损坏
+  }
+}
+
+function renderDiaryLock() {
+  const lockEl = document.getElementById('diaryLock');
+  const bodyEl = document.getElementById('diaryBody');
+  if (!lockEl || !bodyEl) return;
+  const locked = lockEnabled() && !diaryUnlocked;
+  lockEl.style.display = locked ? 'block' : 'none';
+  bodyEl.style.display = locked ? 'none' : 'block';
+  if (!locked) return;
+  if (lockEl.children.length === 0) {
+    lockEl.innerHTML = `
+      <div class="diary-lock">
+        <div class="lock-icon">🔒</div>
+        <div class="lock-title">日记已加密锁定</div>
+        <div class="lock-desc">输入密码解锁后查看日记内容<br>关闭窗口后会自动重新锁定</div>
+        <input type="password" class="lock-input" id="diaryLockInput" placeholder="请输入日记密码" maxlength="32">
+        <button class="btn btn-primary" style="width:100%;" onclick="unlockDiary()">解锁</button>
+      </div>`;
+    lockEl.querySelector('#diaryLockInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') unlockDiary(); });
+    setTimeout(() => { const i = document.getElementById('diaryLockInput'); if (i) i.focus(); }, 100);
+  }
+}
+
+async function unlockDiary() {
+  const pwd = document.getElementById('diaryLockInput').value;
+  if (!pwd) { showToast('请输入密码'); return; }
+  const lock = appData.settings.diaryLock;
+  const key = await deriveDiaryKey(pwd, lock.salt, lock.iter || 150000);
+  if ((await diaryKeyHash(key)) !== lock.hash) { showToast('密码错误'); return; }
+  const diary = await decryptDiaryFromStorage(key);
+  if (!diary) { showToast('日记解密失败，密码可能不对'); return; }
+  appData.diary = diary;
+  diaryKey = key;
+  diaryUnlocked = true;
+  try { sessionStorage.setItem(DIARY_SESSION_KEY, b64FromBytes(await crypto.subtle.exportKey('raw', key))); } catch (e) {}
+  renderDiaryLock();
+  renderDiaryPage();
+  showToast('已解锁 🔓');
+}
+
+async function initDiarySecurity() {
+  if (!lockEnabled()) { renderDiaryLock(); return; }
+  try {
+    const tok = sessionStorage.getItem(DIARY_SESSION_KEY);
+    if (tok) {
+      const key = await crypto.subtle.importKey('raw', bytesFromB64(tok), { name: 'AES-GCM' }, true, ['encrypt', 'decrypt']);
+      const diary = await decryptDiaryFromStorage(key);
+      if (diary) {
+        appData.diary = diary;
+        diaryKey = key;
+        diaryUnlocked = true;
+        renderDiaryLock();
+        renderDiaryPage();
+        return;
+      }
+    }
+  } catch (e) {}
+  appData.diary = { modules: [], entries: [] };
+  renderDiaryLock();
+}
+
+function renderDiaryLockStatus() {
+  const el = document.getElementById('diaryLockDesc');
+  if (!el) return;
+  el.textContent = lockEnabled() ? '已开启 · 日记内容加密保存' : '未设置 · 日记明文保存';
+}
+
+let pwdModalMode = 'set';  // set / change
+
+function openPwdModal() {
+  pwdModalMode = lockEnabled() ? 'change' : 'set';
+  document.getElementById('pwdModalTitle').textContent = pwdModalMode === 'set' ? '设置日记密码' : '修改日记密码';
+  document.getElementById('pwdCurGroup').style.display = lockEnabled() ? 'block' : 'none';
+  document.getElementById('pwdDisableRow').style.display = lockEnabled() ? 'flex' : 'none';
+  document.getElementById('pwdCurInput').value = '';
+  document.getElementById('pwdNewInput').value = '';
+  document.getElementById('pwdNew2Input').value = '';
+  document.getElementById('pwdModal').classList.add('show');
+  setTimeout(() => document.getElementById(pwdModalMode === 'set' ? 'pwdNewInput' : 'pwdCurInput').focus(), 300);
+}
+function closePwdModal() {
+  document.getElementById('pwdModal').classList.remove('show');
+}
+
+async function savePwdModal() {
+  const newPwd = document.getElementById('pwdNewInput').value;
+  const newPwd2 = document.getElementById('pwdNew2Input').value;
+  if (!newPwd || newPwd.length < 4) { showToast('密码至少 4 位'); return; }
+  if (newPwd !== newPwd2) { showToast('两次输入不一致'); return; }
+  if (lockEnabled()) {
+    const cur = document.getElementById('pwdCurInput').value;
+    if (!cur) { showToast('请输入当前密码'); return; }
+    const lock = appData.settings.diaryLock;
+    const curKey = await deriveDiaryKey(cur, lock.salt, lock.iter || 150000);
+    if ((await diaryKeyHash(curKey)) !== lock.hash) { showToast('当前密码错误'); return; }
+    const diary = diaryUnlocked ? appData.diary : await decryptDiaryFromStorage(curKey);
+    if (!diary) { showToast('日记解密失败'); return; }
+    await applyDiaryLock(newPwd, diary);
+    showToast('日记密码已更新 ✓');
+  } else {
+    await applyDiaryLock(newPwd, appData.diary);
+    showToast('日记密码已设置 ✓');
+  }
+  closePwdModal();
+  renderDiaryLockStatus();
+}
+
+async function applyDiaryLock(pwd, diary) {
+  const salt = randBytes(16);
+  const key = await deriveDiaryKey(pwd, b64FromBytes(salt), 150000);
+  const hash = await diaryKeyHash(key);
+  appData.settings.diaryLock = { salt: b64FromBytes(salt), hash: hash, iter: 150000, v: 1 };
+  diaryKey = key;
+  diaryUnlocked = true;
+  appData.diary = diary || { modules: [], entries: [] };
+  await encryptDiaryToStorage(key, appData.diary);
+  saveData();
+  renderDiaryLock();
+}
+
+async function disableDiaryLock() {
+  if (!confirm('关闭密码后日记将改为明文保存（不加密）。确定继续吗？')) return;
+  const cur = document.getElementById('pwdCurInput').value;
+  if (!cur) { showToast('请输入当前密码'); return; }
+  const lock = appData.settings.diaryLock;
+  const key = await deriveDiaryKey(cur, lock.salt, lock.iter || 150000);
+  if ((await diaryKeyHash(key)) !== lock.hash) { showToast('当前密码错误'); return; }
+  const diary = diaryUnlocked ? appData.diary : await decryptDiaryFromStorage(key);
+  if (!diary) { showToast('日记解密失败'); return; }
+  appData.diary = diary;
+  delete appData.settings.diaryLock;
+  try { localStorage.removeItem(DIARY_ENC_KEY); } catch (e) {}
+  try { sessionStorage.removeItem(DIARY_SESSION_KEY); } catch (e) {}
+  diaryKey = null;
+  diaryUnlocked = true;
+  saveData();
+  closePwdModal();
+  renderDiaryLockStatus();
+  renderDiaryLock();
+  renderDiaryPage();
+  showToast('已关闭密码，日记改为明文保存');
+}
+
+/* ========================================
+   日记功能（模块 + 小logo）
+======================================== */
+const DIARY_EMOJIS = ['📕','📗','📘','📙','📔','📓','📒','📖','📚','✍️','🌱','☀️','🌙','⭐','🔥','💡','🎯','🏃','🍵','🎵','💼','🎨','✈️','🍜','🐱','🐶','🌸','🍀','📌','🗓️','🧠','❤️','🌟','🌈','☕','🍰'];
+const DIARY_COLORS = ['#3498db','#e74c3c','#2ecc71','#f39c12','#9b59b6','#1abc9c','#e67e22','#34495e','#e84393','#00b894'];
+const DIARY_MOODS = ['😊','😄','🥰','😌','🤔','😅','😢','😠','😴','🤩','🙏','😎'];
+
+let diaryFilter = 'all';      // 当前筛选的日记本 id
+let editingModuleId = null;   // 正在编辑的日记本
+let logoType = 'emoji';       // logo 类型：emoji / text / img
+let selectedEmoji = '📖';
+let logoImgData = '';         // 上传图片 dataURL
+let diarySub = 'write';       // 日记子页：write 写日记 / review 复盘
+let reviewPeriod = 'thisWeek';// 复盘周期：thisWeek / lastWeek / thisMonth / lastMonth
+
+function getDiary() { return appData.diary; }
+
+function moduleLogoStyle(m) {
+  if (m.logoType === 'img' && m.logo) return { html: '', style: `background-image:url('${m.logo}');` };
+  return { html: m.logo || '📖', style: `background:${m.color};` };
+}
+
+function renderDiaryPage() {
+  renderDiaryLock();
+  if (lockEnabled() && !diaryUnlocked) return;  // 锁定中：不渲染任何日记内容
+  const diary = getDiary();
+  const liveMods = diary.modules.filter(m => !m.deleted);
+  const liveEntries = diary.entries.filter(e => !e.deleted);
+  const today = todayStr();
+  const todayCount = liveEntries.filter(e => e.date === today).length;
+  document.getElementById('diaryStatModules').textContent = liveMods.length;
+  document.getElementById('diaryStatToday').textContent = todayCount;
+  document.getElementById('diaryStatTotal').textContent = liveEntries.length;
+
+  const badge = document.getElementById('diaryBadge');
+  if (liveMods.length > 0 && todayCount === 0) { badge.textContent = '1'; badge.style.display = 'inline-flex'; }
+  else { badge.style.display = 'none'; }
+
+  renderDiaryModules();
+  renderDiaryComposerSelect();
+  renderDiaryEntries();
+  if (diarySub === 'review') renderReview();
+}
+
+/* ---- 日记子页签：写日记 / 复盘 ---- */
+function switchDiarySub(sub) {
+  diarySub = sub;
+  document.getElementById('diarySubWrite').classList.toggle('active', sub === 'write');
+  document.getElementById('diarySubReview').classList.toggle('active', sub === 'review');
+  document.getElementById('diaryWriteView').style.display = sub === 'write' ? 'block' : 'none';
+  document.getElementById('diaryReviewView').style.display = sub === 'review' ? 'block' : 'none';
+  if (sub === 'review') renderReview();
+}
+
+function renderDiaryModules() {
+  const diary = getDiary();
+  const mods = diary.modules.filter(m => !m.deleted);
+  const el = document.getElementById('diaryModules');
+  el.innerHTML = '';
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'module-add';
+  addBtn.innerHTML = '<span class="plus">＋</span>新建';
+  addBtn.onclick = () => openModuleModal(null);
+  el.appendChild(addBtn);
+
+  if (mods.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'diary-empty';
+    empty.style.width = '100%';
+    empty.innerHTML = `<div class="icon">📖</div>
+      还没有日记本，先建一个吧！<br>比如「马伯庸日记」、「工作手记」…
+      <button class="btn btn-primary" onclick="openModuleModal(null)">＋ 创建第一个日记本</button>`;
+    el.appendChild(empty);
+    return;
+  }
+
+  mods.forEach(m => {
+    const count = diary.entries.filter(e => !e.deleted && e.moduleId === m.id).length;
+    const chip = document.createElement('div');
+    chip.className = 'module-chip' + (diaryFilter === m.id ? ' active' : '');
+    const ls = moduleLogoStyle(m);
+    chip.innerHTML = `
+      <span class="logo" style="${ls.style}">${ls.html}</span>
+      <span class="name">${escapeHtml(m.name)}</span>
+      <span class="cnt">${count}篇</span>
+      <span class="edit-btn" title="编辑日记本">✎</span>`;
+    chip.querySelector('.edit-btn').onclick = (e) => { e.stopPropagation(); openModuleModal(m.id); };
+    chip.onclick = () => { diaryFilter = (diaryFilter === m.id) ? 'all' : m.id; renderDiaryModules(); renderDiaryEntries(); };
+    el.appendChild(chip);
+  });
+}
+
+function renderDiaryComposerSelect() {
+  const diary = getDiary();
+  const mods = diary.modules.filter(m => !m.deleted);
+  const sel = document.getElementById('diaryModuleSel');
+  sel.innerHTML = '';
+  if (mods.length === 0) {
+    const opt = document.createElement('option');
+    opt.value = ''; opt.textContent = '请先创建日记本';
+    sel.appendChild(opt);
+    if (!document.getElementById('diaryDate').value) document.getElementById('diaryDate').value = todayStr();
+    return;
+  }
+  const cur = (diaryFilter !== 'all' && mods.some(m => m.id === diaryFilter)) ? diaryFilter : mods[0].id;
+  mods.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m.id; opt.textContent = m.name;
+    if (m.id === cur) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  if (!document.getElementById('diaryDate').value) document.getElementById('diaryDate').value = todayStr();
+
+  const moodsEl = document.getElementById('diaryMoods');
+  if (moodsEl.children.length === 0) {
+    DIARY_MOODS.forEach(md => {
+      const b = document.createElement('button');
+      b.className = 'mood-btn';
+      b.textContent = md;
+      b.dataset.mood = md;
+      b.onclick = () => {
+        moodsEl.querySelectorAll('.mood-btn').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+      };
+      moodsEl.appendChild(b);
+    });
+  }
+}
+
+function renderDiaryEntries() {
+  const diary = getDiary();
+  const el = document.getElementById('diaryList');
+  const titleEl = document.getElementById('diaryListTitle');
+  let list = diary.entries.filter(e => !e.deleted);
+  if (diaryFilter !== 'all') {
+    list = list.filter(e => e.moduleId === diaryFilter);
+    const m = diary.modules.find(x => x.id === diaryFilter);
+    titleEl.innerHTML = `📖 日记列表 · ${m ? escapeHtml(m.name) : ''}`;
+  } else {
+    titleEl.innerHTML = '📖 日记列表';
+  }
+
+  if (list.length === 0) {
+    el.innerHTML = `<div class="diary-empty">
+      <div class="icon">📝</div>
+      ${diary.modules.filter(m => !m.deleted).length === 0 ? '创建日记本后，就可以开始写日记啦' : '还没有日记，在上方写下第一篇吧'}
+    </div>`;
+    return;
+  }
+
+  // 排序：置顶优先，其余按日期/创建时间倒序
+  const sorted = [...list].sort((a, b) => {
+    const ap = a.pinned ? 1 : 0, bp = b.pinned ? 1 : 0;
+    if (ap !== bp) return bp - ap;
+    return (b.date + 'T' + b.createdAt).localeCompare(a.date + 'T' + a.createdAt);
+  });
+  el.innerHTML = '';
+  sorted.forEach(e => {
+    const m = diary.modules.find(x => x.id === e.moduleId);
+    const ls = m ? moduleLogoStyle(m) : { html: '📖', style: 'background:#3498db;' };
+    const card = document.createElement('div');
+    card.className = 'diary-entry' + (e.pinned ? ' pinned' : '');
+    card.style.borderLeftColor = e.pinned ? 'var(--warning)' : (m ? m.color : 'var(--primary)');
+    card.innerHTML = `
+      <div class="top">
+        <span class="logo" style="${ls.style}">${ls.html}</span>
+        <div class="meta">
+          <div class="mname">${m ? escapeHtml(m.name) : '日记'}${e.pinned ? '<span class="pin-badge">📌 置顶</span>' : ''}</div>
+          <div class="date">${e.date}</div>
+        </div>
+        ${e.mood ? `<span class="mood">${e.mood}</span>` : ''}
+      </div>
+      <div class="content">${escapeHtml(e.content)}</div>
+      <div class="actions">
+        <button class="act-btn ${e.pinned ? 'pin-on' : ''}" onclick="togglePin('${e.id}')">📌 ${e.pinned ? '取消置顶' : '置顶'}</button>
+        <button class="act-btn del" onclick="deleteDiaryEntry('${e.id}')">🗑️ 删除</button>
+      </div>`;
+    el.appendChild(card);
+  });
+}
+
+/* ---- 日记本增删改 ---- */
+function openModuleModal(id) {
+  editingModuleId = id || null;
+  const m = id ? getDiary().modules.find(x => x.id === id) : null;
+  document.getElementById('moduleModalTitle').textContent = m ? '编辑日记本' : '新建日记本';
+  document.getElementById('moduleNameInput').value = m ? m.name : '';
+  document.getElementById('moduleDelRow').style.display = m ? 'flex' : 'none';
+
+  if (m) {
+    logoType = m.logoType || 'emoji';
+    selectedEmoji = (m.logoType === 'emoji' && m.logo) ? m.logo : '📖';
+    logoImgData = (m.logoType === 'img' && m.logo) ? m.logo : '';
+    document.getElementById('moduleTextInput').value = (m.logoType === 'text') ? (m.logo || '') : '';
+  } else {
+    logoType = 'emoji';
+    selectedEmoji = '📖';
+    logoImgData = '';
+    document.getElementById('moduleTextInput').value = '';
+  }
+  document.getElementById('logoFileInput').value = '';
+  renderEmojiGrid();
+  switchLogoType(logoType);
+  document.getElementById('moduleModal').classList.add('show');
+  setTimeout(() => document.getElementById('moduleNameInput').focus(), 300);
+}
+
+function closeModuleModal() {
+  document.getElementById('moduleModal').classList.remove('show');
+  editingModuleId = null;
+}
+
+function switchLogoType(t) {
+  logoType = t;
+  document.querySelectorAll('.logo-type-tab').forEach(b => b.classList.toggle('active', b.dataset.ltype === t));
+  document.getElementById('logoPaneEmoji').style.display = t === 'emoji' ? 'block' : 'none';
+  document.getElementById('logoPaneText').style.display = t === 'text' ? 'block' : 'none';
+  document.getElementById('logoPaneImg').style.display = t === 'img' ? 'block' : 'none';
+  updateLogoPreviews();
+}
+
+function renderEmojiGrid() {
+  const grid = document.getElementById('emojiGrid');
+  if (grid.children.length > 0) return;
+  DIARY_EMOJIS.forEach(em => {
+    const b = document.createElement('button');
+    b.className = 'emoji-opt' + (em === selectedEmoji ? ' active' : '');
+    b.textContent = em;
+    b.onclick = () => {
+      selectedEmoji = em;
+      grid.querySelectorAll('.emoji-opt').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      updateLogoPreviews();
+    };
+    grid.appendChild(b);
+  });
+}
+
+function updateLogoPreviews() {
+  const text = document.getElementById('moduleTextInput').value.trim() || '记';
+  const tp = document.getElementById('textLogoPreview');
+  tp.textContent = text.slice(0, 2);
+  tp.style.background = nextColor();
+  const ip = document.getElementById('imgLogoPreview');
+  ip.style.backgroundImage = logoImgData ? `url('${logoImgData}')` : '';
+  document.querySelectorAll('.emoji-opt').forEach(x => x.classList.toggle('active', x.textContent === selectedEmoji));
+}
+
+function nextColor() {
+  const n = getDiary().modules.length;
+  return DIARY_COLORS[n % DIARY_COLORS.length];
+}
+
+function onLogoFile(input) {
+  const f = input.files && input.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const c = document.createElement('canvas');
+        c.width = 96; c.height = 96;
+        const ctx = c.getContext('2d');
+        const s = Math.min(img.width, img.height);
+        ctx.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, 96, 96);
+        logoImgData = c.toDataURL('image/jpeg', 0.82);
+      } catch (err) {
+        logoImgData = e.target.result;
+      }
+      updateLogoPreviews();
+      showToast('图片已选择 ✓');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(f);
+}
+
+function saveModule() {
+  const name = document.getElementById('moduleNameInput').value.trim();
+  if (!name) { showToast('请填写日记本名称'); return; }
+
+  let logo = '', lt = logoType;
+  if (lt === 'emoji') logo = selectedEmoji;
+  else if (lt === 'text') logo = (document.getElementById('moduleTextInput').value.trim() || '记').slice(0, 2);
+  else if (lt === 'img') { logo = logoImgData; if (!logo) { showToast('请先选择一张图片'); return; } }
+
+  const diary = getDiary();
+  const wasEditing = !!editingModuleId;
+  if (wasEditing) {
+    const m = diary.modules.find(x => x.id === editingModuleId);
+    if (m) { m.name = name; m.logo = logo; m.logoType = lt; m.updatedAt = Date.now(); }
+  } else {
+    diary.modules.push({
+      id: 'm' + Date.now(),
+      name: name,
+      logo: logo,
+      logoType: lt,
+      color: nextColor(),
+      createdAt: new Date().toISOString(),
+      updatedAt: Date.now()
+    });
+  }
+  saveData();
+  closeModuleModal();
+  renderDiaryPage();
+  showToast(wasEditing ? '日记本已更新 ✓' : '日记本已创建 ✓');
+}
+
+function deleteModule() {
+  if (!editingModuleId) return;
+  if (!confirm('确认删除这个日记本吗？里面的日记也会一起删除。')) return;
+  const diary = getDiary();
+  const now = Date.now();
+  const m = diary.modules.find(x => x.id === editingModuleId);
+  if (m) { m.deleted = true; m.updatedAt = now; }
+  diary.entries.forEach(e => {
+    if (e.moduleId === editingModuleId) { e.deleted = true; e.updatedAt = now; }
+  });
+  if (diaryFilter === editingModuleId) diaryFilter = 'all';
+  saveData();
+  closeModuleModal();
+  renderDiaryPage();
+  showToast('日记本已删除');
+}
+
+/* ---- 日记条目 ---- */
+function addDiaryEntry() {
+  const diary = getDiary();
+  if (diary.modules.length === 0) { showToast('请先创建日记本'); return; }
+  const content = document.getElementById('diaryContent').value.trim();
+  if (!content) { showToast('写点什么再保存吧～'); return; }
+  const moduleId = document.getElementById('diaryModuleSel').value || diary.modules[0].id;
+  const date = document.getElementById('diaryDate').value || todayStr();
+  const moodEl = document.querySelector('#diaryMoods .mood-btn.active');
+  diary.entries.push({
+    id: 'e' + Date.now(),
+    moduleId: moduleId,
+    date: date,
+    content: content,
+    mood: moodEl ? moodEl.dataset.mood : '',
+    pinned: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: Date.now()
+  });
+  saveData();
+  document.getElementById('diaryContent').value = '';
+  document.querySelectorAll('#diaryMoods .mood-btn').forEach(x => x.classList.remove('active'));
+  renderDiaryPage();
+  showToast('日记已保存 📖');
+}
+
+function deleteDiaryEntry(id) {
+  if (!confirm('确认删除这篇日记吗？')) return;
+  const diary = getDiary();
+  const e = diary.entries.find(x => x.id === id);
+  if (e) { e.deleted = true; e.updatedAt = Date.now(); }  // 墓碑标记，同步到另一端后一起消失
+  saveData();
+  renderDiaryPage();
+  showToast('已删除');
+}
+
+/* ---- 日记置顶 ---- */
+function togglePin(id) {
+  const diary = getDiary();
+  const e = diary.entries.find(x => x.id === id);
+  if (!e) return;
+  e.pinned = !e.pinned;
+  e.updatedAt = Date.now();
+  saveData();
+  renderDiaryPage();
+  showToast(e.pinned ? '已置顶 📌' : '已取消置顶');
+}
+
+/* ========================================
+   日记复盘（周 / 月统计）
+======================================== */
+function fmtDate(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function addDays(d, n) {
+  const r = new Date(d); r.setDate(r.getDate() + n); return r;
+}
+
+// 计算复盘周期的起止日期（周一为一周起点）
+function reviewRange(period) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const dow = (today.getDay() + 6) % 7;  // 周一=0
+  let start, end;
+  if (period === 'thisWeek') {
+    start = addDays(today, -dow);
+    end = addDays(start, 6);
+  } else if (period === 'lastWeek') {
+    start = addDays(today, -dow - 7);
+    end = addDays(start, 6);
+  } else if (period === 'thisMonth') {
+    start = new Date(today.getFullYear(), today.getMonth(), 1);
+    end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  } else {  // lastMonth
+    start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    end = new Date(today.getFullYear(), today.getMonth(), 0);
+  }
+  const labels = {
+    thisWeek: '本周', lastWeek: '上周',
+    thisMonth: '本月', lastMonth: '上月'
+  };
+  return { start, end, label: labels[period],
+    rangeText: fmtDate(start) + ' ~ ' + fmtDate(end) };
+}
+
+function switchReviewPeriod(p) {
+  reviewPeriod = p;
+  renderReview();
+}
+
+function barRows(items, colorFn) {
+  // items: [{label, value}]，返回横向条形图 HTML（最多显示前 8 项，其余并入“其他”）
+  if (!items.length) return '<div class="diary-empty" style="width:100%; padding:18px 0;"><div class="icon">📭</div>暂无数据</div>';
+  const max = Math.max(...items.map(x => x.value), 1);
+  let rows = items.slice(0, 8).map(x => `
+    <div class="review-bar-row">
+      <span class="rb-label" title="${escapeHtml(x.label)}">${escapeHtml(x.label)}</span>
+      <span class="rb-track"><i class="rb-fill" style="width:${Math.round(x.value / max * 100)}%;${colorFn ? `background:${colorFn(x)};` : ''}"></i></span>
+      <span class="rb-num">${x.value}</span>
+    </div>`).join('');
+  const rest = items.slice(8);
+  if (rest.length) {
+    const n = rest.reduce((s, x) => s + x.value, 0);
+    rows += `
+      <div class="review-bar-row">
+        <span class="rb-label" title="其他 ${rest.length} 项">其他</span>
+        <span class="rb-track"><i class="rb-fill" style="width:${Math.round(n / max * 100)}%;background:#95a5a6;"></i></span>
+        <span class="rb-num">${n}</span>
+      </div>`;
+  }
+  return rows;
+}
+
+// 按天分布柱状图（一周 7 格 / 一月按自然日网格）
+function dayGridHtml(start, end, list) {
+  const byDay = {};
+  list.forEach(e => { byDay[e.date] = (byDay[e.date] || 0) + 1; });
+  const max = Math.max(...Object.values(byDay), 1);
+  const cells = [];
+  const cur = new Date(start);
+  while (cur <= end) {
+    const ds = fmtDate(cur);
+    const v = byDay[ds] || 0;
+    const weekday = '日一二三四五六'[cur.getDay()];
+    const isToday = ds === todayStr();
+    cells.push(`
+      <div class="review-day-cell" style="${isToday ? 'color:var(--primary);font-weight:700;' : ''}">
+        <div class="d">${cur.getDate()}日<span style="opacity:.6">${weekday}</span></div>
+        <div class="bar"><i style="height:${v ? Math.max(8, Math.round(v / max * 100)) : 2}%;${v ? '' : 'opacity:.15;'}"></i></div>
+        <div class="v">${v || ''}</div>
+      </div>`);
+    cur.setDate(cur.getDate() + 1);
+  }
+  return `<div class="review-day-grid">${cells.join('')}</div>`;
+}
+
+function renderReview() {
+  const diary = getDiary();
+  const periods = [
+    { key: 'thisWeek', label: '🗓️ 本周' },
+    { key: 'lastWeek', label: '⬅️ 上周' },
+    { key: 'thisMonth', label: '📆 本月' },
+    { key: 'lastMonth', label: '⬅️ 上月' }
+  ];
+  document.getElementById('reviewPeriods').innerHTML = periods.map(p =>
+    `<button class="review-period ${reviewPeriod === p.key ? 'active' : ''}" onclick="switchReviewPeriod('${p.key}')">${p.label}</button>`
+  ).join('');
+
+  const { start, end, rangeText } = reviewRange(reviewPeriod);
+  const s = fmtDate(start), e = fmtDate(end);
+  const list = diary.entries.filter(x => !x.deleted && x.date >= s && x.date <= e);
+
+  document.getElementById('reviewRange').textContent = `${reviewPeriod === 'thisWeek' ? '本周' : reviewPeriod === 'lastWeek' ? '上周' : reviewPeriod === 'thisMonth' ? '本月' : '上月'}（${rangeText}）`;
+
+  // 顶部统计：篇数 / 字数 / 日均
+  const days = Math.round((end - start) / 86400000) + 1;
+  const words = list.reduce((n, x) => n + (x.content ? x.content.length : 0), 0);
+  const avg = list.length ? (list.length / days).toFixed(1) : '0';
+  document.getElementById('reviewStats').innerHTML = `
+    <div class="review-stat"><div class="num">${list.length}</div><div class="label">日记篇数</div></div>
+    <div class="review-stat"><div class="num">${words}</div><div class="label">总字数</div></div>
+    <div class="review-stat"><div class="num">${avg}</div><div class="label">日均篇数</div></div>`;
+
+  // 心情分布
+  const moodCount = {};
+  list.forEach(x => { if (x.mood) moodCount[x.mood] = (moodCount[x.mood] || 0) + 1; });
+  const moodRows = Object.entries(moodCount)
+    .sort((a, b) => b[1] - a[1])
+    .map(([md, n]) => ({ label: md + ' ' + mdName(md), value: n }));
+  const moodHtml = `<div class="review-card"><div class="rc-title">😊 心情分布</div>${barRows(moodRows)}</div>`;
+
+  // 日记本分布
+  const modCount = {};
+  list.forEach(x => { modCount[x.moduleId] = (modCount[x.moduleId] || 0) + 1; });
+  const modRows = Object.entries(modCount)
+    .sort((a, b) => b[1] - a[1])
+    .map(([id, n]) => {
+      const m = diary.modules.find(z => z.id === id);
+      return { label: m ? m.name : '日记', value: n, color: m ? m.color : '#3498db' };
+    });
+  const modHtml = `<div class="review-card"><div class="rc-title">📒 日记本分布</div>${barRows(modRows, x => x.color)}</div>`;
+
+  // 按天分布
+  const dayHtml = `<div class="review-card"><div class="rc-title">📅 按天分布</div>${dayGridHtml(start, end, list)}</div>`;
+
+  // 期间日记列表（置顶优先 + 日期倒序，最多 50 条）
+  const sortedList = [...list].sort((a, b) => {
+    const ap = a.pinned ? 1 : 0, bp = b.pinned ? 1 : 0;
+    if (ap !== bp) return bp - ap;
+    return (b.date + 'T' + b.createdAt).localeCompare(a.date + 'T' + a.createdAt);
+  }).slice(0, 50);
+  let listHtml;
+  if (sortedList.length === 0) {
+    listHtml = `<div class="review-card"><div class="rc-title">📖 期间日记</div>
+      <div class="diary-empty" style="width:100%; padding:18px 0;"><div class="icon">📭</div>这个时间段还没有写日记</div></div>`;
+  } else {
+    listHtml = `<div class="review-card"><div class="rc-title">📖 期间日记（${sortedList.length} 篇）</div>
+      ${sortedList.map(x => {
+        const m = diary.modules.find(z => z.id === x.moduleId);
+        const preview = x.content.length > 60 ? x.content.slice(0, 60) + '…' : x.content;
+        return `
+        <div class="diary-entry ${x.pinned ? 'pinned' : ''}" style="border-left-color:${x.pinned ? 'var(--warning)' : (m ? m.color : 'var(--primary)')}; margin-bottom:10px;">
+          <div class="top">
+            <span class="logo" style="${m ? moduleLogoStyle(m).style : 'background:#3498db;'}">${m ? moduleLogoStyle(m).html : '📖'}</span>
+            <div class="meta">
+              <div class="mname">${m ? escapeHtml(m.name) : '日记'}${x.pinned ? '<span class="pin-badge">📌 置顶</span>' : ''}</div>
+              <div class="date">${x.date}</div>
+            </div>
+            ${x.mood ? `<span class="mood">${x.mood}</span>` : ''}
+          </div>
+          <div class="content">${escapeHtml(preview)}</div>
+        </div>`;
+      }).join('')}</div>`;
+  }
+
+  document.getElementById('reviewContent').innerHTML = moodHtml + modHtml + dayHtml + listHtml;
+}
+
+function mdName(md) {
+  return { '😊': '开心', '😄': '愉快', '🥰': '幸福', '😌': '平静', '🤔': '思考', '😅': '尴尬', '😢': '难过', '😠': '生气', '😴': '疲惫', '🤩': '兴奋', '🙏': '感恩', '😎': '得意' }[md] || '';
+}
+
+/* ========================================
+   日期头
+======================================== */
+function updateHeaderDate() {
+  const d = new Date();
+  const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+  const dateStr = `${d.getMonth()+1}月${d.getDate()}日 ${weekdays[d.getDay()]}`;
+  document.getElementById('headerDate').textContent = dateStr + ' · 监督你每天按时喝水';
+}
+
+/* ========================================
+   初始化
+======================================== */
+function init() {
+  updateHeaderDate();
+  initDiarySecurity();   // 恢复会话免密 / 锁定日记页
+  loadHolidayData();     // 加载内置节假日数据（工作日类型待办判定）
+  switchPage('water');
+
+  checkReminders();
+  setInterval(checkReminders, 1000);
+
+  document.getElementById('todoModal').addEventListener('click', (e) => {
+    if (e.target.id === 'todoModal') closeTodoModal();
+  });
+
+  document.getElementById('todoInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') addTodo();
+  });
+}
+
+init();
+syncTodosToBackend();   // 首次打开即把本地待办推送到后台（含历史数据），确保关网页也能提醒
+loadBackendTodos();     // 合并后台待办内容（另一端新增/修改/删除）与已触发提醒标记，三端一致
+loadBackendWater();      // 合并悬浮球/小程序窗口产生的喝水打卡记录，三端一致
+loadAppSettingsFromBackend();  // 拉取跨端设置（喝水间隔/日记密码/日记内容），两端保持一致
+
+// 三端周期同步：窗口打开期间每 20 秒拉取后台数据；小程序端同时把本地数据推回（以它为准）
+setInterval(() => {
+  loadBackendWater();
+  loadBackendTodos();
+  loadAppSettingsFromBackend();
+  syncTodosToBackend();
+  if (deviceSrc() === 'app') syncWaterToBackend();
+}, 20000);
+
+// ===== PWA: 注册 Service Worker（离线可用 + 可安装） =====
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch((err) => {
+      console.warn('SW register failed:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>
