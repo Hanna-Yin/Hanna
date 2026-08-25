@@ -1805,7 +1805,7 @@ function applySyncCode(){
 
 /* ---- GitHub Gist 自动云同步：令牌存独立 localStorage，绝不进入 S（同步码/备份里都没有它） ---- */
 const TOK_KEY='lxzt_tok',GIST_KEY='lxzt_gist',LSYNC_KEY='lxzt_lsync';
-let gistTimer=null,gistApplying=false;
+let gistTimer=null,gistApplying=false,bootPulling=false;
 function gistTok(){return localStorage.getItem(TOK_KEY)||''}
 function gistId(){return localStorage.getItem(GIST_KEY)||''}
 function gistOn(){return !!(gistTok()&&gistId())}
@@ -1828,6 +1828,7 @@ async function gistSetup(){
 }
 async function gistPush(silent){
   if(!gistOn()||gistApplying)return;
+  if(silent&&bootPulling)return; // 首次拉取完成前禁止自动上传，防止旧数据覆盖云端
   S.syncStamp=Date.now();localStorage.setItem(KEY,JSON.stringify(S));
   try{
     await gistApi('PATCH','/gists/'+gistId(),{files:{'lxzt.json':{content:JSON.stringify(S)}}});
@@ -1836,21 +1837,22 @@ async function gistPush(silent){
   }catch(e){if(!silent)toast('上传失败：'+e.message)}
 }
 async function gistPull(auto){
-  if(!gistOn()||gistApplying)return;
+  if(!gistOn()||gistApplying)return false;
   try{
     const g=await gistApi('GET','/gists/'+gistId());
     const txt=g&&g.files&&g.files['lxzt.json']&&g.files['lxzt.json'].content;
-    if(!txt){if(!auto)toast('云端还没有数据');return}
+    if(!txt){if(!auto)toast('云端还没有数据');return true}
     const d=JSON.parse(txt);
     if(!d||!d.startDate)throw new Error('云端数据损坏');
-    if(d.syncStamp&&S.syncStamp&&d.syncStamp<=S.syncStamp){if(!auto)toast('本机已是最新 ✅');return}
+    if(d.syncStamp&&S.syncStamp&&d.syncStamp<=S.syncStamp){if(!auto)toast('本机已是最新 ✅');return true}
     gistApplying=true;
     S=d;localStorage.setItem(KEY,JSON.stringify(S));
     localStorage.setItem(LSYNC_KEY,String(Date.now()));
     render();
     gistApplying=false;
     toast(auto?'已自动同步云端最新数据 ✅':'已拉取云端数据 ✅');
-  }catch(e){gistApplying=false;if(!auto)toast('拉取失败：'+e.message)}
+    return true;
+  }catch(e){gistApplying=false;if(!auto)toast('拉取失败：'+e.message);return false}
 }
 function schedulePush(now){if(!gistOn())return;clearTimeout(gistTimer);gistTimer=setTimeout(()=>gistPush(true),now?800:4000)}
 function gistOff(){saveGistCfg('','');toast('已关闭自动同步（云端数据保留）');render()}
@@ -1866,9 +1868,26 @@ function render(){
   window.scrollTo(0,0);
 }
 load();
-if(S.lastVisit!==todayStr()){S.lastVisit=todayStr();save()}
 render();
-if(gistOn())gistPull(true);
+if(gistOn()){
+  // 先拉云端最新（期间禁止自动上传，防止本机旧数据覆盖云端新数据）
+  bootPulling=true;
+  gistPull(true).then(ok=>{
+    if(!ok){ // 首次拉取失败（如断网）：10秒后重试一次，期间保持禁止自动上传
+      return new Promise(r=>setTimeout(r,10000)).then(()=>gistPull(true));
+    }
+    return ok;
+  }).finally(()=>{
+    bootPulling=false;
+    if(S.lastVisit!==todayStr()){S.lastVisit=todayStr();save()}
+  });
+}else{
+  if(S.lastVisit!==todayStr()){S.lastVisit=todayStr();save()}
+}
+// 周期性后台拉取：每30秒静默检查云端是否有更新（页面可见时才拉）
+setInterval(()=>{if(gistOn()&&!bootPulling&&!document.hidden)gistPull(true)},30000);
+// 从后台切回前台时也立即拉一次（电脑端刚推的数据，手机切回来就能看到）
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&gistOn()&&!bootPulling)gistPull(true)});
 </script>
 </body>
 </html>
