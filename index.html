@@ -296,15 +296,19 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
     </p>
     <div class="sync-step">
       <h4>📤 导出数据</h4>
-      <p>点击下方按钮，生成同步码。复制后到另一台设备粘贴。</p>
-      <button class="btn btn-primary btn-block" onclick="exportData()">生成同步码</button>
-      <textarea id="exportBox" style="margin-top:8px" placeholder="同步码会显示在这里…" onclick="this.select()"></textarea>
+      <p>点按钮生成<b>同步短码</b>：网络通畅时附带 20 位<b>云端短码</b>（优先复制它）；没网络也能用，自动生成<b>离线压缩码</b>（比旧版短约 95%）。</p>
+      <button class="btn btn-primary btn-block" onclick="exportData()" id="syncExportBtn">生成同步短码</button>
+      <textarea id="exportBox" style="margin-top:8px;height:130px" placeholder="同步码会显示在这里…" onclick="this.select()"></textarea>
+      <button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="downloadBackup()">⬇️ 下载备份文件（微信/网盘传）</button>
     </div>
     <div class="sync-step">
       <h4>📥 导入数据</h4>
-      <p>将另一台设备导出的同步码粘贴到下方，点导入即可同步（会覆盖当前数据）。</p>
-      <textarea id="importBox" placeholder="在此粘贴同步码…"></textarea>
+      <p>粘贴另一台设备的<b>云端短码</b>或<b>离线压缩码</b>（旧版长码也能用），点导入即可同步（会覆盖当前数据）。也可以直接选备份文件。</p>
+      <textarea id="importBox" placeholder="在此粘贴短码…"></textarea>
       <button class="btn btn-primary btn-block" style="margin-top:8px" onclick="importData()">导入数据</button>
+      <label class="btn btn-ghost btn-sm" style="margin-top:6px;cursor:pointer">📂 选择备份文件
+        <input type="file" accept=".json,application/json" style="display:none" onchange="pickBackupFile(this)">
+      </label>
     </div>
     <button class="btn btn-ghost close-btn" onclick="closeSync()">关闭</button>
   </div>
@@ -1193,33 +1197,114 @@ function backToMain(){
   window.scrollTo(0,0);
 }
 
-/* ================= 数据同步 ================= */
+/* ================= 数据同步（短码版） ================= */
+const SYNC_CLOUD='https://jsonblob.com/api/jsonBlob';
 function openSync(){document.getElementById('syncModal').classList.add('show');}
 function closeSync(){document.getElementById('syncModal').classList.remove('show');}
-function exportData(){
-  try{
-    const code=btoa(encodeURIComponent(JSON.stringify(state)));
-    const box=document.getElementById('exportBox');
-    box.value=code;
-    box.select();
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(code).then(()=>toast('✅ 同步码已生成并复制到剪贴板')).catch(()=>{box.select();toast('✅ 同步码已生成，请手动复制');});
-    }else{box.select();toast('✅ 同步码已生成，请手动复制');}
-  }catch(e){toast('导出失败：'+e.message);}
+
+/* ---- 压缩工具：字符串 <-> base64url（deflate，离线可用） ---- */
+function b64FromBytes(u8){
+  let bin='';const CH=0x8000;
+  for(let i=0;i<u8.length;i+=CH)bin+=String.fromCharCode.apply(null,u8.subarray(i,i+CH));
+  return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
-function importData(){
+function bytesFromB64(s){
+  s=s.replace(/-/g,'+').replace(/_/g,'/');
+  while(s.length%4)s+='=';
+  const bin=atob(s),u8=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
+  return u8;
+}
+async function zipStr(str){
+  const st=new Blob([new TextEncoder().encode(str)]).stream().pipeThrough(new CompressionStream('deflate'));
+  return b64FromBytes(new Uint8Array(await new Response(st).arrayBuffer()));
+}
+async function unzipStr(code){
+  const st=new Blob([bytesFromB64(code)]).stream().pipeThrough(new DecompressionStream('deflate'));
+  return new TextDecoder().decode(await new Response(st).arrayBuffer());
+}
+/* ---- 云端短码（尽力而为，网络不可用则静默跳过） ---- */
+async function cloudPut(json){
+  const ctl=new AbortController();const t=setTimeout(()=>ctl.abort(),8000);
+  try{
+    const r=await fetch(SYNC_CLOUD,{method:'POST',headers:{'Content-Type':'application/json'},body:json,signal:ctl.signal});
+    if(r.ok){const m=(r.headers.get('Location')||'').match(/[0-9a-f]{16,24}$/i);if(m)return m[0];}
+  }catch(e){}finally{clearTimeout(t);}
+  return '';
+}
+async function cloudGet(id){
+  const ctl=new AbortController();const t=setTimeout(()=>ctl.abort(),12000);
+  try{
+    const r=await fetch(SYNC_CLOUD+'/'+id,{signal:ctl.signal});
+    if(!r.ok)throw new Error('cloud '+r.status);
+    return await r.json();
+  }finally{clearTimeout(t);}
+}
+/* ---- 导出：云端短码 + 离线压缩码 ---- */
+async function exportData(){
+  const btn=document.getElementById('syncExportBtn');
+  if(btn.disabled)return;
+  btn.disabled=true;btn.textContent='生成中…';
+  const box=document.getElementById('exportBox');
+  try{
+    const json=JSON.stringify(state);
+    const localCode='K1:'+await zipStr(json);
+    const sc=await cloudPut(json);
+    box.value=sc
+      ?'【☁️ 云端短码】复制这个：\n'+sc+'\n\n【🔒 离线压缩码】备用（没网也能用）：\n'+localCode
+      :'【🔒 离线压缩码】复制这个：\n'+localCode+'\n\n（云端短码暂不可用：网络无法访问中转服务，离线码一样能用）';
+    box.select();
+    const copy=sc||localCode;
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(copy).then(()=>toast(sc?'✅ 云端短码已生成并复制':'✅ 离线短码已生成并复制')).catch(()=>toast('✅ 同步码已生成，请手动复制'));
+    }else{toast('✅ 同步码已生成，请手动复制');}
+  }catch(e){toast('导出失败：'+(e&&e.message||e));}
+  finally{btn.disabled=false;btn.textContent='生成同步短码';}
+}
+/* ---- 导入：自动识别短码/压缩码/旧版长码 ---- */
+async function importData(){
   const code=document.getElementById('importBox').value.trim();
   if(!code){toast('请先粘贴同步码');return;}
+  const isCloud=/^[0-9a-f]{16,24}$/i.test(code);
+  let data=null;
   try{
-    const data=JSON.parse(decodeURIComponent(atob(code)));
-    if(!data.foods||!Array.isArray(data.foods))throw new Error('数据格式不正确');
-    if(!confirm('导入后将覆盖当前所有数据（冰箱库存、饮食记录、购物清单），确定吗？'))return;
-    state=data;
-    save();
-    renderFridge();renderMealHistory();renderSeasonal();renderShopping();renderRecipes();renderMealPick();
-    closeSync();
-    toast('✅ 数据导入成功');
-  }catch(e){toast('导入失败：同步码无效');}
+    if(code.startsWith('K1:'))data=JSON.parse(await unzipStr(code.slice(3)));
+    else if(isCloud)data=await cloudGet(code);
+    else data=JSON.parse(decodeURIComponent(atob(code)));
+    if(!data.foods||!Array.isArray(data.foods))throw new Error('格式');
+  }catch(e){
+    toast(isCloud?'导入失败：云端短码无效或网络不可用':'导入失败：同步码无效');
+    return;
+  }
+  if(!confirm('导入后将覆盖当前所有数据（冰箱库存、饮食记录、购物清单），确定吗？'))return;
+  state=data;save();
+  renderFridge();renderMealHistory();renderSeasonal();renderShopping();renderRecipes();renderMealPick();
+  closeSync();toast('✅ 数据导入成功');
+}
+/* ---- 备份文件：下载 / 导入 ---- */
+function downloadBackup(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='冰箱管家备份_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();URL.revokeObjectURL(a.href);
+  toast('✅ 备份文件已下载');
+}
+function pickBackupFile(input){
+  const f=input.files[0];if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const data=JSON.parse(rd.result);
+      if(!data.foods||!Array.isArray(data.foods))throw new Error('格式');
+      if(!confirm('导入后将覆盖当前所有数据（冰箱库存、饮食记录、购物清单），确定吗？')){input.value='';return;}
+      state=data;save();
+      renderFridge();renderMealHistory();renderSeasonal();renderShopping();renderRecipes();renderMealPick();
+      closeSync();toast('✅ 文件导入成功');
+    }catch(e){toast('导入失败：文件格式不正确');}
+    input.value='';
+  };
+  rd.readAsText(f);
 }
 
 /* ================= 应季食材 ================= */
