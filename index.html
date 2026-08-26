@@ -12,7 +12,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<title>冰箱管家 · 低碳生酮版</title>
+<title>冰箱管家</title>
 <style>
 :root{
   --green:#0f9d6e; --green-dark:#0b7d57; --green-light:#e6f7f0;
@@ -164,7 +164,7 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
 <body>
 <div id="app">
   <div class="header">
-    <h1>🧊 冰箱管家 <span class="keto-badge" style="cursor:pointer" title="低碳生酮饮食模式" onclick="openKeto()">🥑 低碳生酮</span> <span class="keto-badge" style="cursor:pointer" title="数据备份/恢复" onclick="openSync()">☁️ 同步</span></h1>
+    <h1>🧊 冰箱管家 <span class="keto-badge" style="cursor:pointer" title="食材红黄绿灯分级" onclick="openKeto()">🥑 食物地图</span> <span class="keto-badge" style="cursor:pointer" title="数据备份/恢复" onclick="openSync()">☁️ 同步</span></h1>
     <div class="date" id="todayText"></div>
   </div>
 
@@ -228,7 +228,7 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
       <input id="recipeSearch" placeholder="🔍 搜索菜谱 / 食材" oninput="renderRecipes()">
       <div class="filter-row" style="margin-top:10px" id="recipeFilter">
         <div class="chip sel" data-f="all">全部</div>
-        <div class="chip" data-f="keto">🥑 严格生酮</div>
+        <div class="chip" data-f="keto">🥑 低碳优先</div>
         <div class="chip" data-f="meat">肉类</div>
         <div class="chip" data-f="fish">水产</div>
         <div class="chip" data-f="egg">蛋奶</div>
@@ -240,14 +240,14 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
     <div id="recipeList"></div>
   </div>
 
-  <!-- ============ 生酮推荐（隐藏页：点顶部「🥑 低碳生酮」徽章进入） ============ -->
+  <!-- ============ 食材分级（隐藏页：点顶部「🥑 食物地图」徽章进入） ============ -->
   <div class="view" id="view-keto">
     <div class="card" style="padding:12px 14px">
       <h3>🗺️ 食物地图 · 野兽生活版</h3>
       <p style="font-size:12px;color:var(--sub);line-height:1.8;margin:0">
         参考鸡侠（野兽生活）的饮食地图，按碳水含量把食物分成三档：
         <b style="color:#0f9d6e">🟢 绿灯 = 推荐摄入</b>、<b style="color:#b97821">🟡 黄灯 = 限量摄入</b>、<b style="color:#d64545">🔴 红灯 = 不推荐</b>。
-        低碳水饮食：每日碳水 &lt;150g；生酮饮食：&lt;50g。在绿灯和黄灯里尽量广泛地选，保证维生素和矿物质充足。
+        优先绿灯食材，黄灯适量，红灯控制。尽量广泛地选，保证维生素和矿物质充足。
         点击绿/黄灯食物可直接加入购物清单。
       </p>
       <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="backToMain()">← 返回冰箱</button>
@@ -262,7 +262,7 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
       <div class="month-strip" id="monthStrip"></div>
       <div id="seasonList"></div>
     </div>
-    <p style="font-size:11px;color:var(--sub);text-align:center;padding:0 10px;">⚠️ 标注「高碳」的水果和根茎类，生酮期间请控制量或不吃</p>
+    <p style="font-size:11px;color:var(--sub);text-align:center;padding:0 10px;">⚠️ 标注「高碳」的水果和根茎类，请控制量或不吃</p>
   </div>
 
   <!-- ============ 购物清单 ============ -->
@@ -300,7 +300,7 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
     </div>
     <div class="sync-step">
       <h4>📤 导出数据</h4>
-      <p>点按钮生成<b>同步短码</b>：网络通畅时附带 20 位<b>云端短码</b>（优先复制它）；没网络也能用，自动生成<b>离线压缩码</b>（比旧版短约 95%）。</p>
+      <p>点「生成同步短码」：若已开启<b>自动云同步</b>，会得到一个约 20 字符的<b>超短同步码</b>（Gist ID，优先复制它，对方无需任何配置，凭此码即可导入）；没开或没网时自动回退到<b>离线压缩码</b>（较长但照样能用）。</p>
       <button class="btn btn-primary btn-block" onclick="exportData()" id="syncExportBtn">生成同步短码</button>
       <textarea id="exportBox" style="margin-top:8px;height:130px" placeholder="同步码会显示在这里…" onclick="this.select()"></textarea>
       <button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="downloadBackup()">⬇️ 下载备份文件（微信/网盘传）</button>
@@ -417,7 +417,7 @@ function carbLevel(name){
   for(const k of CARB_KEYS){if(name.includes(k))return CARB_DB[k];}
   return 'unknown';
 }
-const CARB_LABEL={keto:['🥑 生酮友好','tag-keto'],mid:['⚠️ 中等碳水','tag-warn'],high:['⛔ 高碳水','tag-bad'],unknown:['','tag-cat']};
+const CARB_LABEL={keto:['🥑 低碳友好','tag-keto'],mid:['⚠️ 中等碳水','tag-warn'],high:['⛔ 高碳水','tag-bad'],unknown:['','tag-cat']};
 const CAT_EMOJI={'肉类':'🥩','蔬菜':'🥬','蛋奶':'🥚','水产':'🐟','菌菇豆制品':'🍄','主食':'🍚','水果':'🍓','其他':'📦'};
 
 /* 精细化食物图标：按具体名称匹配（长词优先），匹配不到再退回分类图标 */
@@ -834,7 +834,7 @@ const RECIPES=[
  {n:'蒜泥白肉',t:'30分钟',tag:'meat',keto:2,carb:'约3g',ings:[['五花肉','300克'],['黄瓜','1根'],['蒜','4瓣']],steps:'1. 五花肉煮熟晾凉切薄片\n2. 黄瓜切薄片垫底，肉片码在上面\n3. 蒜泥+生抽+醋+少许糖(代糖)+辣椒油调汁淋上'},
  {n:'香菇蒸滑鸡',t:'30分钟',tag:'meat',keto:2,carb:'约4g',ings:[['鸡肉','400克'],['香菇','5朵']],steps:'1. 鸡块用生抽、蚝油、少许淀粉腌制20分钟\n2. 香菇切片铺盘底，鸡块铺上\n3. 水开后蒸15分钟，撒葱花'},
  {n:'咖喱椰浆鸡(无土豆)',t:'25分钟',tag:'meat',keto:1,carb:'约6g',ings:[['鸡肉','400克'],['洋葱','半个'],['椰浆','100毫升']],steps:'1. 鸡块煎至微黄，下洋葱炒香\n2. 加水没过鸡肉，煮15分钟\n3. 倒入椰浆和咖喱粉，小火煮至浓稠\n4. 不加土豆，可以加西兰花或菜花代替'},
- {n:'番茄炒蛋',t:'10分钟',tag:'egg',keto:1,carb:'约8g',ings:[['鸡蛋','3个'],['番茄','2个']],steps:'1. 鸡蛋加少许盐打散，热油炒成大块盛出\n2. 番茄切块下锅炒出汁(番茄适量，生酮可减量)\n3. 回锅鸡蛋翻匀，加盐调味'},
+ {n:'番茄炒蛋',t:'10分钟',tag:'egg',keto:1,carb:'约8g',ings:[['鸡蛋','3个'],['番茄','2个']],steps:'1. 鸡蛋加少许盐打散，热油炒成大块盛出\n2. 番茄切块下锅炒出汁(番茄适量，可减量)\n3. 回锅鸡蛋翻匀，加盐调味'},
  {n:'韭菜炒蛋',t:'8分钟',tag:'egg',keto:2,carb:'约4g',ings:[['韭菜','1把'],['鸡蛋','3个']],steps:'1. 鸡蛋打散，韭菜切段\n2. 热油炒蛋至凝固盛出\n3. 下韭菜大火炒30秒，回锅鸡蛋加盐翻匀'},
  {n:'虾仁滑蛋',t:'10分钟',tag:'egg',keto:2,carb:'约2g',ings:[['虾仁','150克'],['鸡蛋','3个']],steps:'1. 虾仁焯水30秒捞出\n2. 蛋液加少许水和盐打匀，倒入虾仁\n3. 温油小火推炒至半凝固即出锅'},
  {n:'清蒸鲈鱼',t:'15分钟',tag:'fish',keto:2,carb:'约1g',ings:[['鲈鱼','1条'],['姜','3片'],['葱','2根']],steps:'1. 鱼身两面划刀，铺姜葱，水开后蒸8分钟\n2. 倒掉蒸出的汤汁，换新葱姜丝\n3. 淋蒸鱼豉油和热油'},
@@ -862,7 +862,7 @@ const RECIPES=[
 /* ================= 应季食材库 ================= */
 const SEASONAL={
 1:[['羊肉','肉类','keto','数九寒天涮羊肉'],['牛肉','肉类','keto','冬令进补'],
-   ['大白菜','蔬菜','keto','当季最甜'],['菠菜','蔬菜','keto','冬季补叶酸'],['白萝卜','蔬菜','keto','炖汤水灵'],['冬笋','蔬菜','mid','鲜但碳水稍高'],['莲藕','蔬菜','mid','生酮适量'],['茼蒿','蔬菜','keto','涮火锅必备'],['山药','蔬菜','mid','碳水中等注意量'],['西兰花','蔬菜','keto','冬季当家菜'],
+   ['大白菜','蔬菜','keto','当季最甜'],['菠菜','蔬菜','keto','冬季补叶酸'],['白萝卜','蔬菜','keto','炖汤水灵'],['冬笋','蔬菜','mid','鲜但碳水稍高'],['莲藕','蔬菜','mid','适量'],['茼蒿','蔬菜','keto','涮火锅必备'],['山药','蔬菜','mid','碳水中等注意量'],['西兰花','蔬菜','keto','冬季当家菜'],
    ['带鱼','水产','keto','冬至前后最肥'],['鲈鱼','水产','keto','肥美'],['牡蛎','水产','keto','冬季最肥，高锌'],['鲫鱼','水产','keto','冬鲫炖汤奶白'],
    ['柚子','水果','mid','低卡相对友好'],['猕猴桃','水果','mid','维C之王，适量'],['苹果','水果','mid','冬季苹果正当时'],['草莓','水果','mid','冬春大棚草莓上市']],
 2:[['羊肉','肉类','keto','倒春寒吃羊暖身'],['鸡肉','肉类','keto','春季温和进补'],
@@ -870,11 +870,11 @@ const SEASONAL={
    ['鲈鱼','水产','keto',''],['黄花鱼','水产','keto','春季汛期临近'],
    ['橙子','水果','mid','维C高，适量吃'],['草莓','水果','mid','']],
 3:[['鸡肉','肉类','keto','春补首选'],
-   ['韭菜','蔬菜','keto','头刀韭香'],['芦笋','蔬菜','keto','3月起上市，生酮明星蔬菜'],['豌豆苗','蔬菜','keto',''],['荠菜','蔬菜','keto','包馄饨一绝'],['春笋','蔬菜','mid','碳水中等，适量'],['菠菜','蔬菜','keto',''],['莴笋','蔬菜','keto',''],
+   ['韭菜','蔬菜','keto','头刀韭香'],['芦笋','蔬菜','keto','3月起上市，明星蔬菜'],['豌豆苗','蔬菜','keto',''],['荠菜','蔬菜','keto','包馄饨一绝'],['春笋','蔬菜','mid','碳水中等，适量'],['菠菜','蔬菜','keto',''],['莴笋','蔬菜','keto',''],
    ['鲫鱼','水产','keto','春鲫最肥'],['鳜鱼','水产','keto','桃花流水鳜鱼肥'],['螺蛳','水产','keto','清明螺赛肥鹅'],
    ['草莓','水果','mid','春季草莓最甜'],['菠萝','水果','mid','春菠萝上市，糖高适量'],['牛油果','水果','keto','秘鲁产季开始，全年可买']],
 4:[['鸭肉','肉类','keto','春鸭滋阴'],
-   ['芦笋','蔬菜','keto','当季最佳'],['莴笋','蔬菜','keto',''],['豌豆','蔬菜','mid','碳水偏高注意量'],['蚕豆','蔬菜','high','生酮不推荐'],['香椿','蔬菜','keto','香椿炒蛋'],['荠菜','蔬菜','keto',''],['荷兰豆','蔬菜','mid','脆甜适量'],['鸡毛菜','蔬菜','keto','春菜最嫩'],
+   ['芦笋','蔬菜','keto','当季最佳'],['莴笋','蔬菜','keto',''],['豌豆','蔬菜','mid','碳水偏高注意量'],['蚕豆','蔬菜','high','不推荐'],['香椿','蔬菜','keto','香椿炒蛋'],['荠菜','蔬菜','keto',''],['荷兰豆','蔬菜','mid','脆甜适量'],['鸡毛菜','蔬菜','keto','春菜最嫩'],
    ['黄花鱼','水产','keto','春季洄游'],['河虾','水产','keto',''],['鳜鱼','水产','keto','春天正肥'],['螺蛳','水产','keto','清明前最肥'],
    ['芒果','水果','mid','早熟芒果上市'],['菠萝','水果','mid',''],['牛油果','水果','keto','秘鲁牛油果季']],
 5:[['鸭肉','肉类','keto','夏日将至，鸭肉性凉'],
@@ -888,13 +888,13 @@ const SEASONAL={
 7:[['鸭肉','肉类','keto','苦夏吃鸭'],
    ['苦瓜','蔬菜','keto','清热'],['丝瓜','蔬菜','keto',''],['冬瓜','蔬菜','keto','煮汤'],['空心菜','蔬菜','keto',''],['茄子','蔬菜','keto',''],['红薯叶','蔬菜','keto','叶子低碳，别错过'],
    ['草鱼','水产','keto',''],['鳝鱼','水产','keto','小暑黄鳝赛人参'],['泥鳅','水产','keto','夏天泥鳅最肥'],['花蛤','水产','keto',''],
-   ['西瓜','水果','high','糖高，生酮慎吃'],['桃','水果','mid',''],['葡萄','水果','high','糖分高'],['蓝莓','水果','mid','莓果里相对友好'],['火龙果','水果','mid','红心更甜注意量']],
+   ['西瓜','水果','high','糖高，慎吃'],['桃','水果','mid',''],['葡萄','水果','high','糖分高'],['蓝莓','水果','mid','莓果里相对友好'],['火龙果','水果','mid','红心更甜注意量']],
 8:[['鸭肉','肉类','keto','秋前吃鸭'],
    ['秋葵','蔬菜','keto',''],['苦瓜','蔬菜','keto',''],['丝瓜','蔬菜','keto',''],['冬瓜','蔬菜','keto',''],['红薯叶','蔬菜','keto',''],['四季豆','蔬菜','mid',''],
    ['梭子蟹','水产','keto','开渔季'],['扇贝','水产','keto','肥美'],['鱿鱼','水产','keto','开渔后鲜鱿'],
    ['蓝莓','水果','mid','国产蓝莓尾季'],['葡萄','水果','high',''],['桃','水果','mid','晚桃最甜'],['无花果','水果','mid','糖分浓缩，一两颗解馋'],['西瓜','水果','high','']],
 9:[['鸭肉','肉类','keto','秋燥吃鸭润'],
-   ['莲藕','蔬菜','mid','秋藕最粉糯'],['茭白','蔬菜','keto',''],['芋头','蔬菜','high','生酮慎吃'],['花菜','蔬菜','keto','秋季开始上量'],['生菜','蔬菜','keto',''],
+   ['莲藕','蔬菜','mid','秋藕最粉糯'],['茭白','蔬菜','keto',''],['芋头','蔬菜','high','慎吃'],['花菜','蔬菜','keto','秋季开始上量'],['生菜','蔬菜','keto',''],
    ['秋刀鱼','水产','keto','秋肥'],['大闸蟹','水产','keto','九雌十雄'],['鲅鱼','水产','keto','秋鲅也肥'],
    ['葡萄','水果','high',''],['石榴','水果','mid','适量'],['柚子','水果','mid','早柚上市'],['无花果','水果','mid','']],
 10:[['羊肉','肉类','keto','秋末开始吃羊'],
@@ -1154,7 +1154,7 @@ function renderRecipes(){
     const {r,matched,miss}=x;
     const pill=miss===0?'<span class="match-pill match-yes">✓ 现在就能做</span>':miss<=2?'<span class="match-pill match-near">差 '+miss+' 样</span>':'<span class="match-pill match-no">缺 '+miss+' 样</span>';
     return '<div class="recipe-card" id="rc'+idx+'">'+
-      '<div class="r-head"><div><div class="r-name">'+r.n+' '+(r.keto===2?'<span class="tag tag-keto">🥑 生酮</span>':'<span class="tag tag-warn">适量</span>')+'</div>'+
+      '<div class="r-head"><div><div class="r-name">'+r.n+' '+(r.keto===2?'<span class="tag tag-keto">🥑 低碳</span>':'<span class="tag tag-warn">适量</span>')+'</div>'+
       '<div class="r-sub">⏱ '+r.t+' · 净碳水'+r.carb+'</div></div>'+pill+'</div>'+
       '<div class="r-ings">'+matched.map(m=>'<span class="ing '+((m.got&&state.foods.length)?'ok':'miss')+'">'+esc(m.g[0])+' '+esc(m.g[1])+'</span>').join('')+'</div>'+
       '<div style="margin-top:10px"><button class="btn btn-ghost btn-sm" onclick="document.getElementById(\'rc'+idx+'\').classList.toggle(\'open\')">👀 看做法</button></div>'+
@@ -1167,11 +1167,11 @@ function renderRecipes(){
 /* g=绿灯推荐 y=黄灯限量 r=红灯不推荐；条目 [名称, 说明] */
 const FOOD_MAP=[
  {sec:'油脂类',icon:'🫗',note:'绿灯油脂大胆吃，精炼种子油全部避开',
-  g:[['猪油','稳定耐高温，炒菜首选'],['牛油','煎牛排的标配'],['黄油','草饲更佳，煎蛋收尾淋一勺'],['椰子油','含MCT，给身体和大脑快速供能'],['牛油果油','耐高温，适合给不接受动物油的家人过渡'],['橄榄油','凉拌、低温炒，别爆炒'],['MCT','快速生酮供能，新手从少量开始加'],['亚麻籽油','只能凉拌，不耐高温'],['棕榈仁油','MCT的原料来源']],
+  g:[['猪油','稳定耐高温，炒菜首选'],['牛油','煎牛排的标配'],['黄油','草饲更佳，煎蛋收尾淋一勺'],['椰子油','含MCT，给身体和大脑快速供能'],['牛油果油','耐高温，适合给不接受动物油的家人过渡'],['橄榄油','凉拌、低温炒，别爆炒'],['MCT','快速供能，新手从少量开始加'],['亚麻籽油','只能凉拌，不耐高温'],['棕榈仁油','MCT的原料来源']],
   y:[],
   r:[['调和油','omega-6 超标'],['菜籽油','精炼过程已氧化'],['玉米油','精炼种子油'],['大豆油','omega-6 超标'],['花生油','建议避开'],['葵花籽油','建议避开']]},
  {sec:'肉蛋类',icon:'🥩',note:'鸡侠：多吃肉蛋菜。鸡蛋不用计算随便吃，营养大头在蛋黄；动物内脏维生素密度远超蔬果',
-  g:[['五花肉','肥瘦相间自带脂肪，生酮肉类标杆'],['肥牛','煎烤涮都行，选肥一点的部位'],['牛排','草饲更佳'],['带皮鸡腿','皮下脂肪别去掉，皮脆肉嫩'],['羊排','草饲羊肉炖烤都香'],['猪蹄','胶原蛋白满满'],['鸡蛋','鸡侠原话：不用计算，随便吃'],['鸭蛋','营养密度同样很高'],['猪肝','动物内脏的维生素密度远超蔬菜水果，每周1-2次'],['牛骨髓','地球上营养密度最高的食物之一'],['脑花','重庆吃法，生酮友好'],['猪蹄筋/牛筋','胶原蛋白']],
+  g:[['五花肉','肥瘦相间自带脂肪，肉类标杆'],['肥牛','煎烤涮都行，选肥一点的部位'],['牛排','草饲更佳'],['带皮鸡腿','皮下脂肪别去掉，皮脆肉嫩'],['羊排','草饲羊肉炖烤都香'],['猪蹄','胶原蛋白满满'],['鸡蛋','鸡侠原话：不用计算，随便吃'],['鸭蛋','营养密度同样很高'],['猪肝','动物内脏的维生素密度远超蔬菜水果，每周1-2次'],['牛骨髓','地球上营养密度最高的食物之一'],['脑花','重庆吃法，脂肪友好'],['猪蹄筋/牛筋','胶原蛋白']],
   y:[['香肠腊肉','看配料：含糖含淀粉的避开'],['培根','挑配料表只有肉和盐的']],
   r:[['火腿肠','大多含淀粉和糖，配料表必查']]},
  {sec:'海产类',icon:'🦞',note:'基本全是绿灯，放心吃',
@@ -1179,11 +1179,11 @@ const FOOD_MAP=[
   y:[],
   r:[]},
  {sec:'蔬菜类',icon:'🥬',note:'绿叶菜随便吃；淀粉类根茎（土豆/红薯/山药等）已列在主食类黄灯',
-  g:[['菠菜','补镁补钾，正好补上生酮容易缺的电解质'],['生菜','几乎零碳水，包肉吃绝配'],['油麦菜'],['空心菜'],['芹菜'],['韭菜'],['西兰花','十字花科明星'],['菜花'],['黄瓜'],['冬瓜'],['丝瓜'],['苦瓜'],['芦笋','生酮明星蔬菜'],['白萝卜'],['菌菇'],['海带'],['紫菜']],
+  g:[['菠菜','补镁补钾，正好补上容易缺的电解质'],['生菜','几乎零碳水，包肉吃绝配'],['油麦菜'],['空心菜'],['芹菜'],['韭菜'],['西兰花','十字花科明星'],['菜花'],['黄瓜'],['冬瓜'],['丝瓜'],['苦瓜'],['芦笋','明星蔬菜'],['白萝卜'],['菌菇'],['海带'],['紫菜']],
   y:[['番茄'],['洋葱'],['胡萝卜','碳水稍高'],['彩椒'],['豌豆','碳水偏高注意量'],['四季豆']],
   r:[]},
- {sec:'水果类',icon:'🫐',note:'严格生酮建议不碰水果；低碳水可选低糖莓果少量吃',
-  g:[['牛油果','优质植物脂肪+钾，生酮的招牌水果'],['橄榄'],['柠檬']],
+ {sec:'水果类',icon:'🫐',note:'水果糖分较高，建议适量；可选低糖莓果少量吃',
+  g:[['牛油果','优质植物脂肪+钾，招牌水果'],['橄榄'],['柠檬']],
   y:[['草莓'],['树莓'],['黑莓'],['蔓越莓'],['蓝莓'],['西梅'],['桑葚'],['杨桃'],['杨梅'],['木瓜'],['百香果']],
   r:[['苹果'],['梨'],['香蕉','高糖水果，明确不推荐'],['西瓜'],['哈密瓜'],['芒果'],['荔枝'],['龙眼'],['葡萄'],['提子'],['菠萝'],['榴莲'],['菠萝蜜'],['桃子'],['李子'],['杏'],['枇杷'],['奇异果'],['橙子'],['芦柑'],['柑橘'],['车厘子'],['樱桃'],['番石榴'],['石榴'],['山竹'],['火龙果'],['柿子'],['枣'],['甘蔗','纯糖，别碰']]},
  {sec:'奶制品类',icon:'🧀',note:'选高脂发酵款，警惕牛奶里的乳糖',
@@ -1194,7 +1194,7 @@ const FOOD_MAP=[
   g:[['巴西坚果','补硒神器'],['南瓜子'],['夏威夷果','碳水最低的坚果']],
   y:[['无糖椰子片'],['碧根果'],['杏仁'],['核桃'],['榛子'],['花生'],['松子'],['葵花籽'],['西瓜子'],['芝麻']],
   r:[['腰果','坚果里碳水偏高'],['开心果'],['栗子','淀粉含量高']]},
- {sec:'主食类',icon:'🍚',note:'这是生酮的主战场：米面糖全部红灯，想吃主食用绿灯替代',
+ {sec:'主食类',icon:'🍚',note:'米面糖全部红灯，想吃主食用绿灯替代',
   g:[['魔芋丝','近乎零碳水，切记不能冷冻'],['亚麻籽仁'],['奇亚籽'],['椰子面粉','低碳烘焙'],['杏仁粉','低碳烘焙'],['亚麻籽粉']],
   y:[['玉米'],['芋头'],['红薯'],['紫薯'],['山药'],['南瓜'],['土豆']],
   r:[['大米'],['糯米'],['小米'],['玉米面'],['面条'],['米粉'],['粉丝'],['包子'],['馒头'],['面包'],['饼干','配料表全是精制碳水']]},
@@ -1213,7 +1213,7 @@ const FERMENTS=[
  ['酸菜','炖白肉绝配，吃前冲一冲盐分','keto','冷藏约1个月'],
  ['无糖希腊酸奶','蛋白+益生菌双料，一定看清配料无添加糖','keto','冷藏，开封尽快吃'],
  ['开菲尔','菌种比酸奶更杂的发酵奶，选无糖版','keto','冷藏'],
- ['纳豆','发酵大豆，维生素K2 丰富，拌生酮餐正好','keto','冷冻保存，吃前解冻一盒'],
+ ['纳豆','发酵大豆，维生素K2 丰富，拌着吃正好','keto','冷冻保存，吃前解冻一盒'],
  ['味噌','发酵豆酱，味噌汤和调味提鲜','mid','含少量碳水，调味量无妨；开封后冷藏'],
  ['康普茶','发酵气泡茶饮，选无糖低糖款','mid','未开封常温避光，开封后冷藏'],
  ['苹果醋','凉拌调味，餐前兑水喝有助平稳血糖','keto','常温避光可放很久'],
@@ -1236,7 +1236,7 @@ const SEMIS=[
  ['魔芋丝','近乎零碳水，饱腹感强','keto','切记不能冷冻！冷藏，开封2-3天吃完'],
 ];
 function ketoRow(x){
-  const lv=x[2]==='keto'?'<span class="tag tag-keto">🥑 生酮友好</span>':x[2]==='mid'?'<span class="tag tag-warn">适量</span>':'<span class="tag tag-bad">慎选</span>';
+  const lv=x[2]==='keto'?'<span class="tag tag-keto">🥑 低碳友好</span>':x[2]==='mid'?'<span class="tag tag-warn">适量</span>':'<span class="tag tag-bad">慎选</span>';
   const storeTip=x[3]?' · <span style="color:#8a9a95">📦 '+esc(x[3])+'</span>':'';
   const nm=esc(x[0]).replace(/'/g,"\\'");
   return '<div class="season-food"><div style="font-size:22px">'+foodEmoji(x[0],guessCat(x[0]))+'</div>'+
@@ -1312,6 +1312,31 @@ async function cloudGet(id){
     return await r.json();
   }finally{clearTimeout(t);}
 }
+/* ---- 超短同步码：基于 GitHub 私有 Gist（自同步最安全，码长约 20 字符） ---- */
+async function gistShortPut(json){
+  const tok=gistTok(); if(!tok) return '';
+  const ctl=new AbortController(); const t=setTimeout(()=>ctl.abort(),8000);
+  try{
+    const r=await fetch('https://api.github.com/gists',{method:'POST',
+      headers:{'Authorization':'token '+tok,'Content-Type':'application/json','Accept':'application/vnd.github+json'},
+      body:JSON.stringify({public:false,files:{'fridge-sync.json':{content:json}}}),signal:ctl.signal});
+    if(r.ok){const d=await r.json(); if(d&&d.id) return d.id;}
+  }catch(e){}finally{clearTimeout(t);}
+  return '';
+}
+async function gistShortGet(id){
+  const tok=gistTok(); if(!tok) return '';
+  const ctl=new AbortController(); const t=setTimeout(()=>ctl.abort(),12000);
+  try{
+    const r=await fetch('https://api.github.com/gists/'+encodeURIComponent(id),{headers:{'Authorization':'token '+tok,'Accept':'application/vnd.github+json'},signal:ctl.signal});
+    if(!r.ok) throw new Error('gist '+r.status);
+    const d=await r.json();
+    const f=d&&d.files&&(d.files['fridge-sync.json']||(Object.values(d.files||{})[0]));
+    if(f&&f.content!=null) return f.content;
+  }catch(e){}finally{clearTimeout(t);}
+  return '';
+}
+
 /* ---- 导出：云端短码 + 离线压缩码 ---- */
 async function exportData(){
   const btn=document.getElementById('syncExportBtn');
@@ -1321,14 +1346,14 @@ async function exportData(){
   try{
     const json=JSON.stringify(state);
     const localCode='K1:'+await zipStr(json);
-    const sc=await cloudPut(json);
+    const sc=await gistShortPut(json) || await cloudPut(json);
     box.value=sc
-      ?'【☁️ 云端短码】复制这个：\n'+sc+'\n\n【🔒 离线压缩码】备用（没网也能用）：\n'+localCode
-      :'【🔒 离线压缩码】复制这个：\n'+localCode+'\n\n（云端短码暂不可用：网络无法访问中转服务，离线码一样能用）';
+      ?'【🔗 超短同步码】复制这一行发给另一台设备（约 20 字符）：\n'+sc+'\n\n【🔒 离线压缩码】备用（没网也能用，较长）：\n'+localCode
+      :'【🔒 离线压缩码】复制这个：\n'+localCode+'\n\n（超短码暂不可用：需在「自动云同步」里开启后才有；离线码一样能用）';
     box.select();
     const copy=sc||localCode;
     if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(copy).then(()=>toast(sc?'✅ 云端短码已生成并复制':'✅ 离线短码已生成并复制')).catch(()=>toast('✅ 同步码已生成，请手动复制'));
+      navigator.clipboard.writeText(copy).then(()=>toast(sc?'✅ 超短同步码已生成并复制':'✅ 离线短码已生成并复制')).catch(()=>toast('✅ 同步码已生成，请手动复制'));
     }else{toast('✅ 同步码已生成，请手动复制');}
   }catch(e){toast('导出失败：'+(e&&e.message||e));}
   finally{btn.disabled=false;btn.textContent='生成同步短码';}
@@ -1341,7 +1366,7 @@ async function importData(){
   let data=null;
   try{
     if(code.startsWith('K1:'))data=JSON.parse(await unzipStr(code.slice(3)));
-    else if(isCloud)data=await cloudGet(code);
+    else if(isCloud){const raw=await gistShortGet(code)||await cloudGet(code);data=JSON.parse(raw);}
     else data=JSON.parse(decodeURIComponent(atob(code)));
     if(!data.foods||!Array.isArray(data.foods))throw new Error('格式');
   }catch(e){
@@ -1397,7 +1422,7 @@ function renderSeasonal(){
     if(!items.length)return;
     html+='<div class="section-title"><span>'+CAT_EMOJI[c]+' 当季'+c+'</span></div>';
     html+=items.map(x=>{
-      const lv=x[2]==='keto'?'<span class="tag tag-keto">🥑 生酮友好</span>':x[2]==='mid'?'<span class="tag tag-warn">适量</span>':'<span class="tag tag-bad">高碳慎吃</span>';
+      const lv=x[2]==='keto'?'<span class="tag tag-keto">🥑 低碳友好</span>':x[2]==='mid'?'<span class="tag tag-warn">适量</span>':'<span class="tag tag-bad">高碳慎吃</span>';
       return '<div class="season-food"><div style="font-size:22px">'+foodEmoji(x[0],c)+'</div>'+
         '<div class="sf-info"><div class="sf-name">'+esc(x[0])+'</div><div class="sf-note">'+lv+(x[3]?' · '+esc(x[3]):'')+'</div></div>'+
         '<button class="btn btn-ghost btn-sm" onclick="addShopFromSeason(\''+esc(x[0]).replace(/'/g,"\\'")+'\',\''+c+'\')">＋清单</button></div>';
