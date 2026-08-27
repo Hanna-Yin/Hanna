@@ -1,5 +1,5 @@
 /* 学习工作台 Service Worker：离线缓存 */
-const CACHE = 'study-desk-v2';
+const CACHE = 'study-desk-v3';
 const ASSETS = [
   './',
   './index.html',
