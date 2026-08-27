@@ -790,6 +790,70 @@ function checkTasks(res){
   if(doneNew.length){save();toast('🎉 恭喜完成实践任务：第'+doneNew.join('、')+'题！')}
   return doneNew;
 }
+/* ---- SQL 知识库（问答助手用）：白话讲解 + 示例 + 常见坑 ---- */
+const SQLKB=[
+{id:'select',k:['select','查询','查一下','看看','from','基础'],t:'SELECT · 查数据',d:'SQL 的骨架：<b>SELECT 列 FROM 表 WHERE 条件</b>。SELECT 决定「看哪几列」，FROM 决定「从哪张表」，WHERE 决定「只要哪几行」。SELECT * 表示所有列都要。',ex:"SELECT * FROM bills;\nSELECT item, amount FROM bills WHERE amount > 50;",pit:'列名之间用<b>英文逗号</b>分隔；最后一条语句结尾的分号可写可不写，但写上更稳。'},
+{id:'where',k:['where','筛选','过滤','条件','大于','小于','等于'],t:'WHERE · 筛选条件',d:'WHERE 后面写一个「是/否」条件，表里每一行都会被检查一遍，只有条件成立的行才留下来。比较符：=（相等）、&gt; &lt; &gt;= &lt;=、!= 或 &lt;&gt;（不相等）。',ex:"SELECT * FROM bills WHERE amount > 50;\nSELECT * FROM bills WHERE category = '餐饮';",pit:'① 判断相等是<b>一个 =</b>，不是 ==；② 文字要包<b>单引号</b>：\'餐饮\'，数字不用引号。'},
+{id:'andor',k:['and','or','in','并且','或者','多个条件','not'],t:'AND / OR / IN · 组合条件',d:'多个条件组合：AND 是「都要满足」，OR 是「满足一个就行」。IN 是「在这几个值里任选其一」的简写，比写一串 OR 清爽。NOT 表示取反。',ex:"SELECT * FROM bills WHERE category='餐饮' AND amount>20;\nSELECT * FROM bills WHERE category IN ('餐饮','交通');",pit:'AND 优先级高于 OR：a OR b AND c 会被当成 a OR (b AND c)。拿不准就<b>加括号</b>。'},
+{id:'like',k:['like','模糊','包含','搜索','通配符','%'],t:'LIKE · 模糊匹配',d:'WHERE 列 LIKE \'模式\' 做文字模糊匹配：% 代表<b>任意一串字符</b>（可空），_ 代表<b>恰好一个</b>字符。\'%外卖%\' = 只要中间出现「外卖」两个字就算命中。',ex:"SELECT * FROM bills WHERE item LIKE '%外卖%';\nSELECT * FROM bills WHERE item LIKE '苹果_';",pit:'匹配<b>不区分大小写与否</b>因数据库而异；中文没有大小写问题。模式必须用单引号包住。'},
+{id:'between',k:['between','之间','范围'],t:'BETWEEN · 范围筛选',d:'WHERE 列 BETWEEN a AND b = 「大于等于 a 且小于等于 b」，含两端。等价于 列&gt;=a AND 列&lt;=b，但更好写好读。',ex:"SELECT * FROM bills WHERE amount BETWEEN 10 AND 30;",pit:'是<b>闭区间</b>：10 和 30 本身也算在内。日期也能用：BETWEEN \'2026-08-01\' AND \'2026-08-31\'。'},
+{id:'null',k:['null','空值','为空'],t:'NULL · 空值判断',d:'NULL 表示「这一格没有值」。判断空值不能写 = NULL，必须写 <b>IS NULL</b> / <b>IS NOT NULL</b>——因为 NULL 和任何东西比较的结果都是「未知」，不是相等。',ex:"SELECT * FROM fruits WHERE stock IS NULL;\nSELECT * FROM fruits WHERE note IS NOT NULL;",pit:'任何值和 NULL 做 =、&gt; 比较都查不出来它，这是新手最容易踩的坑。'},
+{id:'orderby',k:['order by','排序','从高到低','从低到高','desc','asc'],t:'ORDER BY · 排序',d:'结果按某列排好再给你。默认 ASC（从小到大），加 DESC 变从大到小。可以排多列：先按第一列，相同的再按第二列。',ex:"SELECT * FROM bills ORDER BY amount DESC;\nSELECT * FROM fruits ORDER BY category, sold DESC;",pit:'ORDER BY 写在 WHERE <b>后面</b>；排文字也行（按拼音/字典序）。'},
+{id:'limit',k:['limit','前几','只要','限量','几名'],t:'LIMIT · 只取前 N 条',d:'配合 ORDER BY 就是「排行榜」：先排序，再砍掉后面只留前 N 条。「花钱最多的 3 笔」= ORDER BY 金额 DESC LIMIT 3。',ex:"SELECT * FROM bills ORDER BY amount DESC LIMIT 3;",pit:'LIMIT 必须跟在 ORDER BY 后面才有「Top N」效果；单独用 LIMIT 只是「随便取 N 条」。'},
+{id:'agg',k:['count','sum','avg','max','min','聚合','统计','总共','平均','求和','计数'],t:'COUNT / SUM / AVG / MAX / MIN · 聚合函数',d:'把很多行<b>压缩成一个数</b>：COUNT 数行数、SUM 求和、AVG 平均、MAX/MIN 最值。它们总是把整张表（或每个分组）压成一行。',ex:"SELECT COUNT(*) FROM bills;\nSELECT SUM(amount), AVG(amount), MAX(amount), MIN(amount) FROM bills;",pit:'COUNT(列) 不数 NULL 的格子，COUNT(*) 数所有行；想同时看到普通列必须配 GROUP BY。'},
+{id:'groupby',k:['group by','分组','每类','各类','分别'],t:'GROUP BY · 分组统计',d:'「每一类各多少」类问题的答案：先把行按某列的值分堆，再对每堆各算一次聚合。GROUP BY category 配 SUM(amount) = 「每个类别各花多少」。',ex:"SELECT category, SUM(amount) FROM bills GROUP BY category;",pit:'SELECT 里出现的普通列<b>必须</b>都在 GROUP BY 里，否则数据库不知道该显示哪一行的值。'},
+{id:'having',k:['having','分组后','对分组','组筛选'],t:'HAVING · 筛选分组',d:'WHERE 筛<b>原始行</b>（分组前），HAVING 筛<b>分组结果</b>（分组后）。「平均单笔超过 25 元的类别」= 先 GROUP BY，再 HAVING AVG(amount)&gt;25。因为算完平均才知道谁超了，WHERE 做不到。',ex:"SELECT category, AVG(amount) FROM bills GROUP BY category HAVING AVG(amount) > 25;",pit:'口诀：<b>WHERE 在前 HAVING 在后</b>；HAVING 里可以用聚合函数，WHERE 里不行。'},
+{id:'join',k:['join','连接','多表','两表','关联','left','连起来','拼接'],t:'JOIN · 多表连接',d:'两张表靠一列对上号，拼成一张大表再查。FROM a JOIN b ON a.某列 = b.某列。LEFT JOIN 会保住左表全部行（右表没有就填 NULL），普通 JOIN 只留两边都对得上的。',ex:"SELECT b.item, f.name FROM bills b JOIN fruits f ON b.item = f.name;",pit:'用了别名（bills b）就要全程用别名；两张表有同名列时必须写 表名.列名 说清是哪张表的。'},
+{id:'subquery',k:['子查询','嵌套','里面再查','in select'],t:'子查询 · 查询里套查询',d:'一个 SELECT 的结果当作另一个查询的「数据」或「条件」用。常见两种：① WHERE 列 IN (SELECT …) —— 「在另一查出来的范围里」；② FROM (SELECT …) —— 把查询结果当临时表。',ex:"SELECT * FROM bills WHERE amount > (SELECT AVG(amount) FROM bills);",pit:'里外两层查询是<b>先算里层再算外层</b>；IN 后面的子查询必须只返回一列。'},
+{id:'insert',k:['insert','插入','添加数据','新增','录入'],t:'INSERT · 插入数据',d:'往表里加行：INSERT INTO 表(列1,列2,…) VALUES(值1,值2,…)。列清单和值<b>一一对应</b>，顺序和个数都要对上。',ex:"INSERT INTO bills(date, item, category, amount) VALUES('2026-08-27', '咖啡', '餐饮', 15);",pit:'数一数括号两边的个数是否一致；文字值要单引号，日期也要。'},
+{id:'update',k:['update','修改','更新','改成'],t:'UPDATE · 修改数据',d:'UPDATE 表 SET 列=新值 WHERE 条件。找到符合条件的行，把指定列改掉。',ex:"UPDATE fruits SET stock = stock - 5 WHERE name = '苹果';",pit:'⚠️ <b>忘写 WHERE 会把整张表全改掉！</b>好习惯：先写 WHERE，执行前用同样条件的 SELECT 确认一遍。'},
+{id:'delete',k:['delete','删除','删掉'],t:'DELETE · 删除数据',d:'DELETE FROM 表 WHERE 条件。删掉符合条件的行（整行消失，不是清空某一格）。',ex:"DELETE FROM bills WHERE date < '2026-01-01';",pit:'⚠️ 同 UPDATE：<b>没有 WHERE = 删光全表</b>。删之前先用 SELECT 验证条件。'},
+{id:'create',k:['create','建表','新建表','表结构'],t:'CREATE TABLE · 建表',d:'CREATE TABLE 表名(列名 类型, …) 定义一张新表：每列叫什么、存什么类型（TEXT 文字 / REAL 数字 / INTEGER 整数）。',ex:"CREATE TABLE notes(id INTEGER, content TEXT, created TEXT);",pit:'表名别用关键字（如 order）；建完表要 INSERT 数据才有东西可查。'},
+{id:'case',k:['case','when','分支','条件判断','打标签'],t:'CASE WHEN · 条件分支',d:'查询里的 if-else：CASE WHEN 条件 THEN 值 WHEN … ELSE 值 END，给每行按条件「打标签」，经常用来分档（如把金额分成大额/小额）。',ex:"SELECT item, CASE WHEN amount>=100 THEN '大额' WHEN amount>=30 THEN '中额' ELSE '小额' END AS level FROM bills;",pit:'别忘了结尾的 <b>END</b>；条件和 THEN 配对，从上往下第一个命中的生效。'},
+{id:'strfunc',k:['concat','substring','upper','lower','replace','trim','字符串函数','拼接','截取','大小写'],t:'字符串函数',d:'CONCAT 拼接、SUBSTRING 截取、UPPER/LOWER 转大小写、REPLACE 替换、TRIM 去首尾空格。对文字列做加工。',ex:"SELECT CONCAT(category, '-', item) FROM bills;\nSELECT UPPER(name) FROM fruits;",pit:'CONCAT 遇到 NULL 整个结果变 NULL；截取位置从 1 开始数，不是 0。'},
+{id:'round',k:['round','四舍五入','保留小数','取整'],t:'ROUND · 保留小数',d:'ROUND(数字, 位数)：四舍五入保留几位小数。ROUND(SUM(minutes)/60, 1) = 总分钟换成小时、留 1 位小数。',ex:"SELECT ROUND(SUM(minutes)/60, 1) FROM study_log;",pit:'注意整数除法陷阱：某些数据库里 90/60 = 1（截断）；本引擎按浮点算没这个问题，真实 MySQL 里要小心。'},
+{id:'distinct',k:['distinct','去重','重复','不重复'],t:'DISTINCT · 去重',d:'SELECT DISTINCT 列 FROM 表：这列的值重复出现时只保留一个。常用来「看看这列到底有哪些不同的值」。',ex:"SELECT DISTINCT category FROM bills;",pit:'DISTINCT 对整行组合生效（多个列时，列组合一样才算重复），不是只对第一列。'},
+{id:'as',k:['as','别名','重命名','起名'],t:'AS · 起别名',d:'给列或表起个短名字，结果表头更好看、语句更好写。SELECT SUM(amount) AS 总支出；FROM bills b。AS 可省略。',ex:"SELECT name, sell_price*sold AS revenue FROM fruits;",pit:'别名只在本次查询内有效，不能在 WHERE 里用 SELECT 里刚起的别名（ORDER BY 里可以）。'},
+{id:'window',k:['窗口函数','over','排名','rank','row_number'],t:'窗口函数 · 进阶排名',d:'ROW_NUMBER()/RANK() OVER (PARTITION BY … ORDER BY …)：不像 GROUP BY 那样压成一行，而是<b>每行都保留</b>、旁边多出一列排名。做「每组前 N 名」超强。属于进阶内容，本迷你引擎暂不支持，到 SQLBolt 或真实数据库里练。',ex:"SELECT name, category, RANK() OVER (PARTITION BY category ORDER BY sold DESC) AS rk FROM fruits;",pit:'学完 GROUP BY 和子查询再碰它；面试常考「组内 Top N」，标准答案就是窗口函数。'}
+];
+/* 概念名 → KB id（供任务讲解、点评跳转） */
+const CONCEPT2KB={'多表连接 JOIN':'join','分组 GROUP BY':'groupby','分组后筛选 HAVING':'having','排序 ORDER BY':'orderby','限量 LIMIT':'limit','模糊匹配 LIKE':'like','范围筛选 BETWEEN':'between','去重 DISTINCT':'distinct','字符串函数':'strfunc','取整 ROUND':'round','计数 COUNT':'agg','求和 SUM':'agg','平均 AVG':'agg','最值 MAX/MIN':'agg','插入 INSERT':'insert','更新 UPDATE':'update','删除 DELETE':'delete','建表 CREATE':'create','基础查询 SELECT/WHERE':'where'};
+function kbById(id){return SQLKB.find(e=>e.id===id)}
+function kbMatch(q){
+  const s=(q||'').toLowerCase();
+  if(!s.trim())return [];
+  return SQLKB.map(e=>{let sc=0;e.k.forEach(k=>{if(s.indexOf(k)>=0)sc++});if((q||'').indexOf(e.t.split(' ')[0])>=0)sc+=2;return{e,sc}})
+    .filter(x=>x.sc>0).sort((a,b)=>b.sc-a.sc).slice(0,3).map(x=>x.e);
+}
+function kbCard(e){
+  return '<div class="card" style="border-left:4px solid var(--p)"><h3>'+e.t+'</h3>'
+    +'<div style="line-height:1.8;margin-bottom:8px">'+e.d+'</div>'
+    +'<div class="small" style="margin-bottom:4px"><b>✏️ 示例</b>（可以直接粘到上方实践场运行）：</div>'
+    +'<pre style="margin:0 0 8px">'+esc(e.ex)+'</pre>'
+    +'<div style="padding:8px 10px;border-radius:8px;font-size:12px;line-height:1.7;background:var(--warnl,#fffbeb)">⚠️ <b>常见坑</b>：'+e.pit+'</div></div>';
+}
+function renderQa(){
+  let h='<div class="tip">💬 <b>SQL 问答助手</b>：不理解某个语句的用法？输入关键词或直接问，比如「group by 是干嘛的」「having 和 where 区别」「like 怎么用」。每个知识点都配了白话讲解、可直接运行的示例和常见坑。</div>';
+  h+='<div class="card"><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="qaInput" placeholder="问问看：如「怎么查每类总共花多少」…" style="flex:1;min-width:200px" value="'+esc(App.qaQ||'')+'"><button class="btn" onclick="qaAsk()">🔍 问一问</button></div>';
+  h+='<div class="small muted" style="margin-top:8px">热门主题（点击直达）：</div><div class="chips" style="margin-top:6px">'
+    +['groupby','where','having','join','like','agg','orderby','subquery','case','window'].map(id=>{const e=kbById(id);return '<span class="pill" onclick="App.qaSel=\''+id+'\';render()">'+(e?e.t.split(' ·')[0]:'')+'</span>'}).join('')+'</div></div>';
+  const hits=kbMatch(App.qaQ||'');
+  if(App.qaSel){const e=kbById(App.qaSel);h+=kbCard(e)}
+  else if(App.qaQ&&hits.length){
+    h+='<div class="small muted" style="margin:4px 0">关于「'+esc(App.qaQ)+'」找到 '+hits.length+' 个相关知识点：</div>'+hits.map(kbCard).join('');
+  }else if(App.qaQ){
+    h+='<div class="card"><div style="line-height:1.8">🤔 没直接匹配到。换个更简单的关键词试试，比如只写 <b>join</b>、<b>分组</b>、<b>模糊</b>。或者翻下面的全部知识点：</div></div>';
+    h+='<div class="card"><h3>📚 全部知识点</h3><div class="chips">'+SQLKB.map(e=>'<span class="pill" onclick="App.qaSel=\''+e.id+'\';render()">'+e.t.split(' ·')[0]+'</span>').join('')+'</div></div>';
+  }else{
+    h+='<div class="card"><h3>📚 全部知识点 <span class="tag">'+SQLKB.length+' 个</span></h3><div class="chips">'+SQLKB.map(e=>'<span class="pill" onclick="App.qaSel=\''+e.id+'\';render()">'+e.t.split(' ·')[0]+'</span>').join('')+'</div><div class="small muted" style="margin-top:6px">按学习顺序覆盖 8 周路线图全部主题，点击任意一个看讲解。</div></div>';
+  }
+  return h;
+}
+function qaAsk(){
+  const el=document.getElementById('qaInput');
+  App.qaQ=el?el.value:App.qaQ;App.qaSel=null;render();
+  const el2=document.getElementById('qaInput');if(el2&&el2.focus)el2.focus();
+}
 /* ---- SQL 老师点评：错误诊断 + 知识点讲解 + 任务差距提示 ---- */
 function sqlConcept(sql){
   const s=sql.toUpperCase();const c=[];
@@ -834,7 +898,7 @@ function sqlErrCoach(sql,msg){
 function sqlOkCoach(sql,res){
   const cs=sqlConcept(sql);
   let h='<div style="font-weight:700;margin-bottom:6px">🧑‍🏫 本条 SQL 点评</div>';
-  h+='<div style="margin-bottom:6px">✅ 语法正确，成功执行。用到的知识点：<b>'+cs.join('、')+'</b>。</div>';
+  h+='<div style="margin-bottom:6px">✅ 语法正确，成功执行。用到的知识点：'+cs.map(c=>CONCEPT2KB[c]?'<a href="javascript:void(0)" style="color:var(--p)" onclick="App.sqlTab=\'qa\';App.qaSel=\''+CONCEPT2KB[c]+'\';render()">'+c+'</a>':c).join('、')+'。<span class="muted" style="font-size:11px">（点击看讲解）</span></div>';
   const s=sql.toUpperCase();
   const warns=[];
   if(s.indexOf('SELECT')>=0&&/\*/.test(sql))warns.push('用了 SELECT *：练习时没问题，实际工作中建议写清楚列名，查询更快也更易读');
@@ -1511,8 +1575,10 @@ App.sqlAns=-1;
 function renderSql(){
   dbEnsure();
   const t=todayStr();
-  let h='<div class="chips" style="margin-bottom:12px"><span class="pill '+(App.sqlTab!=='lab'?'on':'')+'" onclick="App.sqlTab=\'lesson\';render()">📖 今日课程</span><span class="pill '+(App.sqlTab==='lab'?'on':'')+'" onclick="App.sqlTab=\'lab\';render()">🧪 实践场（在线写SQL）</span></div>';
-  if(App.sqlTab==='lab'){
+  let h='<div class="chips" style="margin-bottom:12px"><span class="pill '+(App.sqlTab!=='lab'&&App.sqlTab!=='qa'?'on':'')+'" onclick="App.sqlTab=\'lesson\';render()">📖 今日课程</span><span class="pill '+(App.sqlTab==='lab'?'on':'')+'" onclick="App.sqlTab=\'lab\';render()">🧪 实践场（在线写SQL）</span><span class="pill '+(App.sqlTab==='qa'?'on':'')+'" onclick="App.sqlTab=\'qa\';App.qaSel=null;App.qaQ=\'\';render()">💬 SQL 问答</span></div>';
+  if(App.sqlTab==='qa'){
+    h+=renderQa();
+  }else if(App.sqlTab==='lab'){
     h+='<div class="tip">🧪 <b>SQL 实践场</b>：这里有一个离线就能跑的迷你数据库，装的是<b>你自己的生活数据</b>（个人账单、学习打卡、水果店经营）。写 SQL → 点运行 → 立刻看到结果。每次运行后 <b>🧑‍🏫 老师点评</b> 会告诉你：报错的原因、用到知识点、和任务答案差在哪。</div>';
     // 数据表
     h+='<div class="card"><h3>🗃 数据表 <span class="tag">点表名查看数据</span></h3><div class="chips">'+Object.keys(BASE_DB).map(n=>'<span class="pill '+(App.labShow===n?'on':'')+'" onclick="App.labShow=App.labShow===\''+n+'\'?null:\''+n+'\';render()">'+n+'</span>').join('')+'</div>';
@@ -1546,7 +1612,12 @@ function renderSql(){
     h+='<div class="card"><h3>🎯 实践任务 <span class="tag">'+doneN+' / '+SQLTASKS.length+' 已完成</span></h3><div class="small muted" style="margin-bottom:6px">把任务要求的 SQL 写进上面的编辑器并运行，<b>结果正确自动过关</b>。卡住了再看参考答案（看完建议隔天重做一遍）。</div>';
     h+=SQLTASKS.map((ts,i)=>{
       const ok=S.sqlTasks[i];
-      return '<div class="task" style="align-items:center"><div class="cb '+(ok?'on':'')+'" style="font-size:12px">'+(ok?'✓':'')+'</div><div class="tx"><b>'+(ok?'':'任务'+(i+1)+'：')+ts[0]+'</b>'+(App.sqlAns===i?'<div style="margin-top:5px"><pre style="margin:0">'+esc(ts[1])+'</pre></div>':'')+'</div><button class="btn sm ghost" onclick="App.sqlAns=App.sqlAns==='+i+'?-1:'+i+';render()">'+(App.sqlAns===i?'收起':'参考答案')+'</button></div>';
+      let expl='';
+      if(App.sqlAns===i){
+        const kbs=sqlConcept(ts[1]).map(c=>CONCEPT2KB[c]).filter((v,j,a)=>v&&a.indexOf(v)===j).map(kbById).filter(Boolean);
+        if(kbs.length)expl='<div style="margin-top:8px;padding:8px 10px;background:var(--pl,#eef2ff);border-radius:8px;font-size:12px;line-height:1.7">'+kbs.map(e=>'💬 <b><a href="javascript:void(0)" style="color:var(--p)" onclick="App.sqlTab=\'qa\';App.qaSel=\''+e.id+'\';render()">'+e.t+'</a></b>：'+e.d).join('<br><br>')+'<br><span class="muted">点标题可看完整讲解（示例+常见坑）。</span></div>';
+      }
+      return '<div class="task" style="align-items:center"><div class="cb '+(ok?'on':'')+'" style="font-size:12px">'+(ok?'✓':'')+'</div><div class="tx"><b>'+(ok?'':'任务'+(i+1)+'：')+ts[0]+'</b>'+(App.sqlAns===i?'<div style="margin-top:5px"><pre style="margin:0">'+esc(ts[1])+'</pre>'+expl+'</div>':'')+'</div><button class="btn sm ghost" onclick="App.sqlAns=App.sqlAns==='+i+'?-1:'+i+';render()">'+(App.sqlAns===i?'收起':'参考答案')+'</button></div>';
     }).join('');
     h+='</div>';
     h+='<div class="note">💡 <b>怎么用好实践场</b>：① 新课当天，点课程里的「▶ 在实践场运行本课示例」，改改条件看结果变化；② 周五上机日，来这里做实践任务；③ 学完增删改后，试着往 bills 里 INSERT 一笔今天的真实消费——让 SQL 真正进入你的生活。</div>';
