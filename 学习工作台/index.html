@@ -1421,6 +1421,7 @@ function renderHistory(mod){
   if(!App.histYM || !/^\d{4}-\d{2}$/.test(App.histYM)) App.histYM = dates.length? dates[dates.length-1].slice(0,7) : todayStr().slice(0,7);
   const byDate={};
   list.forEach(e=>{(byDate[e.date]=byDate[e.date]||[]).push(e)});
+  const months=[...new Set(list.map(e=>e.date.slice(0,7)))].filter(Boolean).sort();
   const ym=App.histYM, p=ym.split('-'); const yy=+p[0], mm=+p[1];
   const firstDow=(new Date(yy,mm-1,1).getDay()+6)%7;
   const days=new Date(yy,mm,0).getDate();
@@ -1434,6 +1435,7 @@ function renderHistory(mod){
   }
   let h='<div class="card"><h3>📅 学习日历 <span class="tag">'+list.length+' 天有记录</span></h3>';
   h+='<div class="cal-nav"><button class="cal-btn" onclick="App.histYM=\''+prevYM+'\';App.histPick=\'\';render()">‹</button><span class="cal-ym">'+yy+'年'+mm+'月</span><button class="cal-btn" onclick="App.histYM=\''+nextYM+'\';App.histPick=\'\';render()">›</button></div>';
+  if(months.length>1)h+='<div class="chips" style="margin:8px 0 2px"><span class="small muted">其它有记录的月份：</span>'+months.map(m=>'<span class="pill '+(m===ym?'on':'')+'" onclick="App.histYM=\''+m+'\';App.histPick=\'\';render()">'+m.slice(5)+'月</span>').join('')+'</div>';
   h+='<div class="cal-grid"><div class="cal-dow">一</div><div class="cal-dow">二</div><div class="cal-dow">三</div><div class="cal-dow">四</div><div class="cal-dow">五</div><div class="cal-dow">六</div><div class="cal-dow">日</div>'+cells+'</div>';
   if(App.histPick){
     const arr=byDate[App.histPick];
@@ -1624,11 +1626,19 @@ function doMapCmp(title){
 }
 
 /* ---- 英语 ---- */
+function tickTask(key,i,total){
+  S.checks[key+'#'+i]=!S.checks[key+'#'+i];
+  if(total>0){
+    let all=true;for(let j=0;j<total;j++){if(!S.checks[key+'#'+j]){all=false;break}}
+    if(all){if(!S.done[key]){S.done[key]=true;toast('🎉 今天这一模块学完啦，已记入学习历史')}}
+  }
+  save();render();
+}
 function taskList(mod,dateStr,items){
   const key=mod+'|'+dateStr;
   return items.map((it,i)=>{
     const ck=!!S.checks[key+'#'+i];
-    return '<div class="task '+(ck?'done':'')+'"><div class="cb '+(ck?'on':'')+'" onclick="S.checks[\''+key+'#'+i+'\']='+(ck?'false':'true')+';save();render()">'+(ck?'✓':'')+'</div><div class="tx"><b>'+it.t+'</b><div class="d">'+(it.d||'')+'</div>'+(it.quiz?quizHtml(mod,dateStr):'')+'</div></div>';
+    return '<div class="task '+(ck?'done':'')+'"><div class="cb '+(ck?'on':'')+'" data-k="'+key+'" data-i="'+i+'" data-t="'+items.length+'" onclick="tickTask(this.dataset.k,+this.dataset.i,+this.dataset.t)">'+(ck?'✓':'')+'</div><div class="tx"><b>'+it.t+'</b><div class="d">'+(it.d||'')+'</div>'+(it.quiz?quizHtml(mod,dateStr):'')+'</div></div>';
   }).join('');
 }
 let quizState={};
