@@ -783,7 +783,7 @@ function checkTasks(res){
     if(S.sqlTasks&&S.sqlTasks[i])return;
     try{
       const ref=runSQL(ts[1]).last;
-      if(ref&&sameRows(ref,res)){if(!S.sqlTasks)S.sqlTasks={};S.sqlTasks[i]=true;doneNew.push(i+1)}
+      if(ref&&sameRows(ref,res)){if(!S.sqlTasks)S.sqlTasks={};S.sqlTasks[i]=true;if(!S.sqlLog)S.sqlLog=[];S.sqlLog.push({date:todayStr(),sql:'-- 实践题'+(i+1)+' 通关 --',ok:true});doneNew.push(i+1)}
     }catch(e){}
   });
   DB=saved;
@@ -1057,6 +1057,7 @@ function load(){
   if(!S){S={startDate:todayStr(),done:{},checks:{},notes:{},outputs:{},custom:[],shelf:[],quotes:[],rn:[],lastVisit:todayStr(),initTip:true}}
   if(!S.mymaps)S.mymaps={};
   if(!S.sqlTasks)S.sqlTasks={};
+  if(!S.sqlLog)S.sqlLog=[];
   if(!S.diary)S.diary=[];
   if(!S.wish)S.wish=[];
 }
@@ -1226,8 +1227,8 @@ function gradeOutput(o){
 }
 
 /* ============ 视图 ============ */
-const App={view:'today'};
-const NAVS=[['today','🏠','今日'],['board','📊','看板'],['books','📚','读书'],['en','🔤','英语'],['sql','🗄','SQL'],['custom','🧩','自定义'],['review','✍','复盘']];
+const App={view:'today',histMod:'all'};
+const NAVS=[['today','🏠','今日'],['board','📊','看板'],['books','📚','读书'],['en','🔤','英语'],['sql','🗄','SQL'],['custom','🧩','自定义'],['review','✍','复盘'],['history','📜','历史']];
 App.go=function(v){App.view=v;render()};
 function navRender(){
   const dot=!gateDate()?'':'<span class="dot"></span>';
@@ -1367,6 +1368,55 @@ function renderBoard(){
 
 /* ---- 读书 ---- */
 let bookCat='阅读与学习';
+/* ---- 学习历史：各模块回顾（按日期倒序汇总） ---- */
+function modName(m){return {read:'读书',en:'英语',sql:'SQL',custom:'自定义',review:'复盘'}[m]||m}
+function histCollect(mod){
+  const all=(mod==='all');
+  const list=[];
+  if(all||mod==='read'){
+    (S.quotes||[]).forEach(q=>{if(q.date)list.push({date:q.date,mod:'read',icon:'📖',title:'摘抄《'+(q.book||'')+'》',body:'「'+(q.text||'')+'」'+(q.note?'　💭 '+(q.note):'')+(q.page?'　p.'+(q.page):'')})});
+    (S.rn||[]).forEach(n=>{if(n.date)list.push({date:n.date,mod:'read',icon:'📝',title:'笔记《'+(n.book||'')+'》',body:(n.text||'')})});
+    (S.shelf||[]).forEach(b=>{if(b.status===2)list.push({date:b.dateDone||'',mod:'read',icon:'✅',title:'读完《'+(b.title||'')+'》',body:'进度 '+(b.progress||100)+'%'})});
+    (S.mymaps?Object.keys(S.mymaps):[]).forEach(t=>list.push({date:'',mod:'read',icon:'🧠',title:'自画思维导图《'+t+'》',body:(S.mymaps[t]||[]).length+' 个节点'}));
+  }
+  if(all||mod==='en'){
+    Object.keys(S.done).filter(k=>k.indexOf('en|')===0).forEach(k=>{
+      const d=k.split('|')[1];const en=enDay(d);if(!en)return;
+      const detail=en.items?en.items.map(it=>'<div style="margin:5px 0"><b>'+esc(it.t)+'</b>'+(it.d?'<div class="muted small" style="margin-top:2px;line-height:1.55">'+it.d+'</div>':'')+'</div>').join(''):'';
+      list.push({date:d,mod:'en',icon:'🔤',title:'英语 · 第'+(dayNumOf(d))+'天　'+(en.title||''),body:(en.tag||''),detail:detail});
+    });
+  }
+  if(all||mod==='sql'){
+    if(S.sqlTasks)Object.keys(S.sqlTasks).filter(k=>S.sqlTasks[k]).forEach(k=>{const i=+k;list.push({date:'',mod:'sql',icon:'🧪',title:'SQL 实践题'+(i+1)+' 通关',body:SQLTASKS[i]?SQLTASKS[i][0]:''})});
+    (S.sqlLog||[]).forEach(r=>{if(r.date)list.push({date:r.date,mod:'sql',icon:'⚡',title:'运行 SQL '+(r.ok?'✓ 通过':'✗ 未通过'),body:(r.sql||'').replace(/\n/g,' ').slice(0,90)})});
+  }
+  if(all||mod==='custom'){
+    S.custom.forEach(m=>{Object.keys(S.done).filter(k=>k.indexOf('c'+m.id+'|')===0).forEach(k=>{const d=k.split('|')[1];list.push({date:d,mod:'custom',icon:(m.emoji||'⭐'),title:(m.name||'自定义')+' 打卡完成',body:''})})});
+  }
+  if(all||mod==='review'){
+    Object.keys(S.outputs||{}).forEach(d=>{const o=S.outputs[d];list.push({date:d,mod:'review',icon:'✍',title:'复盘提交 · '+(o.fb?o.fb.grade+' '+o.fb.score+'分':'已交'),body:'收获：'+(o.gain||'')})});
+  }
+  return list.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+}
+function renderHistory(mod){
+  const list=histCollect(mod);
+  if(!list.length)return '<div class="card"><h3>📜 学习历史</h3><div class="empty">还没有可回顾的记录。坚持打卡几天后，这里会按时间顺序记下你学过的每一点 🌱</div></div>';
+  const groups={};const order=[];
+  list.forEach(e=>{const g=e.date||'未标注日期';if(!groups[g]){groups[g]=[];order.push(g)}});
+  list.forEach(e=>groups[e.date||'未标注日期'].push(e));
+  const keys=order.filter(k=>k!=='未标注日期').sort().reverse();if(groups['未标注日期'])keys.push('未标注日期');
+  let h='<div class="card"><h3>📜 学习历史 <span class="tag">'+list.length+' 条</span></h3>';
+  h+='<div class="small muted" style="margin-bottom:6px">按时间倒序，记录你走过的每一步。想看全部就点底部导航的「📜 历史」。</div>';
+  h+=keys.map(d=>'<div style="margin-top:12px"><div class="small" style="font-weight:700;color:var(--tx2);margin-bottom:5px">📅 '+(d==='未标注日期'?d:cnDate(d))+'</div>'+groups[d].map(e=>'<div class="hist"><div class="h"><span>'+e.icon+' '+modName(e.mod)+'</span></div><div style="line-height:1.6"><b>'+esc(e.title)+'</b>'+(e.body?'<br><span class="muted">'+esc(e.body)+'</span>':'')+(e.detail?'<div style="margin-top:6px">'+e.detail+'</div>':'')+'</div></div>').join('')+'</div>').join('');
+  h+='</div>';
+  return h;
+}
+function renderHistPage(){
+  const mods=[['all','🗂 全部'],['review','✍ 复盘'],['read','📖 读书'],['en','🔤 英语'],['sql','🗄 SQL'],['custom','🧩 自定义']];
+  let h='<div class="chips" style="margin-bottom:12px">'+mods.map(m=>'<span class="pill '+(App.histMod===m[0]?'on':'')+'" onclick="App.histMod=\''+m[0]+'\';render()">'+m[1]+'</span>').join('')+'</div>';
+  h+=renderHistory(App.histMod||'all');
+  return h;
+}
 function renderBooks(){
   let h='<div class="card"><h3>📖 今日阅读 <span class="tag">约20分钟</span></h3><div class="task" style="border:none;padding:4px 0"><div class="tx"><b>读 20 分钟书 + 记 1 条摘抄或想法</b><div class="d">书单在下面，从任意一本感兴趣的开始。微信读书/古登堡可直接在线读。</div></div></div>'+(modDone('read',todayStr())?'<span class="pill on" style="background:var(--ok);color:#fff">今日已打卡 ✓</span>':'<button class="btn sm ok" onclick="setModDone(\'read\',todayStr(),true)">✓ 阅读打卡</button>')+'</div>';
   h+='<div class="card"><h3>📚 精选书单 <span class="tag">点链接在线读</span></h3><div class="chips">'+Object.keys(BOOKS).map(c=>'<span class="pill '+(bookCat===c?'on':'')+'" onclick="bookCat=\''+c+'\';render()">'+c+'</span>').join('')+'</div>';
@@ -1381,7 +1431,7 @@ function renderBooks(){
   h+='</div>';
   // 书架
   h+='<div class="card"><h3>📕 我的书架</h3>';
-  h+=S.shelf.length?S.shelf.map((b,i)=>'<div class="task"><div class="tx"><b>'+esc(b.title)+'</b><div class="d">状态：'+['想读','在读','读完'][b.status]+'　进度：'+(b.progress||0)+'%</div><div class="d" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:5px"><select style="width:auto;padding:4px 8px;font-size:12px" onchange="S.shelf['+i+'].status=+this.value;save();render()"><option value="0"'+(b.status===0?' selected':'')+'>想读</option><option value="1"'+(b.status===1?' selected':'')+'>在读</option><option value="2"'+(b.status===2?' selected':'')+'>读完</option></select><input type="number" style="width:74px;padding:4px 8px;font-size:12px" value="'+(b.progress||0)+'" min="0" max="100" onchange="S.shelf['+i+'].progress=+this.value;save()">%</div></div><button class="btn sm ghost" onclick="openMapS('+i+')">🧠 导图</button><button class="btn sm danger" onclick="S.shelf.splice('+i+',1);save();render()">删</button></div>').join(''):'<div class="empty">书架空空如也，从上面书单挑一本加入吧</div>';
+  h+=S.shelf.length?S.shelf.map((b,i)=>'<div class="task"><div class="tx"><b>'+esc(b.title)+'</b><div class="d">状态：'+['想读','在读','读完'][b.status]+'　进度：'+(b.progress||0)+'%</div><div class="d" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:5px"><select style="width:auto;padding:4px 8px;font-size:12px" onchange="S.shelf['+i+'].status=+this.value;if(S.shelf['+i+'].status===2&&!S.shelf['+i+'].dateDone)S.shelf['+i+'].dateDone=todayStr();save();render()"><option value="0"'+(b.status===0?' selected':'')+'>想读</option><option value="1"'+(b.status===1?' selected':'')+'>在读</option><option value="2"'+(b.status===2?' selected':'')+'>读完</option></select><input type="number" style="width:74px;padding:4px 8px;font-size:12px" value="'+(b.progress||0)+'" min="0" max="100" onchange="S.shelf['+i+'].progress=+this.value;save()">%</div></div><button class="btn sm ghost" onclick="openMapS('+i+')">🧠 导图</button><button class="btn sm danger" onclick="S.shelf.splice('+i+',1);save();render()">删</button></div>').join(''):'<div class="empty">书架空空如也，从上面书单挑一本加入吧</div>';
   h+='<div class="row" style="margin-top:8px"><input type="text" id="shT" placeholder="书名（自定义）"><button class="btn sm" onclick="addShelfDoc()">加入书架</button></div></div>';
   // 摘抄
   h+='<div class="card"><h3>✒️ 重点摘抄 <span class="tag">每天至少 1 条</span></h3>';
@@ -1395,6 +1445,7 @@ function renderBooks(){
   h+='<div class="card"><h3>📝 读书笔记</h3><label class="f">书名</label><input type="text" id="nB" list="booklist" placeholder="哪本书？"><label class="f">笔记内容</label><textarea id="nT" placeholder="用自己的话总结读到的内容、联想、疑问…"></textarea><div style="margin-top:10px"><button class="btn sm" onclick="addRn()">＋ 保存笔记</button></div>';
   h+=S.rn.length?S.rn.slice().reverse().map((n,i)=>{const ri=S.rn.length-1-i;return '<div style="border-left:3px solid var(--p2);padding:8px 12px;background:var(--pl);border-radius:0 10px 10px 0;margin-top:8px;font-size:13px"><b>《'+esc(n.book)+'》</b> '+n.date+' <button class="btn sm danger" style="padding:2px 8px;margin-left:6px" onclick="S.rn.splice('+ri+',1);save();render()">删</button><div style="margin-top:4px;line-height:1.6">'+esc(n.text)+'</div></div>'}).join(''):'';
   h+='</div>';
+  h+=renderHistory('read');
   return h;
 }
 function addShelf(t){if(!S.shelf.find(b=>b.title===t)){S.shelf.push({title:t,status:0,progress:0});save()}toast('已加入书架');render()}
@@ -1563,6 +1614,7 @@ function renderEn(){
   // 打卡
   h+='<div class="card" style="text-align:center">'+(modDone('en',t)?'<div style="color:var(--ok);font-weight:700">✓ 今日已打卡，去休息吧！明早记得复盘</div>':'<button class="btn ok" onclick="setModDone(\'en\',todayStr(),true)">✓ 完成今日英语打卡</button>')+'</div>';
   h+='<div class="card"><h3>🗺 英语路线图 <span class="tag">新概念体系+音标拼读打底</span></h3><table><tr><th>阶段</th><th>上课日</th><th>目标</th></tr><tr><td>① 音标</td><td>1-12</td><td>48个音标会认会读</td></tr><tr><td>① 辨音强化</td><td>13-16</td><td>长短音/清浊音对比，耳朵上线</td></tr><tr><td>② 自然拼读</td><td>17-40</td><td>24条规则，见词能拼听音能写</td></tr><tr><td>③ 新概念精读</td><td>41-84</td><td>44课对话+核心语法（配Leo老师视频）</td></tr><tr><td>④ 情景综合</td><td>85-100</td><td>16个日常场景自由开口</td></tr><tr><td>⑤ 自由模式</td><td>101+</td><td>跟读+日记+原版阅读</td></tr></table><div class="note">⏱ 每天只要 <b>15-20 分钟</b>（周日仅10分钟复习）。为什么这样排：Leo老师的新概念课体系完整，但<b>不含音标和自然拼读</b>——直接跟课文会越学越虚。所以前 40 个上课日先用音标+辨音+拼读把地基打牢（正好补上他课里缺的部分），第 41 天起进入新概念精读，跟他的视频双轨并行。容易分神？把任务拆成 3 个 5 分钟，做完一项勾一项。</div></div>';
+  h+=renderHistory('en');
   return h;
 }
 
@@ -1575,9 +1627,11 @@ App.sqlAns=-1;
 function renderSql(){
   dbEnsure();
   const t=todayStr();
-  let h='<div class="chips" style="margin-bottom:12px"><span class="pill '+(App.sqlTab!=='lab'&&App.sqlTab!=='qa'?'on':'')+'" onclick="App.sqlTab=\'lesson\';render()">📖 今日课程</span><span class="pill '+(App.sqlTab==='lab'?'on':'')+'" onclick="App.sqlTab=\'lab\';render()">🧪 实践场（在线写SQL）</span><span class="pill '+(App.sqlTab==='qa'?'on':'')+'" onclick="App.sqlTab=\'qa\';App.qaSel=null;App.qaQ=\'\';render()">💬 SQL 问答</span></div>';
+  let h='<div class="chips" style="margin-bottom:12px"><span class="pill '+(App.sqlTab!=='lab'&&App.sqlTab!=='qa'&&App.sqlTab!=='hist'?'on':'')+'" onclick="App.sqlTab=\'lesson\';render()">📖 今日课程</span><span class="pill '+(App.sqlTab==='lab'?'on':'')+'" onclick="App.sqlTab=\'lab\';render()">🧪 实践场（在线写SQL）</span><span class="pill '+(App.sqlTab==='qa'?'on':'')+'" onclick="App.sqlTab=\'qa\';App.qaSel=null;App.qaQ=\'\';render()">💬 SQL 问答</span><span class="pill '+(App.sqlTab==='hist'?'on':'')+'" onclick="App.sqlTab=\'hist\';render()">📜 学习历史</span></div>';
   if(App.sqlTab==='qa'){
     h+=renderQa();
+  }else if(App.sqlTab==='hist'){
+    h+=renderHistory('sql');
   }else if(App.sqlTab==='lab'){
     h+='<div class="tip">🧪 <b>SQL 实践场</b>：这里有一个离线就能跑的迷你数据库，装的是<b>你自己的生活数据</b>（个人账单、学习打卡、水果店经营）。写 SQL → 点运行 → 立刻看到结果。每次运行后 <b>🧑‍🏫 老师点评</b> 会告诉你：报错的原因、用到知识点、和任务答案差在哪。</div>';
     // 数据表
@@ -1638,6 +1692,8 @@ function runSQLUI(){
     App.sqlRes={ok:true,last:r.last,msgs:r.msgs};
     if(r.last)doneNew=checkTasks(r.last)||[];
   }catch(e){App.sqlRes={ok:false,err:e.message}}
+  // 记录运行历史（带日期，供「学习历史」回顾）
+  try{if(!S.sqlLog)S.sqlLog=[];S.sqlLog.push({date:todayStr(),sql:App.sqlText,ok:App.sqlRes.ok});if(S.sqlLog.length>200)S.sqlLog=S.sqlLog.slice(-200);save()}catch(e){}
   let coach='';
   if(!App.sqlRes.ok)coach=sqlErrCoach(App.sqlText,App.sqlRes.err);
   else{
@@ -1711,6 +1767,7 @@ function renderCustom(){
   });
   h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px"><button class="btn sm" onclick="addTaskRow()">＋ 自己加一条</button><button class="btn sm ghost" onclick="genTasks()">✨ 按水平帮我生成</button>'+(App.formTasks.length?'<button class="btn sm gray" onclick="clearTasks()">清空</button>':'')+'</div>';
   h+='<div style="margin-top:12px">'+(m?'<button class="btn" onclick="saveCustom()">保存修改</button> <button class="btn gray" onclick="cancelEdit()">取消</button>':'<button class="btn" onclick="saveCustom()">＋ 创建模块</button>')+'</div></div>';
+  h+=renderHistory('custom');
   return h;
 }
 function saveCustom(){
@@ -1934,7 +1991,7 @@ function gistOff(){saveGistCfg('','');toast('已关闭自动同步（云端数�
 /* ---- 渲染入口 ---- */
 function render(){
   const v=App.view;
-  $('#view').innerHTML=v==='today'?renderToday():v==='board'?renderBoard():v==='books'?renderBooks():v==='bmap'?renderBmap():v==='en'?renderEn():v==='sql'?renderSql():v==='custom'?renderCustom():v==='review'?renderReview():v==='den'?renderDen():renderSettings();
+  $('#view').innerHTML=v==='today'?renderToday():v==='board'?renderBoard():v==='books'?renderBooks():v==='bmap'?renderBmap():v==='en'?renderEn():v==='sql'?renderSql():v==='custom'?renderCustom():v==='review'?renderReview():v==='history'?renderHistPage():v==='den'?renderDen():renderSettings();
   navRender();
   const t=todayStr();
   $('#hsub').textContent=cnDate(t)+' · 计划第 '+Math.max(dayNumOf(t),1)+' 天';
