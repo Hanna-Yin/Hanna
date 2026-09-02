@@ -797,7 +797,7 @@ function checkTasks(res){
     if(S.sqlTasks&&S.sqlTasks[i])return;
     try{
       const ref=runSQL(ts[1]).last;
-      if(ref&&sameRows(ref,res)){if(!S.sqlTasks)S.sqlTasks={};S.sqlTasks[i]=true;if(!S.sqlLog)S.sqlLog=[];S.sqlLog.push({date:todayStr(),sql:'-- 实践题'+(i+1)+' 通关 --',ok:true});doneNew.push(i+1)}
+      if(ref&&sameRows(ref,res)){if(!S.sqlTasks)S.sqlTasks={};S.sqlTasks[i]=true;if(!S.sqlLog)S.sqlLog=[];S.sqlLog.push({date:todayStr(),sql:'-- 实践题'+(i+1)+' 通关 --',ok:true});if(!S.done['sql|'+todayStr()])S.done['sql|'+todayStr()]=true;doneNew.push(i+1)}
     }catch(e){}
   });
   DB=saved;
@@ -1401,10 +1401,15 @@ function histCollect(mod){
     });
   }
   if(all||mod==='sql'){
+    Object.keys(S.done).filter(k=>k.indexOf('sql|')===0).forEach(k=>{
+      const d=k.split('|')[1];
+      const logs=(S.sqlLog||[]).filter(r=>r.date===d&&r.ok);
+      const detail=logs.length?logs.map(r=>'<div class="small" style="margin:3px 0;padding-left:14px;color:var(--sub)">'+esc(r.sql?r.sql.replace(/-- /g,''):'')+'</div>').join(''):'';
+      list.push({date:d,mod:'sql',icon:'🗄',title:'SQL · 第'+(dayNumOf(d))+'天 打卡',body:logs.length?('通关 '+logs.length+' 道实践题'):'今日完成 SQL 学习',detail:detail});
+    });
     if(S.sqlTasks)Object.keys(S.sqlTasks).filter(k=>S.sqlTasks[k]).forEach(k=>{const i=+k;list.push({date:'',mod:'sql',icon:'🧪',title:'SQL 实践题'+(i+1)+' 通关',body:SQLTASKS[i]?SQLTASKS[i][0]:''})});
     (S.sqlLog||[]).forEach(r=>{if(r.date)list.push({date:r.date,mod:'sql',icon:'⚡',title:'运行 SQL '+(r.ok?'✓ 通过':'✗ 未通过'),body:(r.sql||'').replace(/\n/g,' ').slice(0,90)})});
-  }
-  if(all||mod==='custom'){
+  }  if(all||mod==='custom'){
     S.custom.forEach(m=>{Object.keys(S.done).filter(k=>k.indexOf('c'+m.id+'|')===0).forEach(k=>{const d=k.split('|')[1];const detail=(m.tasks&&m.tasks.length)?m.tasks.map(t=>'<div class="small" style="margin:3px 0;padding-left:14px;color:var(--sub)">• '+esc(t)+'</div>').join(''):'';list.push({date:d,mod:'custom',icon:(m.emoji||'⭐'),title:(m.name||'自定义')+' 打卡完成',body:'共 '+(m.tasks?m.tasks.length:0)+' 项任务',detail:detail})})});
   }
   if(all||mod==='review'){
