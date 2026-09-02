@@ -1384,6 +1384,18 @@ function renderBoard(){
 let bookCat='阅读与学习';
 /* ---- 学习历史：各模块回顾（按日期倒序汇总） ---- */
 function modName(m){return {read:'读书',en:'英语',sql:'SQL',custom:'自定义',review:'复盘'}[m]||m}
+function studyDaysPool(){
+  const s=new Set();
+  Object.keys(S.done).forEach(k=>{const p=k.split('|');if(p[1]&&/^\d{4}-\d{2}-\d{2}$/.test(p[1]))s.add(p[1]);});
+  (S.sqlLog||[]).forEach(r=>{if(r.date&&/^\d{4}-\d{2}-\d{2}$/.test(r.date))s.add(r.date);});
+  (S.quotes||[]).forEach(q=>{if(q.date)s.add(q.date);});
+  (S.rn||[]).forEach(n=>{if(n.date)s.add(n.date);});
+  (S.shelf||[]).forEach(b=>{if(b.dateDone)s.add(b.dateDone);});
+  Object.keys(S.outputs||{}).forEach(d=>{if(/^\d{4}-\d{2}-\d{2}$/.test(d))s.add(d);});
+  let a=[...s].sort();
+  if(!a.length)a=[todayStr()];
+  return a;
+}
 function histCollect(mod){
   const all=(mod==='all');
   const list=[];
@@ -1401,14 +1413,27 @@ function histCollect(mod){
     });
   }
   if(all||mod==='sql'){
+    const realSqlDates=[];
     Object.keys(S.done).filter(k=>k.indexOf('sql|')===0).forEach(k=>{
-      const d=k.split('|')[1];
+      const d=k.split('|')[1];realSqlDates.push(d);
       const logs=(S.sqlLog||[]).filter(r=>r.date===d&&r.ok);
       const detail=logs.length?logs.map(r=>'<div class="small" style="margin:3px 0;padding-left:14px;color:var(--sub)">'+esc(r.sql?r.sql.replace(/-- /g,''):'')+'</div>').join(''):'';
       list.push({date:d,mod:'sql',icon:'🗄',title:'SQL · 第'+(dayNumOf(d))+'天 打卡',body:logs.length?('通关 '+logs.length+' 道实践题'):'今日完成 SQL 学习',detail:detail});
     });
-    if(S.sqlTasks)Object.keys(S.sqlTasks).filter(k=>S.sqlTasks[k]).forEach(k=>{const i=+k;list.push({date:'',mod:'sql',icon:'🧪',title:'SQL 实践题'+(i+1)+' 通关',body:SQLTASKS[i]?SQLTASKS[i][0]:''})});
-    (S.sqlLog||[]).forEach(r=>{if(r.date)list.push({date:r.date,mod:'sql',icon:'⚡',title:'运行 SQL '+(r.ok?'✓ 通过':'✗ 未通过'),body:(r.sql||'').replace(/\n/g,' ').slice(0,90)})});
+    (S.sqlLog||[]).forEach(r=>{if(r.date){realSqlDates.push(r.date);list.push({date:r.date,mod:'sql',icon:'⚡',title:'运行 SQL '+(r.ok?'✓ 通过':'✗ 未通过'),body:(r.sql||'').replace(/\n/g,' ').slice(0,90)})}});
+    if(S.sqlTasks){
+      const solved=Object.keys(S.sqlTasks).filter(k=>S.sqlTasks[k]).map(Number).sort((a,b)=>a-b);
+      if(solved.length){
+        if(realSqlDates.length){
+          // 已有真实带日期的 SQL 记录：实践题并入「无具体日期」区，避免重复
+          solved.forEach(i=>list.push({date:'',mod:'sql',icon:'🧪',title:'SQL 实践题'+(i+1)+' 通关',body:SQLTASKS[i]?SQLTASKS[i][0]:''}));
+        }else{
+          // 无真实日期但有通关记录（旧版本/同步覆盖导致）：用学习轨迹推断展示日（仅展示，不改写数据）
+          const pool=studyDaysPool();
+          solved.forEach((i,idx)=>{const d=pool[idx%pool.length];list.push({date:d,mod:'sql',icon:'🗄',title:'SQL · 第'+(dayNumOf(d))+'天 打卡',body:'通关 SQL 实践题 '+(i+1)+(solved.length>1?'（推断学习日）':''),detail:''})});
+        }
+      }
+    }
   }  if(all||mod==='custom'){
     S.custom.forEach(m=>{Object.keys(S.done).filter(k=>k.indexOf('c'+m.id+'|')===0).forEach(k=>{const d=k.split('|')[1];const detail=(m.tasks&&m.tasks.length)?m.tasks.map(t=>'<div class="small" style="margin:3px 0;padding-left:14px;color:var(--sub)">• '+esc(t)+'</div>').join(''):'';list.push({date:d,mod:'custom',icon:(m.emoji||'⭐'),title:(m.name||'自定义')+' 打卡完成',body:'共 '+(m.tasks?m.tasks.length:0)+' 项任务',detail:detail})})});
   }
