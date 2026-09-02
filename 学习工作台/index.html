@@ -123,6 +123,20 @@ th{background:var(--pl)}
 .tip{background:linear-gradient(135deg,#eef2ff,#fdf4ff);border-radius:14px;padding:13px 15px;font-size:13px;line-height:1.7;margin-bottom:14px;border:1px solid #e0e7ff}
 .big-emoji{font-size:26px}
 @media(min-width:600px){nav{border-radius:20px 20px 0 0}}
+
+.cal-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin:10px 0 4px}
+.cal-btn{width:32px;height:32px;border-radius:9px;border:1px solid var(--p2);background:var(--pl);color:var(--p);font-size:18px;line-height:1;cursor:pointer}
+.cal-ym{font-weight:700;font-size:14px;min-width:84px;text-align:center}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:8px}
+.cal-dow{text-align:center;font-size:11px;color:var(--sub);padding:4px 0}
+.cal-d{position:relative;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;border-radius:9px;font-size:13px;background:var(--pl);color:var(--tx);cursor:pointer;border:1px solid transparent}
+.cal-d.has{background:#eef2ff;color:var(--p);font-weight:700}
+.cal-d.has:hover{background:#e0e7ff}
+.cal-d.sel{outline:2px solid var(--p);background:#e0e7ff}
+.cal-n{line-height:1}
+.cal-dot{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--p)}
+.cal-detail{margin-top:14px}
+.cal-dtitle{font-weight:700;font-size:13px;color:var(--tx2);margin-bottom:7px}
 </style>
 </head>
 <body>
@@ -1227,7 +1241,7 @@ function gradeOutput(o){
 }
 
 /* ============ 视图 ============ */
-const App={view:'today',histMod:'all'};
+const App={view:'today',histMod:'all',histYM:'',histPick:''};
 const NAVS=[['today','🏠','今日'],['board','📊','看板'],['books','📚','读书'],['en','🔤','英语'],['sql','🗄','SQL'],['custom','🧩','自定义'],['review','✍','复盘'],['history','📜','历史']];
 App.go=function(v){App.view=v;render()};
 function navRender(){
@@ -1391,7 +1405,7 @@ function histCollect(mod){
     (S.sqlLog||[]).forEach(r=>{if(r.date)list.push({date:r.date,mod:'sql',icon:'⚡',title:'运行 SQL '+(r.ok?'✓ 通过':'✗ 未通过'),body:(r.sql||'').replace(/\n/g,' ').slice(0,90)})});
   }
   if(all||mod==='custom'){
-    S.custom.forEach(m=>{Object.keys(S.done).filter(k=>k.indexOf('c'+m.id+'|')===0).forEach(k=>{const d=k.split('|')[1];list.push({date:d,mod:'custom',icon:(m.emoji||'⭐'),title:(m.name||'自定义')+' 打卡完成',body:''})})});
+    S.custom.forEach(m=>{Object.keys(S.done).filter(k=>k.indexOf('c'+m.id+'|')===0).forEach(k=>{const d=k.split('|')[1];const detail=(m.tasks&&m.tasks.length)?m.tasks.map(t=>'<div class="small" style="margin:3px 0;padding-left:14px;color:var(--sub)">• '+esc(t)+'</div>').join(''):'';list.push({date:d,mod:'custom',icon:(m.emoji||'⭐'),title:(m.name||'自定义')+' 打卡完成',body:'共 '+(m.tasks?m.tasks.length:0)+' 项任务',detail:detail})})});
   }
   if(all||mod==='review'){
     Object.keys(S.outputs||{}).forEach(d=>{const o=S.outputs[d];list.push({date:d,mod:'review',icon:'✍',title:'复盘提交 · '+(o.fb?o.fb.grade+' '+o.fb.score+'分':'已交'),body:'收获：'+(o.gain||'')})});
@@ -1399,18 +1413,47 @@ function histCollect(mod){
   return list.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
 }
 function renderHistory(mod){
-  const list=histCollect(mod);
-  if(!list.length)return '<div class="card"><h3>📜 学习历史</h3><div class="empty">还没有可回顾的记录。坚持打卡几天后，这里会按时间顺序记下你学过的每一点 🌱</div></div>';
-  const groups={};const order=[];
-  list.forEach(e=>{const g=e.date||'未标注日期';if(!groups[g]){groups[g]=[];order.push(g)}});
-  list.forEach(e=>groups[e.date||'未标注日期'].push(e));
-  const keys=order.filter(k=>k!=='未标注日期').sort().reverse();if(groups['未标注日期'])keys.push('未标注日期');
-  let h='<div class="card"><h3>📜 学习历史 <span class="tag">'+list.length+' 条</span></h3>';
-  h+='<div class="small muted" style="margin-bottom:6px">按时间倒序，记录你走过的每一步。想看全部就点底部导航的「📜 历史」。</div>';
-  h+=keys.map(d=>'<div style="margin-top:12px"><div class="small" style="font-weight:700;color:var(--tx2);margin-bottom:5px">📅 '+(d==='未标注日期'?d:cnDate(d))+'</div>'+groups[d].map(e=>'<div class="hist"><div class="h"><span>'+e.icon+' '+modName(e.mod)+'</span></div><div style="line-height:1.6"><b>'+esc(e.title)+'</b>'+(e.body?'<br><span class="muted">'+esc(e.body)+'</span>':'')+(e.detail?'<div style="margin-top:6px">'+e.detail+'</div>':'')+'</div></div>').join('')+'</div>').join('');
+  const all=histCollect(mod);
+  const list=all.filter(e=>e.date);
+  const noDate=all.filter(e=>!e.date);
+  const dates=list.map(e=>e.date).sort();
+  if(!dates.length && !noDate.length)return '<div class="card"><h3>📅 学习日历</h3><div class="empty">还没有可回顾的记录。坚持打卡几天后，日历上带圆点的日子就是你学过的内容 🌱</div></div>';
+  if(!App.histYM || !/^\d{4}-\d{2}$/.test(App.histYM)) App.histYM = dates.length? dates[dates.length-1].slice(0,7) : todayStr().slice(0,7);
+  const byDate={};
+  list.forEach(e=>{(byDate[e.date]=byDate[e.date]||[]).push(e)});
+  const ym=App.histYM, p=ym.split('-'); const yy=+p[0], mm=+p[1];
+  const firstDow=(new Date(yy,mm-1,1).getDay()+6)%7;
+  const days=new Date(yy,mm,0).getDate();
+  const prevYM=histYMstep(ym,-1), nextYM=histYMstep(ym,1);
+  let cells='';
+  for(let i=0;i<firstDow;i++) cells+='<div></div>';
+  for(let d=1;d<=days;d++){
+    const ds=ym+'-'+String(d).padStart(2,'0');
+    const has=byDate[ds], sel=App.histPick===ds;
+    cells+='<div class="cal-d'+(has?' has':'')+(sel?' sel':'')+'" onclick="App.histPick=\''+ds+'\';render()"><div class="cal-n">'+d+'</div>'+(has?'<div class="cal-dot"></div>':'')+'</div>';
+  }
+  let h='<div class="card"><h3>📅 学习日历 <span class="tag">'+list.length+' 天有记录</span></h3>';
+  h+='<div class="cal-nav"><button class="cal-btn" onclick="App.histYM=\''+prevYM+'\';App.histPick=\'\';render()">‹</button><span class="cal-ym">'+yy+'年'+mm+'月</span><button class="cal-btn" onclick="App.histYM=\''+nextYM+'\';App.histPick=\'\';render()">›</button></div>';
+  h+='<div class="cal-grid"><div class="cal-dow">一</div><div class="cal-dow">二</div><div class="cal-dow">三</div><div class="cal-dow">四</div><div class="cal-dow">五</div><div class="cal-dow">六</div><div class="cal-dow">日</div>'+cells+'</div>';
+  if(App.histPick){
+    const arr=byDate[App.histPick];
+    if(arr){
+      h+='<div class="cal-detail"><div class="cal-dtitle">📖 '+cnDate(App.histPick)+' · 当天学习内容</div>'+
+        arr.map(e=>'<div class="hist"><div class="h"><span>'+e.icon+' '+modName(e.mod)+'</span></div><div style="line-height:1.6"><b>'+esc(e.title)+'</b>'+(e.body?'<br><span class="muted">'+esc(e.body)+'</span>':'')+(e.detail?'<div style="margin-top:6px">'+e.detail+'</div>':'')+'</div></div>').join('')+'</div>';
+    }else{
+      h+='<div class="cal-detail empty">🗓 这一天还没有学习记录</div>';
+    }
+  }else{
+    h+='<div class="cal-detail empty">👆 点击日历上带圆点的日期，查看当天学过的内容</div>';
+  }
+  if(noDate.length){
+    h+='<div class="cal-detail"><div class="cal-dtitle">📌 其它记录（无具体日期）</div>'+
+      noDate.map(e=>'<div class="hist"><div class="h"><span>'+e.icon+' '+modName(e.mod)+'</span></div><div style="line-height:1.6"><b>'+esc(e.title)+'</b>'+(e.body?'<br><span class="muted">'+esc(e.body)+'</span>':'')+'</div></div>').join('')+'</div>';
+  }
   h+='</div>';
   return h;
 }
+function histYMstep(ym,d){const p=ym.split('-');const t=new Date(+p[0],+p[1]-1+d,1);return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0');}
 function renderHistPage(){
   const mods=[['all','🗂 全部'],['review','✍ 复盘'],['read','📖 读书'],['en','🔤 英语'],['sql','🗄 SQL'],['custom','🧩 自定义']];
   let h='<div class="chips" style="margin-bottom:12px">'+mods.map(m=>'<span class="pill '+(App.histMod===m[0]?'on':'')+'" onclick="App.histMod=\''+m[0]+'\';render()">'+m[1]+'</span>').join('')+'</div>';
