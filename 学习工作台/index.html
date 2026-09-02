@@ -1423,10 +1423,11 @@ function renderHistory(mod){
   const noDate=all.filter(e=>!e.date);
   const dates=list.map(e=>e.date).sort();
   if(!dates.length && !noDate.length)return '<div class="card"><h3>📅 学习日历</h3><div class="empty">还没有可回顾的记录。坚持打卡几天后，日历上带圆点的日子就是你学过的内容 🌱</div></div>';
-  if(!App.histYM || !/^\d{4}-\d{2}$/.test(App.histYM)) App.histYM = dates.length? dates[dates.length-1].slice(0,7) : todayStr().slice(0,7);
   const byDate={};
   list.forEach(e=>{(byDate[e.date]=byDate[e.date]||[]).push(e)});
   const months=[...new Set(list.map(e=>e.date.slice(0,7)))].filter(Boolean).sort();
+  if(!App.histYM || !/^\d{4}-\d{2}$/.test(App.histYM) || (months.length && !months.includes(App.histYM))) App.histYM = dates.length? dates[dates.length-1].slice(0,7) : todayStr().slice(0,7);
+  if(App.histPick && App.histPick.slice(0,7)!==App.histYM) App.histPick='';
   const ym=App.histYM, p=ym.split('-'); const yy=+p[0], mm=+p[1];
   const firstDow=(new Date(yy,mm-1,1).getDay()+6)%7;
   const days=new Date(yy,mm,0).getDate();
