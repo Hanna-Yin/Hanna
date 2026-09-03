@@ -351,28 +351,57 @@ function gistRenderAll(){updateShelfHint();renderFridge();renderMealHistory();re
 function gistCfgHtml(){
   if(gistOn()){
     return '<div style="font-size:12px;color:var(--sub);line-height:1.6;margin-bottom:8px">🟢 已开启 · 云端 Gist '+gistId().slice(0,10)+'… · 上次同步：'+(localStorage.getItem(LSYNC_KEY)?new Date(+localStorage.getItem(LSYNC_KEY)).toLocaleString():'刚刚')+'<br>打开应用自动拉最新，改动约 4 秒后自动上传。令牌只保存在本机浏览器。</div>'
-      +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-sm" onclick="gistPull(false)">⬇️ 立即拉取</button><button class="btn btn-sm" onclick="gistPush(false)">⬆️ 立即上传</button><button class="btn btn-ghost btn-sm" onclick="gistOff()">关闭自动同步</button></div>';
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-sm" onclick="gistPull(false)">⬇️ 立即拉取</button><button class="btn btn-sm" onclick="gistPush(false)">⬆️ 立即上传</button><button class="btn btn-ghost btn-sm" onclick="copyGistId()">📋 复制 Gist ID</button><button class="btn btn-ghost btn-sm" onclick="gistOff()">关闭自动同步</button></div>';
   }
-  return '<div style="font-size:12px;color:var(--sub);line-height:1.7;margin-bottom:8px">① 点 <a href="https://github.com/settings/tokens/new?scopes=gist&description=fridge-sync" target="_blank">这里生成令牌</a>（只勾 gist 权限）→ ② 复制 ghp_ 开头令牌粘贴到下面 → ③ 开启。<b>手机和电脑各设置一次</b>（同一令牌），之后全自动：打开拉最新、改动自动上传。</div>'
-    +'<input type="password" id="gtok" placeholder="粘贴 GitHub 令牌（ghp_ 开头）" style="width:100%">'
-    +'<button class="btn btn-primary btn-sm" style="margin-top:6px" onclick="gistSetup()">开启自动同步</button>'
-    +'<div style="font-size:11px;color:var(--sub);margin-top:6px;line-height:1.6">数据存在你自己的 GitHub 私有 Gist 里，只有你能看。开了日记/密码类的其他应用不受影响，各应用云端数据独立。</div>';
+  return '<div style="font-size:12px;color:var(--sub);line-height:1.7;margin-bottom:8px">① 点 <a href="https://github.com/settings/tokens/new?scopes=gist&description=fridge-sync" target="_blank">这里生成令牌</a>（只勾 gist 权限）→ ② 复制 ghp_ 开头令牌粘贴到下面。<b>手机和电脑用同一个令牌</b>：先在一台「开启」生成云端，再到另一台点「加入」并粘贴前一台显示的 <b>Gist ID</b>，即可共用同一云端（否则两台各自独立、互不可见）。</div>'
+    +'<input type="password" id="gtok" placeholder="粘贴 GitHub 令牌（ghp_ 开头，两台用同一个）" style="width:100%">'
+    +'<input id="gjoin" placeholder="可选：粘贴对方设备显示的 Gist ID（加入同一云端）" style="width:100%;margin-top:6px">'
+    +'<button class="btn btn-primary btn-sm" style="margin-top:6px" onclick="gistSetup()">开启 / 加入自动同步</button>'
+    +'<div style="font-size:11px;color:var(--sub);margin-top:6px;line-height:1.6">数据存在你自己的 GitHub 私有 Gist 里，只有你能看。没令牌也能用「生成同步短码」里的离线压缩码（K1: 开头）手动同步，完全不依赖网络账号。</div>';
 }
 function renderGistCfg(){const el=document.getElementById('gistCfg');if(el)el.innerHTML=gistCfgHtml();}
 async function gistSetup(){
   const tok=((document.getElementById('gtok')&&document.getElementById('gtok').value)||'').trim();
+  const join=((document.getElementById('gjoin')&&document.getElementById('gjoin').value)||'').trim();
   if(!tok)return toast('先粘贴 GitHub 令牌');
   saveGistCfg(tok,'');
   try{
+    if(join){
+      // 加入对方已创建的同一云端（关键：两台必须指向同一个 Gist）
+      const g=await gistApi('GET','/gists/'+encodeURIComponent(join));
+      if(!g||!g.id)throw new Error('Gist ID 无效或无权访问');
+      saveGistCfg(tok,g.id);localStorage.setItem(LSYNC_KEY,String(Date.now()));
+      renderGistCfg();
+      toast('已加入对方云端 ✅ 点「立即拉取」获取最新数据');
+      return;
+    }
     state.syncStamp=Date.now();save();
     const g=await gistApi('POST','/gists',{description:'冰箱管家数据同步（私有）',public:false,files:{'fridge.json':{content:JSON.stringify(state)}}});
     saveGistCfg(tok,g.id);localStorage.setItem(LSYNC_KEY,String(Date.now()));
-    renderGistCfg();toast('自动同步已开启 ✅');
+    renderGistCfg();toast('自动同步已开启 ✅ 记得把下方 Gist ID 发给另一台设备「加入」');
   }catch(e){saveGistCfg('','');renderGistCfg();toast('开启失败：'+e.message)}
+}
+function copyGistId(){
+  const id=gistId();if(!id)return toast('未开启自动同步');
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(id).then(()=>toast('已复制 Gist ID：'+id)).catch(()=>prompt('复制此 Gist ID：',id));
+  else prompt('复制此 Gist ID：',id);
 }
 async function gistPush(silent){
   if(!gistOn()||gistApplying)return;
   if(silent&&bootPulling)return; // 首次拉取完成前禁止自动上传，防止旧数据覆盖云端
+  // 推送前先确认云端不是更新的版本，避免用本机旧数据覆盖对方刚改的内容
+  try{
+    const g=await gistApi('GET','/gists/'+gistId());
+    const rt=g&&g.files&&g.files['fridge.json']&&g.files['fridge.json'].content;
+    if(rt){
+      const d=JSON.parse(rt);
+      if(d.syncStamp&&state.syncStamp&&d.syncStamp>state.syncStamp){
+        gistApplying=true;state=d;localStorage.setItem(KEY,JSON.stringify(state));gistRenderAll();localStorage.setItem(LSYNC_KEY,String(Date.now()));gistApplying=false;
+        if(!silent)toast('云端有更新，已先拉取 ☁️');
+        return;
+      }
+    }
+  }catch(e){/* 检查失败则继续上传 */}
   state.syncStamp=Date.now();localStorage.setItem(KEY,JSON.stringify(state));
   try{
     await gistApi('PATCH','/gists/'+gistId(),{files:{'fridge.json':{content:JSON.stringify(state)}}});
