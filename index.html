@@ -43,6 +43,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
 
 /* cards & general */
 .card{background:var(--card);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(30,60,50,.05);}
+.fridge-search-bar{position:sticky;top:72px;z-index:15;background:var(--bg);padding:8px 0 6px;margin-bottom:4px;}
+.fridge-search-bar input{font-size:15px;padding:13px 15px;border:1.5px solid var(--line);box-shadow:0 2px 10px rgba(30,60,50,.07);}
 .card h3{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
 .section-title{font-size:13px;color:var(--sub);margin:16px 4px 8px;display:flex;justify-content:space-between;align-items:center;}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;border:none;border-radius:10px;padding:9px 14px;font-size:14px;cursor:pointer;font-family:inherit;transition:.15s;}
@@ -170,6 +172,9 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
 
   <!-- ============ 冰箱库存 ============ -->
   <div class="view active" id="view-fridge">
+    <div class="fridge-search-bar">
+      <input id="fridgeSearch" placeholder="🔍 搜搜冰箱里有没有记过这个食物（名称 / 备注）" oninput="renderFridge()">
+    </div>
     <div class="card">
       <h3>➕ 添加食物</h3>
       <div class="form-row">
@@ -202,9 +207,6 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
       <button class="btn btn-primary btn-block" onclick="addFood()">放入冰箱 🧊</button>
     </div>
     <div id="expAlert"></div>
-    <div class="card" style="padding:12px">
-      <input id="fridgeSearch" placeholder="🔍 搜搜冰箱里有没有记过这个食物" oninput="renderFridge()">
-    </div>
     <div class="section-title"><span id="fridgeCount"></span><span></span></div>
     <div id="foodList"></div>
   </div>
