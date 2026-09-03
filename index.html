@@ -223,6 +223,9 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
       <button class="btn btn-primary btn-block" style="margin-top:10px" onclick="logMeal()">确认并扣减库存 ✅</button>
     </div>
     <div class="section-title"><span>📋 饮食记录</span></div>
+    <div class="card" style="padding:12px">
+      <input id="mealSearch" placeholder="🔍 搜饮食记录（菜名 / 早午晚餐）" oninput="renderMealHistory()">
+    </div>
     <div id="mealHistory"></div>
   </div>
 
@@ -951,7 +954,7 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   t.classList.add('active');
   document.getElementById('view-'+t.dataset.v).classList.add('active');
   window.scrollTo(0,0);
-  if(t.dataset.v==='meal')renderMealPick();
+  if(t.dataset.v==='meal'){renderMealPick();renderMealHistory();}
   if(t.dataset.v==='recipe')renderRecipes();
 });
 
@@ -1141,17 +1144,16 @@ function logMeal(){
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function renderMealHistory(){
   const wrap=document.getElementById('mealHistory');
-  const today=state.meals.filter(m=>m.date===todayStr());
-  const past=state.meals.filter(m=>m.date!==todayStr()).slice(0,15);
+  const sEl=document.getElementById('mealSearch');
+  const q=(sEl?sEl.value.trim().toLowerCase():'');
+  let all=state.meals;
+  if(q)all=all.filter(m=>m.type.toLowerCase().includes(q)||m.items.some(i=>i.name.toLowerCase().includes(q)));
+  const today=all.filter(m=>m.date===todayStr());
+  const past=all.filter(m=>m.date!==todayStr()).slice(0,30);
   let html='';
-  if(today.length){
-    html+='<div class="section-title"><span>今天</span></div>';
-    html+=today.map(m=>mealHtml(m)).join('');
-  }
-  if(past.length){
-    html+='<div class="section-title"><span>更早</span></div>';
-    html+=past.map(m=>mealHtml(m)).join('');
-  }
+  if(q&&!all.length){wrap.innerHTML='<div class="empty"><div class="big">🔍</div>没有匹配「'+(sEl?sEl.value.trim():'')+'」的饮食记录</div>';return;}
+  if(today.length){html+='<div class="section-title"><span>今天</span></div>'+today.map(m=>mealHtml(m)).join('');}
+  if(past.length){html+='<div class="section-title"><span>更早</span></div>'+past.map(m=>mealHtml(m)).join('');}
   if(!state.meals.length)html='<div class="empty"><div class="big">🍽️</div>还没有饮食记录<br>吃了什么，记一笔</div>';
   wrap.innerHTML=html;
 }
