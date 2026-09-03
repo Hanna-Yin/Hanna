@@ -43,8 +43,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
 
 /* cards & general */
 .card{background:var(--card);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(30,60,50,.05);}
-.fridge-search-bar{position:sticky;top:72px;z-index:15;background:var(--bg);padding:8px 0 6px;margin-bottom:4px;}
-.fridge-search-bar input{font-size:15px;padding:13px 15px;border:1.5px solid var(--line);box-shadow:0 2px 10px rgba(30,60,50,.07);}
 .card h3{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
 .section-title{font-size:13px;color:var(--sub);margin:16px 4px 8px;display:flex;justify-content:space-between;align-items:center;}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;border:none;border-radius:10px;padding:9px 14px;font-size:14px;cursor:pointer;font-family:inherit;transition:.15s;}
@@ -172,9 +170,6 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
 
   <!-- ============ 冰箱库存 ============ -->
   <div class="view active" id="view-fridge">
-    <div class="fridge-search-bar">
-      <input id="fridgeSearch" placeholder="🔍 搜搜冰箱里有没有记过这个食物（名称 / 备注）" oninput="renderFridge()">
-    </div>
     <div class="card">
       <h3>➕ 添加食物</h3>
       <div class="form-row">
@@ -207,6 +202,9 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
       <button class="btn btn-primary btn-block" onclick="addFood()">放入冰箱 🧊</button>
     </div>
     <div id="expAlert"></div>
+    <div class="card" style="padding:12px">
+      <input id="fridgeSearch" placeholder="🔍 搜搜冰箱里有没有记过这个食物" oninput="renderFridge()">
+    </div>
     <div class="section-title"><span id="fridgeCount"></span><span></span></div>
     <div id="foodList"></div>
   </div>
@@ -226,7 +224,7 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
     </div>
     <div class="section-title"><span>📋 饮食记录</span></div>
     <div class="card" style="padding:12px">
-      <input id="mealSearch" placeholder="🔍 搜饮食记录（菜名 / 早午晚餐）" oninput="renderMealHistory()">
+      <input id="mealSearch" placeholder="🔍 搜饮食记录 / 库存食材（菜名 · 早午晚餐 · 食材名）" oninput="mealSearchExec()">
     </div>
     <div id="mealHistory"></div>
   </div>
@@ -1100,8 +1098,13 @@ document.querySelectorAll('#mealTypePick .mt').forEach(m=>m.onclick=()=>{
 function renderMealPick(){
   const wrap=document.getElementById('mealPickList');
   if(!state.foods.length){wrap.innerHTML='<div class="empty">冰箱空空的，先去「冰箱」页添加食物吧</div>';return;}
+  const sEl=document.getElementById('mealSearch');
+  const q=(sEl?sEl.value.trim().toLowerCase():'');
+  let foods=state.foods;
+  if(q)foods=foods.filter(f=>f.name.toLowerCase().includes(q)||(f.note||'').toLowerCase().includes(q));
+  if(q&&!foods.length){wrap.innerHTML='<div class="empty"><div class="big">🔍</div>库存里没有「'+(sEl?sEl.value.trim():'')+'」<br>可去「冰箱」页添加</div>';return;}
   const zoneRank=f=>f.frozen?2:(f.room?1:0);
-  wrap.innerHTML=state.foods.slice().sort((a,b)=>zoneRank(a)-zoneRank(b)||daysLeft(a)-daysLeft(b)).map(f=>{
+  wrap.innerHTML=foods.slice().sort((a,b)=>zoneRank(a)-zoneRank(b)||daysLeft(a)-daysLeft(b)).map(f=>{
     const sel=ui.picked[f.id];
     const et=f.qty>0?expTag(f):null;
     return '<div class="pick-item'+(sel?' sel':'')+'" onclick="togglePick(\''+f.id+'\')">'+
@@ -1144,6 +1147,8 @@ function logMeal(){
   toast('✅ 已记录并扣减库存'+(usedUp.length?' · 已用完：'+usedUp.join('、'):''));
 }
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+/* 饮食模块搜索：同时过滤「饮食记录」与「库存食材清单」 */
+function mealSearchExec(){renderMealHistory();renderMealPick();}
 function renderMealHistory(){
   const wrap=document.getElementById('mealHistory');
   const sEl=document.getElementById('mealSearch');
