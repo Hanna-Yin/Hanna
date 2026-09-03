@@ -173,12 +173,13 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
     <div class="card">
       <h3>➕ 添加食物</h3>
       <div class="form-row">
-        <div><label class="field-label">名称</label><input id="f-name" placeholder="如：五花肉" oninput="updateShelfHint()"></div>
+        <div><label class="field-label">名称</label><input id="f-name" placeholder="如：五花肉" oninput="updateShelfHint();dupHint()"></div>
         <div style="flex:0 0 96px"><label class="field-label">数量</label><input id="f-qty" type="number" min="0" step="any" value="1"></div>
         <div style="flex:0 0 84px"><label class="field-label">单位</label>
           <select id="f-unit"><option>份</option><option>颗</option><option>斤</option><option>个</option><option>盒</option><option>包</option><option>条</option><option>块</option></select>
         </div>
       </div>
+      <div id="dupHint" style="font-size:11px;line-height:1.7;margin:6px 2px 0"></div>
       <div class="form-row">
         <div><label class="field-label">分类</label>
           <select id="f-cat" onchange="updateShelfHint()"><option>肉类</option><option>蔬菜</option><option>蛋奶</option><option>水产</option><option>菌菇豆制品</option><option>主食</option><option>水果</option><option>其他</option></select>
@@ -201,6 +202,9 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
       <button class="btn btn-primary btn-block" onclick="addFood()">放入冰箱 🧊</button>
     </div>
     <div id="expAlert"></div>
+    <div class="card" style="padding:12px">
+      <input id="fridgeSearch" placeholder="🔍 搜搜冰箱里有没有记过这个食物" oninput="renderFridge()">
+    </div>
     <div class="section-title"><span id="fridgeCount"></span><span></span></div>
     <div id="foodList"></div>
   </div>
@@ -956,12 +960,33 @@ function addFood(){
   save();renderFridge();
   document.getElementById('f-name').value='';document.getElementById('f-note').value='';
   document.getElementById('f-qty').value=1;document.getElementById('f-days').value='';
-  updateShelfHint();
+  updateShelfHint();dupHint();
   toast('已放入'+ZONE_LABEL[zone]+'：'+name+' '+qty+unit);
 }
 function delFood(id){
   if(!confirm('确定从冰箱里删除这个食物吗？'))return;
   state.foods=state.foods.filter(f=>f.id!==id);save();renderFridge();renderMealPick();
+}
+/* ================= 输入时的重复检测 ================= */
+function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function dupHint(){
+  const el=document.getElementById('dupHint');
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){el.innerHTML='';return;}
+  const q=name.toLowerCase();
+  const hits=state.foods.filter(f=>{
+    const n=f.name.toLowerCase();
+    return n.includes(q)||q.includes(n);
+  });
+  if(!hits.length){
+    el.innerHTML='✅ 冰箱里还没有「'+escapeHtml(name)+'」的记录，放心添加';
+    return;
+  }
+  const lines=hits.slice(0,5).map(f=>{
+    const cl=carbLevel(f.name);
+    return '　'+foodEmoji(f.name,f.cat)+' '+escapeHtml(f.name)+' · '+ZONE_LABEL[zoneOf(f)]+' · '+f.qty+f.unit+(f.note?' · '+escapeHtml(f.note):'');
+  }).join('<br>');
+  el.innerHTML='⚠️ <b>已经记过啦（'+hits.length+' 条），别加重复了：</b><br>'+lines+(hits.length>5?'<br>　…等共 '+hits.length+' 条':'')+'<br>　<span style="color:var(--sub)">同名同单位同温区会自动累加数量</span>';
 }
 function adjustQty(id,d){
   const f=state.foods.find(x=>x.id===id);if(!f)return;
@@ -977,16 +1002,22 @@ function adjustQty(id,d){
 }
 function renderFridge(){
   const wrap=document.getElementById('foodList');
-  document.getElementById('fridgeCount').textContent='🧊 冰箱里共 '+state.foods.length+' 种食物';
+  const sEl=document.getElementById('fridgeSearch');
+  const q=(sEl?sEl.value.trim().toLowerCase():'');
+  const src=q?state.foods.filter(f=>f.name.toLowerCase().includes(q)||(f.note||'').toLowerCase().includes(q)):state.foods;
+  document.getElementById('fridgeCount').textContent=q?('🔍 搜到 '+src.length+' 条 / 共 '+state.foods.length+' 种'):'🧊 冰箱里共 '+state.foods.length+' 种食物';
   if(!state.foods.length){
     wrap.innerHTML='<div class="empty"><div class="big">🧊</div>冰箱还是空的～<br>先添加一些食物吧</div>';renderExpAlert();return;
+  }
+  if(q&&!src.length){
+    wrap.innerHTML='<div class="empty"><div class="big">🔍</div>冰箱里没有「'+escapeHtml(sEl.value.trim())+'」的记录<br>可以放心添加，不会重复</div>';renderExpAlert();return;
   }
   const cats=['肉类','水产','蔬菜','菌菇豆制品','蛋奶','主食','水果','其他'];
   let html='';
   /* 常温区在前（耐放），冷藏区居中，冷冻区在后 */
   const ZONE_DESC={room:'阴凉通风存放 · 不占冰箱空间',fridge:'',freeze:'分装冷冻长期保存 · 吃前点「解冻」提前一晚移入冷藏'};
   [['🏠 常温区','room'],['🧊 冷藏区','fridge'],['❄️ 冷冻区','freeze']].forEach(([zoneLabel,z])=>{
-    const pool=state.foods.filter(f=>zoneOf(f)===z);
+    const pool=src.filter(f=>zoneOf(f)===z);
     if(!pool.length)return;
     html+='<div class="section-title"'+(z!=='room'?' style="margin-top:22px"':'')+'><span>'+zoneLabel+'</span><span style="font-size:11px">'+pool.length+' 种</span></div>';
     if(ZONE_DESC[z])html+='<p style="font-size:11px;color:var(--sub);margin:-4px 4px 8px">'+ZONE_DESC[z]+'</p>';
