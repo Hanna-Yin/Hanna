@@ -219,13 +219,13 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
         <div class="mt" data-t="晚餐">🌙 晚餐</div>
         <div class="mt" data-t="加餐">🥜 加餐</div>
       </div>
+      <div style="padding:2px 0 6px">
+        <input id="mealSearch" placeholder="🔍 搜库存食材 / 饮食记录（输入后从上方清单勾选）" oninput="mealSearchExec()">
+      </div>
       <div id="mealPickList"></div>
       <button class="btn btn-primary btn-block" style="margin-top:10px" onclick="logMeal()">确认并扣减库存 ✅</button>
     </div>
     <div class="section-title"><span>📋 饮食记录</span></div>
-    <div class="card" style="padding:12px">
-      <input id="mealSearch" placeholder="🔍 搜饮食记录 / 库存食材（菜名 · 早午晚餐 · 食材名）" oninput="mealSearchExec()">
-    </div>
     <div id="mealHistory"></div>
   </div>
 
