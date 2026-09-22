@@ -216,7 +216,7 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
       <h3>➕ 添加食物</h3>
       <div class="form-row">
         <div><label class="field-label">名称</label><input id="f-name" placeholder="如：五花肉" oninput="updateShelfHint();dupHint();unitSelHint()"></div>
-        <div style="flex:0 0 96px"><label class="field-label">数量</label><input id="f-qty" type="number" min="0" step="any" value="1"></div>
+        <div style="flex:0 0 96px"><label class="field-label">数量</label><input id="f-qty" type="number" min="0" step="any" value="1" oninput="unitSelHint()"></div>
         <div style="flex:0 0 84px"><label class="field-label">单位</label>
           <select id="f-unit" onchange="unitSelHint()"><option>g</option><option>kg</option><option>份</option><option>斤</option><option>个</option><option>颗</option><option>盒</option><option>包</option><option>条</option><option>块</option></select>
         </div>
@@ -227,6 +227,10 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
           <select id="f-cat" onchange="updateShelfHint()"><option>肉类</option><option>蔬菜</option><option>蛋奶</option><option>水产</option><option>菌菇豆制品</option><option>主食</option><option>水果</option><option>其他</option></select>
         </div>
         <div><label class="field-label">备注（可选）</label><input id="f-note" placeholder="如：切好了3块"></div>
+      </div>
+      <div class="form-row" style="margin-top:2px">
+        <div style="flex:0 0 110px"><label class="field-label">分成几份(选填)</label><input id="f-div" type="number" min="1" max="50" step="1" placeholder="如：5" oninput="unitSelHint()"></div>
+        <div style="flex:1;display:flex;align-items:flex-end"><div id="divHint" style="font-size:11px;color:var(--sub);line-height:1.6;padding-bottom:6px"></div></div>
       </div>
       <div class="form-row" style="margin-top:2px">
         <div style="flex:1"><label class="field-label">蛋白(g·选填)</label><input id="f-prot" type="number" min="0" step="any" placeholder="如：20"></div>
@@ -826,16 +830,24 @@ function unitSelHint(){
   applyMacroRef();
 }
 /* 参考值占位：蛋白/脂肪/净碳水输入框显示内置库参考值（灰色占位字）。
-   重量单位→每100g；非重量单位→按「常见一份克数」折算成每 1 个单位。
+   重量单位→每100g；分装时→按「每份≈Xg」折算；非重量单位→按「常见一份克数」折算成每 1 个单位。
    不填=按参考值算（foodNutri 回落逻辑）；填了=以用户数值为主。 */
 function applyMacroRef(){
   const ne=document.getElementById('f-name');
   const pe=document.getElementById('f-prot'),fe=document.getElementById('f-fat'),ce=document.getElementById('f-carb');
   if(!pe||!fe||!ce)return;
   const hint=document.getElementById('nutriHint');
+  const dh=document.getElementById('divHint');
+  if(dh)dh.innerHTML='';
   const name=ne?String(ne.value||'').trim():'';
   const us=document.getElementById('f-unit');
   const u=us?us.value:'g';
+  const qe=document.getElementById('f-qty');
+  const qty=qe?(parseFloat(qe.value)||0):0;
+  const de=document.getElementById('f-div');
+  const divRaw=de?(parseInt(de.value,10)||0):0;
+  const divN=Math.max(1,Math.min(50,divRaw||1));
+  const overMax=divRaw>50;
   const DEF=['如：20','如：15','如：2'];
   const db=name?nutriFull(name):null;
   if(!db){
@@ -844,14 +856,26 @@ function applyMacroRef(){
     return;
   }
   const w=unitIsWeight(u);
-  const g=portionGrams(name)||100;
-  const k=w?1:g/100;
+  let k=1,basisTxt='每100g';
+  if(!w){
+    const g=portionGrams(name)||100;
+    k=g/100;basisTxt='1'+esc(u)+'≈'+g+'g';
+    if(dh&&divRaw>1)dh.innerHTML='💡 「'+esc(u)+'」是非重量单位，参考值按 <b>1'+esc(u)+'</b> 的净含量算，暂不支持再分装。';
+  }else{
+    const totalG=unitToGrams(qty,u);
+    if(divRaw>1&&totalG&&totalG>=20){
+      const perG=Math.round(totalG/divN);
+      if(perG>=10){
+        k=perG/100;basisTxt='每份≈'+perG+'g';
+        if(dh)dh.innerHTML='📦 分装：<b>'+qty+esc(u)+'</b>（约'+totalG+'g）÷ <b>'+divN+'</b> 份 = 每份约 <b>'+perG+'g</b>，保存后生成 <b>'+divN+'</b> 条独立食材（每条约'+perG+'g，吃一份删一份）'+(overMax?'（最多50份，已按50份算）':'')+'。';
+      }else if(dh){
+        dh.innerHTML='⚠️ 每份只有约 '+perG+'g（不足10g），份数太多了，建议调小。';
+      }
+    }
+  }
   const rp=round1(db.p*k),rf=round1(db.f*k),rc=round1(db.nc*k);
   pe.placeholder='参考'+rp;fe.placeholder='参考'+rf;ce.placeholder='参考'+rc;
-  if(hint){
-    const basisTxt=w?'每100g':'1'+esc(u)+'≈'+g+'g';
-    hint.innerHTML+='<div style="margin-top:2px;color:var(--green-dark)">📌 参考值（'+basisTxt+'）：蛋白'+rp+' · 脂肪'+rf+' · 净碳水'+rc+'g —— <b>不填就按这个算，填了以你的为准</b></div>';
-  }
+  if(hint)hint.innerHTML+='<div style="margin-top:2px;color:var(--green-dark)">📌 参考值（'+basisTxt+'）：蛋白'+rp+' · 脂肪'+rf+' · 净碳水'+rc+'g —— <b>不填就按这个算，填了以你的为准</b></div>';
 }
 /* 勾选食材时的实时营养预估（随数量变化） */
 function unitPreviewHtml(id){
@@ -1380,6 +1404,10 @@ function addFood(){
   const prot=parseFloat(document.getElementById('f-prot').value)||0;
   const fat=parseFloat(document.getElementById('f-fat').value)||0;
   const carb=parseFloat(document.getElementById('f-carb').value)||0;
+  const divRaw=document.getElementById('f-div')?document.getElementById('f-div').value:'';
+  const divN=Math.max(1,Math.min(50,parseInt(divRaw,10)||1));
+  const totalG=unitIsWeight(unit)?unitToGrams(qty,unit):null;
+  const split=totalG!=null&&divN>1&&totalG>=20;
   if(!name){toast('先给食物起个名字吧');return;}
   const adv=storeAdvice(name);
   if(frozen&&adv&&adv.noFreeze){
@@ -1398,6 +1426,19 @@ function addFood(){
     }
   }
   // 同名同单位同温区直接累加（补充新货，保质期按新货重算）
+  if(split){
+    const perG=Math.max(10,Math.round(totalG/divN));
+    const nEff=Math.max(1,Math.min(50,Math.round(totalG/perG)));
+    for(let i=0;i<nEff;i++)state.foods.unshift({id:uid(),name,cat,unit:'g',qty:perG,note,addedAt:todayStr(),days,frozen:zone==='freeze',room:zone==='room',p:prot||undefined,f:fat||undefined,c:carb||undefined});
+    save();renderFridge();
+    document.getElementById('f-name').value='';document.getElementById('f-note').value='';
+    document.getElementById('f-qty').value=1;document.getElementById('f-days').value='';
+    document.getElementById('f-prot').value='';document.getElementById('f-fat').value='';document.getElementById('f-carb').value='';
+    if(document.getElementById('f-div'))document.getElementById('f-div').value='';
+    updateShelfHint();dupHint();unitSelHint();
+    toast('已分装：'+name+' '+qty+unit+' → '+nEff+'份 × 约'+perG+'g，吃一份删一份');
+    return;
+  }
   const exist=state.foods.find(f=>f.name===name&&f.unit===unit&&zoneOf(f)===zone);
   if(exist){exist.qty=+(exist.qty+qty).toFixed(2);exist.addedAt=todayStr();if(days!=null)exist.days=days;if(note)exist.note=note;if(prot)exist.p=prot;if(fat)exist.f=fat;if(carb)exist.c=carb;}
   else state.foods.unshift({id:uid(),name,cat,unit,qty,note,addedAt:todayStr(),days,frozen:zone==='freeze',room:zone==='room',p:prot||undefined,f:fat||undefined,c:carb||undefined});
@@ -1405,6 +1446,7 @@ function addFood(){
   document.getElementById('f-name').value='';document.getElementById('f-note').value='';
   document.getElementById('f-qty').value=1;document.getElementById('f-days').value='';
   document.getElementById('f-prot').value='';document.getElementById('f-fat').value='';document.getElementById('f-carb').value='';
+  if(document.getElementById('f-div'))document.getElementById('f-div').value='';
   updateShelfHint();dupHint();unitSelHint();
   toast('已放入'+ZONE_LABEL[zone]+'：'+name+' '+qty+unit);
 }
