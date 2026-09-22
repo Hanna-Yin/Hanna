@@ -215,7 +215,7 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
     <div class="card">
       <h3>➕ 添加食物</h3>
       <div class="form-row">
-        <div><label class="field-label">名称</label><input id="f-name" placeholder="如：五花肉" oninput="updateShelfHint();dupHint()"></div>
+        <div><label class="field-label">名称</label><input id="f-name" placeholder="如：五花肉" oninput="updateShelfHint();dupHint();unitSelHint()"></div>
         <div style="flex:0 0 96px"><label class="field-label">数量</label><input id="f-qty" type="number" min="0" step="any" value="1"></div>
         <div style="flex:0 0 84px"><label class="field-label">单位</label>
           <select id="f-unit" onchange="unitSelHint()"><option>g</option><option>kg</option><option>份</option><option>斤</option><option>个</option><option>颗</option><option>盒</option><option>包</option><option>条</option><option>块</option></select>
@@ -823,6 +823,35 @@ function unitSelHint(){
   const u=sel.value;
   if(unitIsWeight(u))el.innerHTML='💡 单位是 <b>'+esc(u)+'</b>（重量）：下面三项按 <b>每100g</b> 填（和食品包装标签一致），<b>全留空则自动用内置食物库估算</b>；记饮食时按克数自动换算。';
   else el.innerHTML='💡 单位是 <b>'+esc(u)+'</b>（非重量）：下面三项按 <b>1'+esc(u)+'</b> 的营养填（如「1罐椰浆」填一罐的量）；留空则按内置库「常见一份克数」自动估算（包装类建议手动填更准）。';
+  applyMacroRef();
+}
+/* 参考值占位：蛋白/脂肪/净碳水输入框显示内置库参考值（灰色占位字）。
+   重量单位→每100g；非重量单位→按「常见一份克数」折算成每 1 个单位。
+   不填=按参考值算（foodNutri 回落逻辑）；填了=以用户数值为主。 */
+function applyMacroRef(){
+  const ne=document.getElementById('f-name');
+  const pe=document.getElementById('f-prot'),fe=document.getElementById('f-fat'),ce=document.getElementById('f-carb');
+  if(!pe||!fe||!ce)return;
+  const hint=document.getElementById('nutriHint');
+  const name=ne?String(ne.value||'').trim():'';
+  const us=document.getElementById('f-unit');
+  const u=us?us.value:'g';
+  const DEF=['如：20','如：15','如：2'];
+  const db=name?nutriFull(name):null;
+  if(!db){
+    pe.placeholder=DEF[0];fe.placeholder=DEF[1];ce.placeholder=DEF[2];
+    if(hint&&name)hint.innerHTML+='<div style="margin-top:2px">📌 「'+esc(name)+'」不在内置营养库：留空按 0 算，建议查包装标签填上。</div>';
+    return;
+  }
+  const w=unitIsWeight(u);
+  const g=portionGrams(name)||100;
+  const k=w?1:g/100;
+  const rp=round1(db.p*k),rf=round1(db.f*k),rc=round1(db.nc*k);
+  pe.placeholder='参考'+rp;fe.placeholder='参考'+rf;ce.placeholder='参考'+rc;
+  if(hint){
+    const basisTxt=w?'每100g':'1'+esc(u)+'≈'+g+'g';
+    hint.innerHTML+='<div style="margin-top:2px;color:var(--green-dark)">📌 参考值（'+basisTxt+'）：蛋白'+rp+' · 脂肪'+rf+' · 净碳水'+rc+'g —— <b>不填就按这个算，填了以你的为准</b></div>';
+  }
 }
 /* 勾选食材时的实时营养预估（随数量变化） */
 function unitPreviewHtml(id){
@@ -1376,7 +1405,7 @@ function addFood(){
   document.getElementById('f-name').value='';document.getElementById('f-note').value='';
   document.getElementById('f-qty').value=1;document.getElementById('f-days').value='';
   document.getElementById('f-prot').value='';document.getElementById('f-fat').value='';document.getElementById('f-carb').value='';
-  updateShelfHint();dupHint();
+  updateShelfHint();dupHint();unitSelHint();
   toast('已放入'+ZONE_LABEL[zone]+'：'+name+' '+qty+unit);
 }
 function delFood(id){
