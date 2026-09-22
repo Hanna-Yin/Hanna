@@ -1449,7 +1449,7 @@ function addFood(){
     toast('已分装：'+name+' '+qty+unit+' → '+nEff+'份 × 约'+perG+'g，吃一份删一份');
     return;
   }
-  const exist=state.foods.find(f=>f.name===name&&f.unit===unit&&zoneOf(f)===zone);
+  const exist=state.foods.find(f=>f.name===name&&f.unit===unit&&zoneOf(f)===zone&&(f.note||'')===(note||''));
   if(exist){exist.qty=+(exist.qty+qty).toFixed(2);exist.addedAt=todayStr();if(days!=null)exist.days=days;if(note)exist.note=note;if(prot)exist.p=prot;if(fat)exist.f=fat;if(carb)exist.c=carb;}
   else state.foods.unshift({id:uid(),name,cat,unit,qty,note,addedAt:todayStr(),days,frozen:zone==='freeze',room:zone==='room',p:prot||undefined,f:fat||undefined,c:carb||undefined});
   save();renderFridge();
