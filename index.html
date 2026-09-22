@@ -128,7 +128,22 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
 .map-row b{flex:0 0 56px;font-size:11px;margin-top:6px;font-weight:600;}
 .mr-g{color:#0f9d6e}.mr-y{color:#b97821}.mr-r{color:#d64545}
 .map-chips{display:flex;flex-wrap:wrap;gap:6px;flex:1;min-width:0;}
-.map-chip{font-size:12px;padding:4px 10px;border-radius:99px;white-space:nowrap;}
+.map-chip{font-size:12px;padding:5px 10px;border-radius:12px;white-space:nowrap;display:inline-flex;flex-direction:column;align-items:flex-start;line-height:1.3;}
+.mc-nu{display:block;font-size:10px;font-weight:400;font-style:normal;opacity:.72;letter-spacing:.2px;}
+.mc-nu.na{opacity:.45;}
+/* 食材营养提醒卡 */
+.nutri-advice{background:var(--card);border-radius:12px;padding:12px 14px;margin-bottom:10px;border-left:4px solid var(--green);box-shadow:0 1px 4px rgba(30,60,50,.05);}
+.nutri-advice.lv-y{border-left-color:#e0a53a;}
+.nutri-advice.lv-r{border-left-color:#d64545;}
+.na-head{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;flex-wrap:wrap;}
+.na-head .lv{font-size:11px;font-weight:500;color:var(--sub);}
+.na-nums{display:flex;gap:8px;margin:9px 0 7px;flex-wrap:wrap;}
+.na-num{flex:1;min-width:78px;background:var(--bg);border-radius:10px;padding:7px 6px;text-align:center;}
+.na-num b{display:block;font-size:17px;color:var(--text);}
+.na-num b i{font-size:10px;font-style:normal;color:var(--sub);}
+.na-num span{font-size:10px;color:var(--sub);}
+.na-tip{font-size:12px;color:#485853;line-height:1.75;}
+.na-tip b{color:#d64545;}
 .mc-g{background:#e6f5ee;color:#0b7a55;}
 .mc-y{background:#fdf3e2;color:#96650f;}
 .mc-r{background:#fdeaea;color:#b03030;}
@@ -149,6 +164,33 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
 #toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:rgba(40,55,50,.92);color:#fff;padding:10px 18px;border-radius:99px;font-size:13px;z-index:99;opacity:0;pointer-events:none;transition:.25s;white-space:nowrap;}
 #toast.show{opacity:1;}
 .back-top{position:fixed;bottom:88px;right:16px;width:42px;height:42px;border-radius:50%;background:var(--card);box-shadow:0 2px 10px rgba(30,60,50,.15);display:none;align-items:center;justify-content:center;font-size:19px;z-index:25;border:none;cursor:pointer;color:var(--green-dark);}
+/* 营养页 */
+.nutri-stats{display:flex;gap:8px;margin:12px 0 10px;}
+.nutri-stat{flex:1;background:var(--bg);border-radius:12px;padding:12px 6px;text-align:center;}
+.nutri-stat .v{font-size:22px;font-weight:800;color:var(--text);}
+.nutri-stat .v .u{font-size:11px;font-weight:400;color:var(--sub);margin-left:2px;}
+.nutri-stat .lbl{font-size:11px;color:var(--sub);margin-top:2px;}
+.nutri-stat.c{background:var(--green-light);}
+.nutri-stat.c .v{color:var(--green-dark);}
+.nutri-stat.p{background:#eef2fb;}
+.nutri-stat.p .v{color:#3a5fa8;}
+.nutri-stat.f{background:#fdf3e7;}
+.nutri-stat.f .v{color:#b97821;}
+.nutri-bar{height:10px;background:var(--bg);border-radius:99px;overflow:hidden;}
+.nutri-bar i{display:block;height:100%;background:var(--green);border-radius:99px;transition:width .3s;}
+.nutri-bar.over i{background:var(--red);}
+.nutri-target{font-size:11px;color:var(--sub);margin:6px 2px 0;line-height:1.6;}
+.nutri-target b{color:var(--green-dark);cursor:pointer;text-decoration:underline dotted;}
+.macro-chip{font-size:10px;background:#eef2f7;color:#5a7184;border-radius:6px;padding:2px 6px;font-weight:600;white-space:nowrap;}
+.meal-macros{font-size:11px;color:#0b7a55;background:var(--green-light);border-radius:8px;padding:5px 8px;margin-top:6px;display:inline-block;}
+/* 今日小结 */
+.nutri-verdict{background:var(--bg);border-radius:12px;padding:12px 14px;margin-top:12px;}
+.nv-row{display:flex;gap:8px;padding:5px 0;font-size:12.5px;line-height:1.65;color:#485853;align-items:flex-start;}
+.nv-row .ic{flex:0 0 auto;}
+.nv-row b{font-weight:700;margin-right:2px;}
+/* 饮食页顶部当日汇总条 */
+.day-bar{background:var(--green-light);border-radius:10px;padding:8px 10px;font-size:11.5px;color:#0b7a55;line-height:1.6;margin-bottom:10px;}
+.day-bar b{font-weight:700;}
 /* sync modal */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:80;display:none;align-items:center;justify-content:center;padding:20px;}
 .modal-overlay.show{display:flex;}
@@ -176,7 +218,7 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
         <div><label class="field-label">名称</label><input id="f-name" placeholder="如：五花肉" oninput="updateShelfHint();dupHint()"></div>
         <div style="flex:0 0 96px"><label class="field-label">数量</label><input id="f-qty" type="number" min="0" step="any" value="1"></div>
         <div style="flex:0 0 84px"><label class="field-label">单位</label>
-          <select id="f-unit"><option>份</option><option>颗</option><option>斤</option><option>个</option><option>盒</option><option>包</option><option>条</option><option>块</option></select>
+          <select id="f-unit" onchange="unitSelHint()"><option>g</option><option>kg</option><option>份</option><option>斤</option><option>个</option><option>颗</option><option>盒</option><option>包</option><option>条</option><option>块</option></select>
         </div>
       </div>
       <div id="dupHint" style="font-size:11px;line-height:1.7;margin:6px 2px 0"></div>
@@ -186,6 +228,12 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
         </div>
         <div><label class="field-label">备注（可选）</label><input id="f-note" placeholder="如：切好了3块"></div>
       </div>
+      <div class="form-row" style="margin-top:2px">
+        <div style="flex:1"><label class="field-label">蛋白(g·选填)</label><input id="f-prot" type="number" min="0" step="any" placeholder="如：20"></div>
+        <div style="flex:1"><label class="field-label">脂肪(g·选填)</label><input id="f-fat" type="number" min="0" step="any" placeholder="如：15"></div>
+        <div style="flex:1"><label class="field-label">净碳水(g·选填)</label><input id="f-carb" type="number" min="0" step="any" placeholder="如：2"></div>
+      </div>
+      <div id="nutriHint" style="font-size:11px;color:var(--sub);padding:0 2px;margin-top:-2px;line-height:1.6"></div>
       <div class="form-row">
         <div style="flex:0 0 88px"><label class="field-label">存储</label>
           <select id="f-store" onchange="updateShelfHint()"><option>🧊 冷藏</option><option>🏠 常温</option><option>❄️ 冷冻</option></select>
@@ -211,6 +259,7 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
 
   <!-- ============ 今日饮食 ============ -->
   <div class="view" id="view-meal">
+    <div id="mealDayBar"></div>
     <div class="card">
       <h3>🍽️ 记录一餐 · 吃了多少减多少</h3>
       <div class="meal-type-pick" id="mealTypePick">
@@ -257,6 +306,8 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
         优先绿灯食材，黄灯适量，红灯控制。尽量广泛地选，保证维生素和矿物质充足。
         点击绿/黄灯食物可直接加入购物清单。
       </p>
+      <input id="mapSearch" style="margin-top:10px" placeholder="🔍 查食材：每100g 含糖/碳水/脂肪 + 建议吃多少" oninput="renderKeto()">
+      <div style="font-size:11px;color:var(--sub);margin-top:6px;line-height:1.6">每个食物下方小字 = <b>每 100g</b> 的 糖 / 碳水 / 脂肪。搜某个食材（如「西瓜」）会给出含糖提醒和建议食用量。</div>
       <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="backToMain()">← 返回冰箱</button>
     </div>
     <div id="ketoList"></div>
@@ -284,12 +335,35 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
     </div>
   </div>
 
+  <!-- ============ 今日营养 ============ -->
+  <div class="view" id="view-nutri">
+    <div class="card">
+      <h3>📊 今日营养 · 净碳水为先</h3>
+      <div class="nutri-stats">
+        <div class="nutri-stat c"><div class="v"><span id="ncVal">0</span><span class="u">g</span></div><div class="lbl">净碳水</div></div>
+        <div class="nutri-stat p"><div class="v"><span id="pVal">0</span><span class="u">g</span></div><div class="lbl">蛋白质</div></div>
+        <div class="nutri-stat f"><div class="v"><span id="fVal">0</span><span class="u">g</span></div><div class="lbl">脂肪</div></div>
+      </div>
+      <div class="nutri-bar" id="ncBar"><i style="width:0%"></i></div>
+      <div class="nutri-target">净碳水目标 <b id="ncTarget" onclick="editNutriTarget()">50</b> g · 生酮一般 ≤50g/天（点数字修改）</div>
+      <div class="nutri-bar" id="fatBar" style="margin-top:10px"><i style="width:0%"></i></div>
+      <div class="nutri-target">脂肪目标 <b id="fatTarget" onclick="editFatTarget()">100</b> g · 生酮靠脂肪供能，这是「至少吃到」的量（点数字修改）</div>
+      <div class="nutri-bar" id="protBar" style="margin-top:10px"><i style="width:0%"></i></div>
+      <div class="nutri-target">蛋白目标 <b id="protTarget" onclick="editProtTarget()">60</b> g · 适量即可，不是越多越好（点数字修改）</div>
+      <div id="nutriVerdict"></div>
+      <div id="ketoReco"></div>
+    </div>
+    <div class="section-title"><span>🍽️ 今日各餐</span></div>
+    <div id="nutriMeals"></div>
+  </div>
+
   <div class="tabs">
     <div class="tab active" data-v="fridge"><span class="icon">🧊</span><span class="label">冰箱</span></div>
     <div class="tab" data-v="meal"><span class="icon">🍽️</span><span class="label">饮食</span></div>
     <div class="tab" data-v="recipe"><span class="icon">📖</span><span class="label">菜谱</span></div>
     <div class="tab" data-v="season"><span class="icon">🥬</span><span class="label">应季</span></div>
     <div class="tab" data-v="shop"><span class="icon">🛒</span><span class="label">清单</span></div>
+    <div class="tab" data-v="nutri"><span class="icon">📊</span><span class="label">营养</span></div>
   </div>
 </div>
 <div id="toast"></div>
@@ -329,12 +403,40 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
 /* ================= 数据层 ================= */
 const KEY='fridgeKetoApp_v1';
 let state=JSON.parse(localStorage.getItem(KEY)||'null')||{foods:[],meals:[],shopping:[]};
+if(state.ketoTarget==null)state.ketoTarget=50;
+if(state.fatTarget==null)state.fatTarget=100;
+if(state.protTarget==null)state.protTarget=60;
 let ui={mealType:'早餐',picked:{},seasonMonth:null,recipeFilter:'all'};
 
 function save(){localStorage.setItem(KEY,JSON.stringify(state));schedulePush()}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1800);}
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+function round1(x){return Math.round((x||0)*10)/10;}
+/* 常见食材「一份/一个/一罐」的可食克数（估算用，长词优先） */
+const PORTION_DB={
+  '鹌鹑蛋':10,'咸鸭蛋':60,'鸡蛋':55,'鸭蛋':60,'皮蛋':60,'蛋':55,
+  '鸡翅':60,'鸡腿':120,'鸡胸':100,'鸡排':120,'牛排':150,'猪排':120,'排骨':150,'五花肉':150,'肉':100,
+  '三文鱼':150,'巴沙鱼':150,'龙利鱼':150,'带鱼':100,'鱿鱼':150,'生蚝':100,'扇贝':100,'虾':150,'鱼':150,
+  '圣女果':15,'番茄':150,'西红柿':150,'黄瓜':150,'土豆':130,'红薯':150,'玉米':200,'洋葱':150,
+  '苹果':200,'梨':200,'橙子':180,'橘子':100,'香蕉':120,'桃':150,'猕猴桃':80,'奇异果':80,'牛油果':140,'蓝莓':125,'草莓':150,'西瓜':300,
+  '牛奶':250,'酸奶':100,'豆浆':250,'豆腐':350,'豆干':100,'奶酪':20,'黄油':10,'奶油':100,'椰浆':200,
+  '面包':35,'馒头':100,'米饭':200,'面条':250,'坚果':25,'核桃':15
+};
+const PORTION_KEYS=Object.keys(PORTION_DB).sort((a,b)=>b.length-a.length);
+function portionGrams(name){
+  if(!name)return null; const s=String(name);
+  for(const k of PORTION_KEYS){ if(s.includes(k))return PORTION_DB[k]; }
+  return null;
+}
+function macroChip(f){
+  const nu=foodNutri(f);
+  if(!nu.p&&!nu.f&&!nu.c)return '';
+  if(nu.basis===100)return '<span class="macro-chip">每100g P'+round1(nu.p)+' F'+round1(nu.f)+' C'+round1(nu.c)+'</span>';
+  const hint=(nu.est&&nu.grams)?'（1'+esc(f.unit)+'≈'+nu.grams+'g）':'';
+  return '<span class="macro-chip">'+(nu.est?'约':'')+'P'+round1(nu.p)+' F'+round1(nu.f)+' C'+round1(nu.c)+hint+'</span>';
+}
 
 /* ================= GitHub Gist 自动云同步 =================
    令牌存独立 localStorage（fridgeKetoApp_*），绝不进入 state/短码/备份。
@@ -350,11 +452,18 @@ async function gistApi(method,path,body){
   if(!r.ok){let m='HTTP '+r.status;try{const j=await r.json();if(j.message)m=j.message}catch(e){}throw new Error(m)}
   return r.json();
 }
-function gistRenderAll(){updateShelfHint();renderFridge();renderMealHistory();renderSeasonal();renderShopping();renderRecipes();renderKeto();}
+function gistRenderAll(){updateShelfHint();renderFridge();renderMealHistory();renderSeasonal();renderShopping();renderRecipes();renderKeto();if(typeof renderNutri==='function')renderNutri();}
 function gistCfgHtml(){
   if(gistOn()){
-    return '<div style="font-size:12px;color:var(--sub);line-height:1.6;margin-bottom:8px">🟢 已开启 · 云端 Gist '+gistId().slice(0,10)+'… · 上次同步：'+(localStorage.getItem(LSYNC_KEY)?new Date(+localStorage.getItem(LSYNC_KEY)).toLocaleString():'刚刚')+'<br>打开应用自动拉最新，改动约 4 秒后自动上传。令牌只保存在本机浏览器。</div>'
-      +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-sm" onclick="gistPull(false)">⬇️ 立即拉取</button><button class="btn btn-sm" onclick="gistPush(false)">⬆️ 立即上传</button><button class="btn btn-ghost btn-sm" onclick="copyGistId()">📋 复制 Gist ID</button><button class="btn btn-ghost btn-sm" onclick="gistOff()">关闭自动同步</button></div>';
+    const ls=localStorage.getItem(LSYNC_KEY);
+    return '<div style="font-size:12px;color:var(--sub);line-height:1.7;margin-bottom:8px">🟢 已开启 · 上次同步：'+(ls?new Date(+ls).toLocaleString():'刚刚')+
+      '<br>📱 本机：<b>'+state.foods.length+'</b> 样食材　☁️ <span id="cloudInfo">云端读取中…</span></div>'
+      +'<div style="font-size:11px;background:#f2f5f4;border-radius:8px;padding:9px;margin-bottom:8px;line-height:1.6;word-break:break-all">🔑 本设备绑定的 Gist ID（<b>两台设备必须完全一致</b>才会同步）：<br><b style="user-select:all;font-size:12px">'+esc(gistId())+'</b></div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-sm" onclick="gistPull(false)">⬇️ 立即拉取</button><button class="btn btn-sm" onclick="gistForcePull()">🔄 强制拉取(覆盖本机)</button><button class="btn btn-sm" onclick="gistPush(false)">⬆️ 立即上传</button><button class="btn btn-sm" onclick="gistForcePush()">⏫ 强制上传(覆盖云端)</button><button class="btn btn-ghost btn-sm" onclick="copyGistId()">📋 复制 Gist ID</button><button class="btn btn-ghost btn-sm" onclick="gistOff()">关闭自动同步</button></div>'
+      +'<div style="margin-top:10px;padding-top:10px;border-top:1px dashed #dfe6e4;font-size:11px;color:var(--sub);line-height:1.6">🔗 <b>想改用另一台设备的云端？</b>粘贴对方的 Gist ID：</div>'
+      +'<input id="gjoin2" placeholder="粘贴另一台设备显示的 Gist ID" style="width:100%;margin-top:4px">'
+      +'<button class="btn btn-ghost btn-sm" style="margin-top:4px" onclick="gistJoin()">🔗 切换到这个云端</button>'
+      +'<div style="font-size:11px;color:var(--sub);margin-top:9px;line-height:1.7">❓ <b>手机改了没同步到电脑？</b>先点「🔄 强制拉取(覆盖本机)」——它会忽略时间戳，直接用云端覆盖本机。<br>如果两台显示的 <b>Gist ID 不一样</b>，说明各自建了独立云端、永远不会同步：在上面粘贴另一台的 ID 点「切换」。</div>';
   }
   return '<div style="font-size:12px;color:var(--sub);line-height:1.7;margin-bottom:8px">① 点 <a href="https://github.com/settings/tokens/new?scopes=gist&description=fridge-sync" target="_blank">这里生成令牌</a>（只勾 gist 权限）→ ② 复制 ghp_ 开头令牌粘贴到下面。<b>手机和电脑用同一个令牌</b>：先在一台「开启」生成云端，再到另一台点「加入」并粘贴前一台显示的 <b>Gist ID</b>，即可共用同一云端（否则两台各自独立、互不可见）。</div>'
     +'<input type="password" id="gtok" placeholder="粘贴 GitHub 令牌（ghp_ 开头，两台用同一个）" style="width:100%">'
@@ -362,7 +471,7 @@ function gistCfgHtml(){
     +'<button class="btn btn-primary btn-sm" style="margin-top:6px" onclick="gistSetup()">开启 / 加入自动同步</button>'
     +'<div style="font-size:11px;color:var(--sub);margin-top:6px;line-height:1.6">数据存在你自己的 GitHub 私有 Gist 里，只有你能看。没令牌也能用「生成同步短码」里的离线压缩码（K1: 开头）手动同步，完全不依赖网络账号。</div>';
 }
-function renderGistCfg(){const el=document.getElementById('gistCfg');if(el)el.innerHTML=gistCfgHtml();}
+function renderGistCfg(){const el=document.getElementById('gistCfg');if(el)el.innerHTML=gistCfgHtml();refreshCloudInfo();}
 async function gistSetup(){
   const tok=((document.getElementById('gtok')&&document.getElementById('gtok').value)||'').trim();
   const join=((document.getElementById('gjoin')&&document.getElementById('gjoin').value)||'').trim();
@@ -398,7 +507,7 @@ async function gistPush(silent){
     const rt=g&&g.files&&g.files['fridge.json']&&g.files['fridge.json'].content;
     if(rt){
       const d=JSON.parse(rt);
-      if(d.syncStamp&&state.syncStamp&&d.syncStamp>state.syncStamp){
+      if(d.syncStamp&&(!state.syncStamp||d.syncStamp>state.syncStamp)){
         gistApplying=true;state=d;localStorage.setItem(KEY,JSON.stringify(state));gistRenderAll();localStorage.setItem(LSYNC_KEY,String(Date.now()));gistApplying=false;
         if(!silent)toast('云端有更新，已先拉取 ☁️');
         return;
@@ -432,6 +541,65 @@ async function gistPull(auto){
 }
 function schedulePush(now){if(!gistOn())return;clearTimeout(gistTimer);gistTimer=setTimeout(()=>gistPush(true),now?800:4000)}
 function gistOff(){saveGistCfg('','');renderGistCfg();toast('已关闭自动同步（云端数据保留）')}
+/* 云端概况：让两台设备一眼看出谁的新、是不是同一个云端 */
+async function refreshCloudInfo(){
+  const el=document.getElementById('cloudInfo');if(!el)return;
+  if(!gistOn()){el.textContent='未开启';return;}
+  try{
+    const g=await gistApi('GET','/gists/'+gistId());
+    const txt=g&&g.files&&g.files['fridge.json']&&g.files['fridge.json'].content;
+    if(!txt){el.textContent='云端暂无数据';return;}
+    const d=JSON.parse(txt);
+    const n=(d.foods||[]).length;
+    const t=d.syncStamp?new Date(d.syncStamp).toLocaleString():'未知时间';
+    el.innerHTML='<b>'+n+'</b> 样（更新于 '+t+'）';
+  }catch(e){el.textContent='读取失败：'+esc(e.message||'网络问题');}
+}
+/* 已开启状态下切换到另一个 Gist（两台绑了不同云端时的解法） */
+async function gistJoin(){
+  const el=document.getElementById('gjoin2');
+  const j=((el&&el.value)||'').trim();
+  if(!j)return toast('先粘贴对方的 Gist ID');
+  if(!gistTok())return toast('本机没有令牌，请先「关闭自动同步」再重新开启');
+  try{
+    const g=await gistApi('GET','/gists/'+encodeURIComponent(j));
+    if(!g||!g.id)throw new Error('Gist ID 无效或无权访问');
+    saveGistCfg(gistTok(),g.id);
+    renderGistCfg();
+    toast('已切换到该云端 ✅ 接着点「🔄 强制拉取(覆盖本机)」');
+  }catch(e){toast('切换失败：'+(e.message||e))}
+}
+/* 忽略时间戳，直接用云端覆盖本机（手机改了没同步过来时用这个） */
+async function gistForcePull(){
+  if(!gistOn())return toast('未开启自动同步');
+  if(!confirm('确定用【云端】数据覆盖【本机】吗？\n本机尚未上传的改动会被覆盖。\n\n（手机上的库存已经传到云端时，用这个把库存拉到电脑）'))return;
+  try{
+    const g=await gistApi('GET','/gists/'+gistId());
+    const txt=g&&g.files&&g.files['fridge.json']&&g.files['fridge.json'].content;
+    if(!txt){toast('云端还没有数据');return;}
+    const d=JSON.parse(txt);
+    if(!d||!Array.isArray(d.foods))throw new Error('云端数据损坏');
+    gistApplying=true;
+    state=d;localStorage.setItem(KEY,JSON.stringify(state));
+    localStorage.setItem(LSYNC_KEY,String(Date.now()));
+    gistRenderAll();
+    gistApplying=false;
+    toast('已用云端覆盖本机 ✅ 共 '+state.foods.length+' 样食材');
+    renderGistCfg();
+  }catch(e){gistApplying=false;toast('强制拉取失败：'+(e.message||e))}
+}
+/* 忽略时间戳，用本机覆盖云端（反过来：电脑才是最新时用这个） */
+async function gistForcePush(){
+  if(!gistOn())return toast('未开启自动同步');
+  if(!confirm('确定用【本机】数据覆盖【云端】吗？\n云端尚未拉取的改动会被覆盖。\n\n（只在确认本机数据才是最新时用）'))return;
+  state.syncStamp=Date.now();localStorage.setItem(KEY,JSON.stringify(state));
+  try{
+    await gistApi('PATCH','/gists/'+gistId(),{files:{'fridge.json':{content:JSON.stringify(state)}}});
+    localStorage.setItem(LSYNC_KEY,String(Date.now()));
+    toast('已用本机覆盖云端 ✅ 共 '+state.foods.length+' 样食材');
+    renderGistCfg();
+  }catch(e){toast('强制上传失败：'+(e.message||e))}
+}
 
 /* 常见食物碳水级别（生酮友好度） */
 const CARB_DB={
@@ -455,7 +623,218 @@ function carbLevel(name){
 }
 const CARB_LABEL={keto:['🥑 低碳友好','tag-keto'],mid:['⚠️ 中等碳水','tag-warn'],high:['⛔ 高碳水','tag-bad'],unknown:['','tag-cat']};
 const CAT_EMOJI={'肉类':'🥩','蔬菜':'🥬','蛋奶':'🥚','水产':'🐟','菌菇豆制品':'🍄','主食':'🍚','水果':'🍓','其他':'📦'};
+/* ================= 每 100g 营养库（糖 / 碳水 / 脂肪） =================
+   格式：'名称':[糖g, 碳水g, 脂肪g]，均为每 100g 可食部（常见状态，取中国食物成分表 / USDA 典型值）
+   匹配方式与 CARB_DB 一致：长词优先的子串匹配。 */
+const NUTRI_DB={
+/* 油脂类 */
+'猪油':[0,0,100],'牛油':[0,0,100],'黄油':[0.1,0.1,81],'椰子油':[0,0,100],'牛油果油':[0,0,100],'橄榄油':[0,0,100],'MCT油':[0,0,100],'MCT':[0,0,100],'亚麻籽油':[0,0,100],'棕榈仁油':[0,0,100],'调和油':[0,0,100],'菜籽油':[0,0,100],'玉米油':[0,0,100],'大豆油':[0,0,100],'花生油':[0,0,100],'葵花籽油':[0,0,100],
+/* 肉蛋类 */
+'五花肉':[0,0,35],'肥牛':[0,0,25],'牛排':[0,0,15],'带皮鸡腿':[0,0,16],'鸡腿':[0,0,15],'羊排':[0,0,20],'猪蹄':[0,0,18],'鸡蛋':[0.4,1.1,9],'鸭蛋':[0.4,3.1,13],'猪肝':[0,5,3.5],'牛骨髓':[0,0,92],'脑花':[0,0,9.8],'猪蹄筋':[0,0,1.5],'牛筋':[0,0,1.5],'鸡胸':[0,0,2],'牛肉':[0,0,4.2],'猪肉':[0,0,30],'羊肉':[0,0,14],
+'香肠':[2,10,30],'腊肉':[0.5,3,48],'培根':[0.5,1.3,40],'火腿肠':[3,12,14],
+/* 海产类 */
+'三文鱼':[0,0,13],'金枪鱼':[0,0,4],'巴沙鱼':[0,0,4],'带鱼':[0,0,4.9],'鲈鱼':[0,0,3.4],'黑虎虾':[0,1,0.8],'基围虾':[0,1,0.8],'皮皮虾':[0,1,1],'虾':[0,1,0.8],'扇贝':[0,3,0.5],'蛏子':[0,2,0.9],'花甲':[0,2,0.6],'龙虾':[0,0.5,1],'螃蟹':[0,1.5,2.3],'鲍鱼':[0,6,0.8],'鱿鱼':[0,3,1.4],'生蚝':[0,4.9,2],'章鱼':[0,2,1],
+/* 蔬菜类 */
+'菠菜':[0.4,3.6,0.4],'生菜':[0.5,2.9,0.2],'油麦菜':[0.5,2,0.3],'空心菜':[0.5,3,0.3],'芹菜':[1.3,3,0.2],'韭菜':[1.5,4.6,0.4],'西兰花':[1.7,7,0.4],'菜花':[1.9,5,0.3],'黄瓜':[1.7,3.6,0.1],'冬瓜':[1.2,2.6,0.2],'丝瓜':[1.5,4,0.2],'苦瓜':[1.9,4.9,0.1],'芦笋':[1.9,3.9,0.1],'白萝卜':[2.5,4.1,0.1],'菌菇':[1.5,4.5,0.3],'香菇':[2.2,5.2,0.3],'金针菇':[0.2,6,0.4],'木耳':[0.2,6,0.5],'海带':[0.5,2.5,0.1],'紫菜':[2,44,1.3],'大白菜':[1.2,3.2,0.1],'娃娃菜':[1,3,0.2],
+'番茄':[2.6,3.9,0.2],'圣女果':[2.6,3.9,0.2],'洋葱':[4.2,9.3,0.1],'胡萝卜':[4.7,9.6,0.2],'彩椒':[4.2,6,0.3],'豌豆':[5.7,14,0.4],'四季豆':[2.5,7,0.2],
+/* 水果类 */
+'牛油果':[0.7,8.5,15],'橄榄':[0,3.8,15],'柠檬':[2.5,9.3,0.3],
+'草莓':[4.9,7.7,0.3],'树莓':[4.4,12,0.7],'黑莓':[4.9,10,0.5],'蔓越莓':[4,12,0.1],'蓝莓':[10,14.5,0.3],'西梅':[10,11,0.3],'桑葚':[8,12,0.4],'杨桃':[4,6.7,0.3],'杨梅':[5,6.7,0.2],'木瓜':[8,10,0.1],'百香果':[11,23,0.7],
+'苹果':[10,14,0.2],'梨':[10,15,0.1],'香蕉':[12,23,0.3],'西瓜':[6.2,7.6,0.2],'哈密瓜':[8,8.2,0.1],'芒果':[14,15,0.4],'荔枝':[15,16.5,0.4],'龙眼':[14,17,0.1],'葡萄':[15.5,18,0.2],'提子':[15.5,18,0.2],'菠萝':[10,13,0.1],'榴莲':[13,27,5],'菠萝蜜':[19,24,0.3],'桃子':[8,10,0.3],'李子':[10,11,0.3],'杏':[9,11,0.4],'枇杷':[8,12,0.2],'奇异果':[9,14.7,0.5],'橙子':[9,11.8,0.1],'芦柑':[10,13,0.2],'柑橘':[9,12.5,0.2],'车厘子':[13,16,0.2],'樱桃':[13,16,0.2],'番石榴':[8,14,0.5],'石榴':[14,18,0.3],'山竹':[16,18,0.2],'火龙果':[8,13,0.4],'柿子':[14,18,0.2],'冬枣':[25,30,0.3],'枣':[25,30,0.3],'甘蔗':[15,17,0.1],
+/* 奶制品 */
+'奶油奶酪':[3.5,4.5,34],'干酪':[0.5,1.3,33],'硬奶酪':[0.5,1.3,33],'芝士片':[2,4,25],'淡奶油':[3,3,36],'酸奶油':[3.5,4,20],'无糖酸奶':[4.7,4.7,3.5],'希腊酸奶':[3.6,3.6,4],'酸奶':[4.7,4.7,3.5],
+'全脂牛奶':[5,5,3.3],'牛奶':[5,5,3.3],'低脂牛奶':[5,5,1.5],'脱脂牛奶':[5,5,0.3],'零乳糖牛奶':[5,5,3.5],'含糖乳饮料':[10,11,1.5],'含糖酸奶':[13,15,3],
+/* 坚果种子 */
+'巴西坚果':[2.3,12,66],'南瓜子':[1.4,15,49],'夏威夷果':[4.6,14,76],'无糖椰子片':[7,21,50],'碧根果':[4,14,72],'杏仁粉':[4,20,50],'杏仁':[4.4,22,50],'核桃':[2.6,14,65],'榛子':[4.3,17,61],'花生':[4,16,49],'松子':[3.6,13,68],'葵花籽':[2.6,20,51],'西瓜子':[1,15,47],'芝麻':[0.3,23,50],'腰果':[5.9,30,44],'开心果':[7.7,28,45],'栗子':[11,45,1.5],
+/* 主食 / 淀粉 */
+'魔芋丝':[0,3,0],'魔芋':[0,3,0],'亚麻籽仁':[1.6,29,42],'亚麻籽粉':[1.6,29,42],'奇亚籽':[0,42,31],'椰子面粉':[10,60,15],
+'玉米':[4.5,22,1.5],'芋头':[0.4,18,0.2],'红薯':[4.2,20,0.2],'紫薯':[5,25,0.2],'山药':[0.5,12.4,0.2],'南瓜':[2.8,5.5,0.1],'土豆':[0.8,17,0.1],
+'大米':[0.1,26,0.3],'米饭':[0.1,26,0.3],'糯米':[0.5,78,1],'小米':[0.5,75,3.1],'玉米面':[1.5,70,3],'面条':[0.5,27,0.5],'米粉':[0.3,25,0.2],'粉丝':[0.5,83,0.2],'包子':[2,35,5],'馒头':[2,47,1.1],'面包':[5,50,5],'饼干':[20,70,20],
+/* 发酵 / 半成品 / 其他常用 */
+'泡菜':[1,3,0.2],'酸菜':[0.5,3,0.2],'开菲尔':[4,4.5,3],'纳豆':[2,12,11],'味噌':[6,26,6],'康普茶':[2,4,0],'苹果醋':[0.4,1,0],'酸黄瓜':[1,2.3,0.2],'腐乳':[1,5,8],
+'原切腌制牛排':[0,0,15],'腌制鸡腿':[1,2,15],'卤牛肉':[1,2,6],'溏心蛋':[0.4,1.1,9],'烤肠':[3,12,20],'川味香肠':[2,10,30],'蛋饺':[2,12,10],'火锅丸子':[3,15,12],'冻豆腐':[0.5,4,8],'豆腐':[0.5,4,8],'椰浆':[3,6,20],'椰子':[3,15,33],
+/* —— 补充：应季食材与常见别名/缺项 —— */
+'杏鲍菇':[1.5,4.5,0.3],'猕猴桃':[9,14.7,0.5],'桃':[8,10,0.3],'笋':[0.8,3.6,0.2],'花菜':[1.9,5,0.3],'花蛤':[0,2,0.6],'蛤蜊':[0,2,0.6],'蛏':[0,2,0.9],'牡蛎':[0,4.9,2],'海蜇':[0,2,0.3],
+'茼蒿':[1.8,2.7,0.3],'苋菜':[0.9,4.1,0.3],'茭白':[2,5.9,0.2],'秋葵':[1.5,7.5,0.2],'茄子':[2.8,4.9,0.2],'蒜苔':[2,13,0.3],'荠菜':[0.5,4,0.4],'香椿':[0.4,4,0.5],'鸡毛菜':[1,2.4,0.3],'荷兰豆':[3,7,0.2],'红薯叶':[0.5,4.4,0.6],'蚕豆':[4,19,0.7],'毛豆':[2.2,9,5],'豌豆苗':[1.8,3.8,0.4],
+'鲫鱼':[0,3.8,2.7],'黄花鱼':[0,1,4],'鳜鱼':[0,0,3.5],'鲅鱼':[0,1,5],'秋刀鱼':[0,0,13],'草鱼':[0,0,5.2],'鳝鱼':[0,1.2,1.4],'泥鳅':[0,1.7,2.9],'青鱼':[0,0,5],'海参':[0,0,0.2],
+'大闸蟹':[0,2.3,1.6],'梭子蟹':[0,1.5,1.5],'河虾':[0,0,1],'小龙虾':[0,0.5,1],'螺蛳':[0,3,0.5],
+'午餐肉':[1,5,20],'皮蛋':[0.5,4.5,9],'鸡蛋干':[0,4,10],'鸡蛋羹':[0.3,1.2,6],'茶叶蛋':[0.4,1.1,9],'卤蛋':[0.5,1.5,9],'咸鸭蛋':[0.5,3.3,13],'牛尾':[0,0,25],'牛腩':[0,1,20],'鸭胸':[0,0.5,13],'鸭血':[0,2,0.4],'猪血':[0,1,0.3],'猪排骨':[0,0.7,20],'猪里脊':[0,0.7,7],'五花肉片':[0,0,35],'肥牛卷':[0,0,25],'羊肉片':[0,0,20],'鸡腿肉':[0,0,13],'鸡胸肉':[0,0,2],'牛肉干':[2,8,25],'猪肉脯':[10,30,15],'鱼丸':[1,8,5],'虾滑':[0,3,2],
+'黑咖啡':[0,0,0],'美式':[0,0,0],'拿铁':[5,6,3.5],'无糖可乐':[0,0,0],'无糖气泡水':[0,0,0],'椰子水':[3,4,0],'杏仁奶':[0,1,1.2],'豆浆':[0,1.5,1.5],'无糖豆浆':[0,1.5,1.5],'豆腐脑':[0,2,2]
+};
+const NUTRI_KEYS=Object.keys(NUTRI_DB).sort((a,b)=>b.length-a.length);
+/* 查每 100g 营养：返回 {k:匹配到的名称, s:糖, c:碳水, f:脂肪} */
+function findNutri(name){
+  if(!name)return null;
+  const nm=String(name);
+  for(const k of NUTRI_KEYS){ if(nm.includes(k))return {k:k,s:NUTRI_DB[k][0],c:NUTRI_DB[k][1],f:NUTRI_DB[k][2]}; }
+  return null;
+}
+/* 按营养值推算灯色（食物地图里已有的以地图为准，这里兜底） */
+function nutriLevel(n){
+  if(!n)return 'unknown';
+  if(n.s>=6||n.c>=15)return 'r';
+  if(n.s>=2||n.c>=6)return 'y';
+  return 'g';
+}
+/* 食物地图里该食物的灯色（精确匹配，取不到返回 null） */
+function mapLightOf(name){
+  if(!name)return null;
+  for(const m of FOOD_MAP){
+    if(m.g.some(x=>x[0]===name))return 'g';
+    if(m.y.some(x=>x[0]===name))return 'y';
+    if(m.r.some(x=>x[0]===name))return 'r';
+  }
+  return null;
+}
+/* 建议食用量：给该食物留一份净碳水额度（黄灯12g / 红灯8g），反推克数 */
+function suggestPortion(n,lv){
+  if(!n||lv==='g')return null;
+  const budget=(lv==='y')?12:8;
+  let g=Math.round(budget/Math.max(n.c,0.5)*100/10)*10;
+  g=Math.max(30,Math.min(400,g));
+  return {g:g,budget:budget,carb:Math.round(g*n.c/100)};
+}
+function portionDesc(g){
+  return g<=50?'（大约两三口 / 两三片）':g<=120?'（大约小半碗）':g<=250?'（大约一小碗）':'（大约一大碗）';
+}
+/* 搜索食材时的营养提醒卡 */
+function nutriAdviceHtml(kw){
+  if(!kw)return '';
+  const n=findNutri(kw);
+  if(!n)return '';
+  const lv=mapLightOf(n.k)||nutriLevel(n);
+  const lvTxt=lv==='g'?'🟢 绿灯 · 推荐吃':(lv==='y'?'🟡 黄灯 · 限量吃':'🔴 红灯 · 少碰');
+  let tip;
+  if(lv==='g'){
+    tip='✅ 低碳友好：每 100g 只有 <b>'+n.c+'g</b> 碳水、<b>'+n.s+'g</b> 糖，正常吃不用限量。';
+  }else{
+    const sp=suggestPortion(n,lv);
+    const sWarn=n.s>=6?('⚠️ 含糖偏高：每 100g 有 <b>'+n.s+'g</b> 糖。'):'';
+    tip=(lv==='y'?'⚠️ 可以少量吃，别放开。':'🚫 含糖 / 碳水偏高，尽量少吃。')+sWarn+
+        '建议一次 <b>不超过 '+sp.g+'g</b>'+portionDesc(sp.g)+'，约 '+sp.carb+'g 净碳水。';
+  }
+  return '<div class="nutri-advice lv-'+lv+'">'+
+    '<div class="na-head">'+foodEmoji(n.k)+' '+esc(n.k)+'<span class="lv">'+lvTxt+'</span></div>'+
+    '<div class="na-nums">'+
+      '<div class="na-num"><b>'+n.s+'<i>g</i></b><span>糖 / 100g</span></div>'+
+      '<div class="na-num"><b>'+n.c+'<i>g</i></b><span>碳水 / 100g</span></div>'+
+      '<div class="na-num"><b>'+n.f+'<i>g</i></b><span>脂肪 / 100g</span></div>'+
+    '</div>'+
+    '<div class="na-tip">'+tip+'</div>'+
+  '</div>';
+}
 
+
+
+
+/* ================= 蛋白质库（每 100g） ================= */
+const PROTEIN_DB={
+'猪油':0,'牛油':0,'黄油':0.9,'椰子油':0,'牛油果油':0,'橄榄油':0,'MCT油':0,'MCT':0,'亚麻籽油':0,'棕榈仁油':0,'调和油':0,'菜籽油':0,'玉米油':0,'大豆油':0,'花生油':0,'葵花籽油':0,'芝麻油':0,
+'五花肉':13,'五花肉片':13,'肥牛':17,'肥牛卷':17,'牛排':22,'原切腌制牛排':22,'牛腩':17.5,'牛尾':17,'牛肉':20,'牛肉干':45,'牛骨髓':7,'牛筋':34,'猪蹄筋':35,'猪蹄':22.6,'猪肝':19.3,'猪里脊':20,'猪排骨':17.5,'猪血':12,'猪肉':13,'培根':12.5,'香肠':12,'川味香肠':12,'腊肉':20,'火腿肠':10,'午餐肉':10,'猪肉脯':25,'烤肠':12,'纯肉烤肠':12,'腌制鸡腿':18,'卤牛肉':30,
+'带皮鸡腿':17,'鸡腿':17,'鸡腿肉':18,'鸡胸':22,'鸡胸肉':22,'鸡蛋':13.3,'鸡蛋羹':8,'鸡蛋干':15,'茶叶蛋':13,'卤蛋':13,'溏心蛋':13,'鸭蛋':12.6,'咸鸭蛋':12,'皮蛋':14,'鸭':16,'鸭胸':20,'鸭血':14,'羊排':19,'羊腿':20,'羊肉':19,'羊肉片':18,'脑花':10,'鸡翅':17,
+'三文鱼':20,'香煎三文鱼':22,'金枪鱼':23,'金枪鱼罐头':25,'巴沙鱼':13,'带鱼':17.7,'鲈鱼':18.6,'清蒸鲈鱼':18,'鲫鱼':17.1,'黄花鱼':17.7,'鳜鱼':19.9,'鲅鱼':21,'秋刀鱼':18.5,'草鱼':16.6,'鳝鱼':18,'泥鳅':17.9,'青鱼':20,'海参':16,'黑虎虾':16,'基围虾':18,'皮皮虾':11.6,'虾':16.4,'虾滑':15,'河虾':16.4,'白灼虾':16,'小龙虾':14.8,'扇贝':11.1,'蛏子':7.3,'蛏':7.3,'花甲':10,'花蛤':10,'蛤蜊':10,'龙虾':18.9,'螃蟹':11.6,'大闸蟹':14,'梭子蟹':15.9,'鲍鱼':12.6,'鱿鱼':17.4,'生蚝':9.9,'牡蛎':9.9,'章鱼':14.6,'螺蛳':10,'海蜇':3.7,'鱼丸':12,
+'菠菜':2.6,'生菜':1.3,'油麦菜':1.4,'空心菜':2.2,'芹菜':0.8,'韭菜':2.4,'西兰花':4.1,'菜花':2.1,'花菜':2.1,'黄瓜':0.8,'冬瓜':0.4,'丝瓜':1,'苦瓜':1,'芦笋':1.4,'白萝卜':0.9,'菌菇':2.7,'香菇':2.2,'金针菇':2.4,'杏鲍菇':1.3,'平菇':1.9,'口蘑':3.1,'木耳':1.5,'海带':1.2,'紫菜':26.5,'大白菜':1.5,'娃娃菜':1.5,'番茄':0.9,'圣女果':0.9,'洋葱':1.1,'胡萝卜':1,'彩椒':1.3,'豌豆':7.4,'豌豆苗':3.1,'四季豆':2,'苋菜':2.8,'茼蒿':1.9,'茭白':1.2,'荠菜':2.9,'香椿':1.7,'鸡毛菜':1.5,'荷兰豆':2.5,'红薯叶':2.8,'茄子':1.1,'秋葵':2,'蒜苔':2,'莴笋':1,'莲藕':1.9,'笋':2.6,'春笋':2.6,'冬笋':4,'西葫芦':0.8,
+'牛油果':2,'橄榄':0.8,'柠檬':1.1,'草莓':1,'树莓':1.2,'黑莓':1.4,'蔓越莓':0.4,'蓝莓':0.7,'西梅':0.7,'桑葚':1.7,'杨桃':0.6,'杨梅':0.8,'木瓜':0.4,'百香果':2.2,'苹果':0.4,'梨':0.4,'香蕉':1.4,'西瓜':0.5,'哈密瓜':0.5,'芒果':0.6,'荔枝':0.9,'龙眼':1.2,'葡萄':0.5,'提子':0.5,'菠萝':0.5,'榴莲':2.6,'菠萝蜜':0.7,'桃子':0.9,'桃':0.9,'李子':0.7,'杏':0.9,'枇杷':0.8,'奇异果':1.1,'猕猴桃':1.1,'橙子':0.8,'芦柑':0.6,'柑橘':0.7,'车厘子':1.1,'樱桃':1.1,'番石榴':1.1,'石榴':1.4,'山竹':0.4,'火龙果':1.1,'柿子':0.4,'冬枣':1.1,'枣':1.1,'甘蔗':0.4,'无花果':1.5,'柚子':0.8,
+'奶油奶酪':8.5,'干酪':25,'硬奶酪':25,'芝士片':10,'淡奶油':2.1,'酸奶油':2.5,'无糖酸奶':3.5,'希腊酸奶':9,'酸奶':3.5,'全脂牛奶':3.2,'牛奶':3.2,'低脂牛奶':3.3,'脱脂牛奶':3.4,'零乳糖牛奶':3.2,'含糖乳饮料':1,'含糖酸奶':3,'开菲尔':3.5,
+'豆腐':8.1,'冻豆腐':8,'内酯豆腐':5,'豆干':16,'腐竹':45,'油豆腐':17,'千张':25,'香干':15,'豆浆':3,'无糖豆浆':3,'豆腐脑':3,'纳豆':16.5,'味噌':12,'泡菜':2,'酸菜':2,'酸黄瓜':0.9,'腐乳':12,'康普茶':0,'苹果醋':0,
+'巴西坚果':14,'南瓜子':30,'夏威夷果':8,'无糖椰子片':7,'碧根果':9,'杏仁':21,'杏仁粉':21,'核桃':15,'榛子':15,'花生':24,'松子':14,'葵花籽':21,'西瓜子':32,'芝麻':18,'腰果':18,'开心果':20,'栗子':4.2,'奇亚籽':17,'亚麻籽仁':18,'亚麻籽粉':18,'椰子':3.3,'椰子面粉':20,'椰浆':2,
+'大米':2.6,'米饭':2.6,'糯米':7.3,'小米':9,'玉米':4,'玉米面':8,'面条':2.7,'米粉':1.5,'粉丝':0.8,'包子':8,'馒头':7,'面包':8.3,'饼干':9,'土豆':2,'芋头':2.2,'红薯':1.6,'紫薯':1.1,'山药':1.9,'南瓜':0.7,'魔芋丝':0.1,'魔芋':0.1,
+'皮蛋瘦肉粥':5,'紫菜蛋花汤':2,'番茄炒蛋':6,'辣椒炒肉':12,'红烧肉':15,'可乐鸡翅':12,'黑咖啡':0.3,'美式':0.3,'拿铁':3.4,'无糖可乐':0,'无糖气泡水':0,'椰子水':0.2,'杏仁奶':1
+};
+const PROTEIN_KEYS=Object.keys(PROTEIN_DB).sort((a,b)=>b.length-a.length);
+function proteinOf(name){
+  if(!name)return 0;
+  const nm=String(name);
+  for(const k of PROTEIN_KEYS){ if(nm.includes(k))return PROTEIN_DB[k]; }
+  return 0;
+}
+/* ================= 膳食纤维库（算净碳水用） =================
+   净碳水 = 总碳水 - 膳食纤维（未收录的按 0 计，油脂类显式为 0） */
+const FIBER_DB={
+'猪油':0,'牛油':0,'黄油':0,'椰子油':0,'牛油果油':0,'橄榄油':0,'MCT油':0,'MCT':0,'亚麻籽油':0,'棕榈仁油':0,'调和油':0,'菜籽油':0,'玉米油':0,'大豆油':0,'花生油':0,'葵花籽油':0,'芝麻油':0,
+'牛油果':6.7,'奇亚籽':34,'亚麻籽仁':27,'亚麻籽粉':27,'椰子面粉':39,'杏仁粉':10,
+'西兰花':3.3,'菜花':2,'花菜':2,'菠菜':2.2,'生菜':1.3,'油麦菜':1.2,'空心菜':1.6,'芹菜':1.6,'韭菜':2.4,'黄瓜':0.5,'冬瓜':1,'丝瓜':0.6,'苦瓜':2.6,'芦笋':2.1,'白萝卜':1.6,'菌菇':1.5,'香菇':3.3,'金针菇':2.7,'杏鲍菇':2.5,'平菇':2,'口蘑':2.5,'蘑菇':2.5,'木耳':2.6,'海带':1.3,'紫菜':1.5,'大白菜':1,'娃娃菜':1,'包菜':2,'番茄':1.2,'圣女果':1.8,'洋葱':1.7,'胡萝卜':2.8,'彩椒':2.1,'豌豆':5.5,'豌豆苗':1.9,'四季豆':2.7,
+'苋菜':1.8,'茼蒿':1.2,'茭白':1.9,'荠菜':1.4,'香椿':1.5,'鸡毛菜':1,'荷兰豆':2.5,'红薯叶':1,'茄子':2.5,'秋葵':3.2,'蒜苔':2.5,'莴笋':1.5,'莲藕':2.2,'笋':1.8,'春笋':2.2,'冬笋':2.2,'西葫芦':1,'白菜':1,
+'草莓':2,'树莓':6.5,'黑莓':5.3,'蔓越莓':4.6,'蓝莓':2.4,'西梅':2.4,'桑葚':1.7,'杨桃':1.4,'杨梅':1,'木瓜':1.7,'百香果':10.4,'苹果':2.4,'梨':3.1,'香蕉':2.6,'西瓜':0.4,'哈密瓜':0.9,'芒果':1.6,'荔枝':1.3,'龙眼':1.1,'葡萄':0.9,'提子':0.9,'菠萝':1.4,'榴莲':3.8,'菠萝蜜':2.3,'桃子':1.5,'桃':1.5,'李子':1.4,'杏':2,'枇杷':0.4,'奇异果':3,'猕猴桃':3,'橙子':2.4,'芦柑':1.7,'柑橘':1.7,'车厘子':1.9,'樱桃':1.6,'番石榴':5.4,'石榴':4,'山竹':1.8,'火龙果':1.8,'柿子':1.4,'冬枣':1.9,'枣':1.9,'无花果':2.9,'柚子':1.8,'柠檬':2.8,'橄榄':3.3,
+'巴西坚果':7.5,'南瓜子':6,'夏威夷果':8.6,'无糖椰子片':16.3,'碧根果':9.6,'杏仁':12.5,'核桃':6.7,'榛子':9.7,'花生':8.5,'松子':3.7,'葵花籽':8.6,'西瓜子':1.1,'芝麻':11.8,'腰果':3.3,'开心果':10.3,'栗子':5.1,'椰子':9,
+'玉米':2.4,'芋头':4.1,'红薯':3,'紫薯':3.3,'山药':1.5,'南瓜':1.2,'土豆':1.8,'蚕豆':4,'毛豆':5.2,
+'大米':0.4,'米饭':0.4,'糯米':0.4,'小米':1.5,'玉米面':5.5,'面条':1.8,'米粉':0.8,'粉丝':0.7,'包子':1.5,'馒头':2,'面包':2.4,'饼干':2.5,
+'泡菜':2.4,'酸菜':1.9,'酸黄瓜':1.2,'味噌':5.4,'纳豆':5.4,'腐乳':0.5,'豆腐':0.3,
+'豆浆':0.5,'杏仁奶':0.5,'椰子水':0,'拿铁':0,'美式':0
+};
+const FIBER_KEYS=Object.keys(FIBER_DB).sort((a,b)=>b.length-a.length);
+function fiberOf(name){
+  if(!name)return 0;
+  const nm=String(name);
+  for(const k of FIBER_KEYS){ if(nm.includes(k))return FIBER_DB[k]; }
+  return 0;
+}
+/* 每 100g 全量营养：糖/碳水/脂肪/纤维/净碳水 */
+function nutriFull(name){
+  const n=findNutri(name);
+  if(!n)return null;
+  const fib=fiberOf(name);
+  return {k:n.k,s:n.s,c:n.c,f:n.f,p:proteinOf(name),fib:fib,nc:Math.max(0,Math.round((n.c-fib)*10)/10)};
+}
+/* 统一小字：每100g：净碳X · 碳X · 糖X · 脂X g（查不到返回 ''） */
+function nutriLine(name){
+  const n=nutriFull(name);
+  if(!n)return '';
+  return '每100g：蛋白'+n.p+' · 净碳'+n.nc+' · 碳'+n.c+' · 糖'+n.s+' · 脂'+n.f+'g';
+}
+function nutriTip(name){
+  const t=nutriLine(name);
+  return t?' · <span style="color:#8a9a95">'+t+'</span>':'';
+}
+/* ================= 重量单位与营养自动估算 ================= */
+/* 单位换算成克：g/克=1，kg/千克/公斤=1000，斤=500；非重量单位返回 null */
+function unitToGrams(q,u){
+  const s=String(u||'').trim().toLowerCase();
+  if(s==='g'||s==='克')return q;
+  if(s==='kg'||s==='千克'||s==='公斤')return q*1000;
+  if(s==='斤')return q*500;
+  return null;
+}
+function unitIsWeight(u){return unitToGrams(1,u)!==null;}
+/* 该食物「一个单位」的营养基准：
+   重量单位(g/kg/斤)→按每100g（手动填的=标签值，留空=内置食物库），记录时按克数换算；
+   非重量单位→手动填的每单位值优先；全留空则按「常见一份克数 × 每100g」自动估算（est=true）。 */
+function foodNutri(f){
+  const db=nutriFull(f.name);
+  const has=!!db;
+  const w=unitIsWeight(f.unit);
+  const val=(m,d)=>(m!=null&&m!=='')?Number(m):d;
+  if(w)return {basis:100,est:false,grams:null,
+    p:val(f.p,has?db.p:0),
+    f:val(f.f,has?db.f:0),
+    c:val(f.c,has?db.nc:0)};
+  const g=portionGrams(f.name)||100;
+  const est=!(f.p!=null&&f.p!=='')&&!(f.f!=null&&f.f!=='')&&!(f.c!=null&&f.c!=='');
+  return {basis:1,est:est,grams:has?g:null,
+    p:val(f.p,has?Math.round(db.p*g/10)/10:0),
+    f:val(f.f,has?Math.round(db.f*g/10)/10:0),
+    c:val(f.c,has?Math.round(db.nc*g/10)/10:0)};
+}
+/* 添加食物表单的单位提示 */
+function unitSelHint(){
+  const sel=document.getElementById('f-unit');
+  const el=document.getElementById('nutriHint');
+  if(!sel||!el)return;
+  const u=sel.value;
+  if(unitIsWeight(u))el.innerHTML='💡 单位是 <b>'+esc(u)+'</b>（重量）：下面三项按 <b>每100g</b> 填（和食品包装标签一致），<b>全留空则自动用内置食物库估算</b>；记饮食时按克数自动换算。';
+  else el.innerHTML='💡 单位是 <b>'+esc(u)+'</b>（非重量）：下面三项按 <b>1'+esc(u)+'</b> 的营养填（如「1罐椰浆」填一罐的量）；留空则按内置库「常见一份克数」自动估算（包装类建议手动填更准）。';
+}
+/* 勾选食材时的实时营养预估（随数量变化） */
+function unitPreviewHtml(id){
+  const f=state.foods.find(x=>x.id===id);
+  const sel=ui.picked[id];
+  if(!f||!sel)return '';
+  const nu=foodNutri(f);
+  const k=nu.basis===100?(unitToGrams(1,f.unit)||0)/100:1;
+  const P=nu.p*k*(sel.qty||0),F=nu.f*k*(sel.qty||0),C=nu.c*k*(sel.qty||0);
+  if(!P&&!F&&!C)return '';
+  return '≈ 这份：蛋白'+round1(P)+'g · 脂肪'+round1(F)+'g · 净碳'+round1(C)+'g'+((nu.basis===100||nu.est)?'（自动估算）':'');
+}
 /* 精细化食物图标：按具体名称匹配（长词优先），匹配不到再退回分类图标 */
 const FOOD_EMOJI={
   /* 肉类 */
@@ -956,6 +1335,7 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   window.scrollTo(0,0);
   if(t.dataset.v==='meal'){renderMealPick();renderMealHistory();}
   if(t.dataset.v==='recipe')renderRecipes();
+  if(t.dataset.v==='nutri')renderNutri();
 });
 
 /* ================= 库存 ================= */
@@ -968,6 +1348,9 @@ function addFood(){
   const sv=document.getElementById('f-store').value;
   const zone=sv.includes('冷冻')?'freeze':sv.includes('常温')?'room':'fridge';
   const frozen=zone==='freeze';
+  const prot=parseFloat(document.getElementById('f-prot').value)||0;
+  const fat=parseFloat(document.getElementById('f-fat').value)||0;
+  const carb=parseFloat(document.getElementById('f-carb').value)||0;
   if(!name){toast('先给食物起个名字吧');return;}
   const adv=storeAdvice(name);
   if(frozen&&adv&&adv.noFreeze){
@@ -987,11 +1370,12 @@ function addFood(){
   }
   // 同名同单位同温区直接累加（补充新货，保质期按新货重算）
   const exist=state.foods.find(f=>f.name===name&&f.unit===unit&&zoneOf(f)===zone);
-  if(exist){exist.qty=+(exist.qty+qty).toFixed(2);exist.addedAt=todayStr();if(days!=null)exist.days=days;if(note)exist.note=note;}
-  else state.foods.unshift({id:uid(),name,cat,unit,qty,note,addedAt:todayStr(),days,frozen:zone==='freeze',room:zone==='room'});
+  if(exist){exist.qty=+(exist.qty+qty).toFixed(2);exist.addedAt=todayStr();if(days!=null)exist.days=days;if(note)exist.note=note;if(prot)exist.p=prot;if(fat)exist.f=fat;if(carb)exist.c=carb;}
+  else state.foods.unshift({id:uid(),name,cat,unit,qty,note,addedAt:todayStr(),days,frozen:zone==='freeze',room:zone==='room',p:prot||undefined,f:fat||undefined,c:carb||undefined});
   save();renderFridge();
   document.getElementById('f-name').value='';document.getElementById('f-note').value='';
   document.getElementById('f-qty').value=1;document.getElementById('f-days').value='';
+  document.getElementById('f-prot').value='';document.getElementById('f-fat').value='';document.getElementById('f-carb').value='';
   updateShelfHint();dupHint();
   toast('已放入'+ZONE_LABEL[zone]+'：'+name+' '+qty+unit);
 }
@@ -1076,7 +1460,7 @@ function renderFridge(){
           '<div class="meta">'+(kd[0]?'<span class="tag '+kd[1]+'">'+kd[0]+'</span>':'')+
           (et?'<span class="tag '+et.cls+'" style="cursor:pointer" title="点击修改保质期" onclick="editDays(\''+f.id+'\')">'+et.t+'</span>':'')+
           (st?'<span class="tag '+st.cls+'" style="cursor:help" title="'+esc(st.title)+'" onclick="toast(\''+esc(st.title).replace(/'/g,"\\'")+'\')">'+st.t+'</span>':'')+
-          (f.note?'<span>'+esc(f.note)+'</span>':'')+stock+'</div></div>'+
+          (f.note?'<span>'+esc(f.note)+'</span>':'')+stock+macroChip(f)+'</div></div>'+
           '<div class="qty-box"><button class="qty-btn" onclick="adjustQty(\''+f.id+'\',-'+step+')">−</button>'+
           '<div class="num">'+f.qty+'<small> '+f.unit+'</small></div>'+
           '<button class="qty-btn" onclick="adjustQty(\''+f.id+'\','+step+')">＋</button></div>'+
@@ -1107,13 +1491,16 @@ function renderMealPick(){
   wrap.innerHTML=foods.slice().sort((a,b)=>zoneRank(a)-zoneRank(b)||daysLeft(a)-daysLeft(b)).map(f=>{
     const sel=ui.picked[f.id];
     const et=f.qty>0?expTag(f):null;
+    const nl=nutriLine(f.name);
     return '<div class="pick-item'+(sel?' sel':'')+'" onclick="togglePick(\''+f.id+'\')">'+
       '<div class="ck">'+(sel?'✓':'')+'</div>'+
       '<div style="flex:1;min-width:0"><div class="name" style="font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+foodEmoji(f.name,f.cat)+' '+esc(f.name)+'</div>'+
       '<div style="font-size:11px;color:var(--sub);margin-top:2px">库存 '+f.qty+' '+f.unit+
       (f.frozen?' · <span style="color:#4a90d9;font-weight:600">❄️ 冷冻中·先解冻</span>':'')+
       (f.room?' · <span style="color:#b97821;font-weight:600">🏠 常温存放</span>':'')+
-      (et&&et.lv>0&&!f.frozen?' · <span style="color:'+(et.lv>=2?'var(--red)':'#b97821')+';font-weight:600">'+et.t+'</span>':'')+'</div></div>'+
+      (et&&et.lv>0&&!f.frozen?' · <span style="color:'+(et.lv>=2?'var(--red)':'#b97821')+';font-weight:600">'+et.t+'</span>':'')+'</div>'+
+      (nl?'<div style="font-size:11px;color:#8a9a95;margin-top:2px">'+nl+'</div>':'')+
+      (sel?'<div id="pv-'+f.id+'" style="font-size:11px;color:var(--green-dark);font-weight:600;margin-top:3px">'+unitPreviewHtml(f.id)+'</div>':'')+'</div>'+
       (sel?'<div class="amt" onclick="event.stopPropagation()"><input type="number" min="0" step="any" value="'+sel.qty+'" oninput="setPickQty(\''+f.id+'\',this.value)"></div>':'')+
     '</div>';
   }).join('');
@@ -1126,6 +1513,8 @@ function togglePick(id){
 }
 function setPickQty(id,v){
   if(ui.picked[id])ui.picked[id].qty=parseFloat(v)||0;
+  const el=document.getElementById('pv-'+id);
+  if(el)el.innerHTML=unitPreviewHtml(id);
 }
 function logMeal(){
   const ids=Object.keys(ui.picked);
@@ -1135,7 +1524,10 @@ function logMeal(){
     const f=state.foods.find(x=>x.id===id);if(!f)return;
     const q=ui.picked[id].qty;
     if(q<=0)return;
-    items.push({name:f.name,qty:q,unit:f.unit,zone:zoneOf(f)});
+    const nu=foodNutri(f);
+    const k100=nu.basis===100?(unitToGrams(1,f.unit)||0)/100:1;
+    items.push({name:f.name,qty:q,unit:f.unit,zone:zoneOf(f),
+      p:Math.round(nu.p*k100*1000)/1000,f:Math.round(nu.f*k100*1000)/1000,c:Math.round(nu.c*k100*1000)/1000});
     f.qty=+Math.max(0,f.qty-q).toFixed(2);
     if(f.qty<=0)usedUp.push(f.name);
   });
@@ -1143,7 +1535,7 @@ function logMeal(){
   state.meals.unshift({id:uid(),date:todayStr(),type:ui.mealType,time:new Date().toTimeString().slice(0,5),items});
   // 自动移除用完的食物（数量归零）
   if(usedUp.length)state.foods=state.foods.filter(f=>f.qty>0);
-  save();ui.picked={};renderMealPick();renderFridge();renderMealHistory();renderRecipes();
+  save();ui.picked={};renderMealPick();renderFridge();renderMealHistory();renderRecipes();renderNutri();
   toast('✅ 已记录并扣减库存'+(usedUp.length?' · 已用完：'+usedUp.join('、'):''));
 }
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
@@ -1164,9 +1556,16 @@ function renderMealHistory(){
   if(!state.meals.length)html='<div class="empty"><div class="big">🍽️</div>还没有饮食记录<br>吃了什么，记一笔</div>';
   wrap.innerHTML=html;
 }
+function mealMacros(m){
+  let p=0,f=0,c=0;
+  m.items.forEach(i=>{p+=(i.p||0)*(i.qty||0);f+=(i.f||0)*(i.qty||0);c+=(i.c||0)*(i.qty||0);});
+  if(!p&&!f&&!c)return '';
+  return '<div class="meal-macros">本餐 · 净碳 '+round1(c)+'g · 蛋白 '+round1(p)+'g · 脂肪 '+round1(f)+'g</div>';
+}
 function mealHtml(m){
   return '<div class="meal-log"><span class="mt-tag">'+m.type+' '+m.time+'</span>'+
     '<div class="items">'+m.items.map(i=>'· '+foodEmoji(i.name)+' '+esc(i.name)+' × '+i.qty+' '+i.unit).join('<br>')+'</div>'+
+    mealMacros(m)+
     '<div class="time">'+m.date+' <a href="javascript:void(0)" style="color:var(--red)" onclick="undoMeal(\''+m.id+'\')">撤回</a></div></div>';
 }
 /* 撤回一餐：删除记录并把吃掉的食材按原温区返还回冰箱 */
@@ -1183,6 +1582,249 @@ function undoMeal(id){
   state.meals=state.meals.filter(x=>x.id!==id);
   save();renderFridge();renderMealHistory();renderMealPick();renderRecipes();
   toast('↩️ 已撤回这一餐，食物已返还冰箱');
+}
+
+/* ================= 今日营养汇总 ================= */
+function renderNutri(){
+  const wrap=document.getElementById('nutriMeals');
+  if(!wrap)return;
+  renderReco();
+  const today=state.meals.filter(m=>m.date===todayStr());
+  let p=0,f=0,c=0;
+  today.forEach(m=>m.items.forEach(i=>{p+=(i.p||0)*(i.qty||0);f+=(i.f||0)*(i.qty||0);c+=(i.c||0)*(i.qty||0);}));
+  const tgt=state.ketoTarget||50,tF=state.fatTarget||100,tP=state.protTarget||60;
+  document.getElementById('ncVal').textContent=round1(c);
+  document.getElementById('pVal').textContent=round1(p);
+  document.getElementById('fVal').textContent=round1(f);
+  document.getElementById('ncTarget').textContent=tgt;
+  const fe=document.getElementById('fatTarget');if(fe)fe.textContent=tF;
+  const pe=document.getElementById('protTarget');if(pe)pe.textContent=tP;
+  const pct=Math.min(100,Math.round(c/tgt*100));
+  const bar=document.getElementById('ncBar');
+  bar.querySelector('i').style.width=pct+'%';
+  bar.classList.toggle('over',c>tgt);
+  const fbar=document.getElementById('fatBar');
+  if(fbar){fbar.querySelector('i').style.width=Math.min(100,Math.round(f/tF*100))+'%';fbar.classList.toggle('over',f<tF);}
+  const pbar=document.getElementById('protBar');
+  if(pbar){pbar.querySelector('i').style.width=Math.min(100,Math.round(p/tP*100))+'%';pbar.classList.toggle('over',p<tP);}
+  /* 今日小结：大白话判断 */
+  const vd=document.getElementById('nutriVerdict');
+  if(vd){
+    const row=(ic,t,d)=>'<div class="nv-row"><span class="ic">'+ic+'</span><div><b>'+t+'</b>'+d+'</div></div>';
+    let vh='<div style="font-size:13px;font-weight:700;margin-bottom:4px">📋 今日小结</div>';
+    if(!today.length)vh+=row('💤','还没记录','去「饮食」页记一餐，这里自动出判断');
+    else{
+      vh+= c>tgt?row('🔴','净碳水超标','今天已 '+round1(c)+'g，超 '+round1(c-tgt)+'g；主食水果先停一停，多喝水')
+               :row('🟢','净碳水安全','已 '+round1(c)+'g / ≤'+tgt+'g，还剩 '+round1(tgt-c)+'g 额度');
+      vh+= f>=tF?row('🟢','脂肪吃够了','已 '+round1(f)+'g / ≥'+tF+'g，供能主力在线')
+                :row('🟡','脂肪还不够','已 '+round1(f)+'g / ≥'+tF+'g，还差 '+round1(tF-f)+'g——补点五花肉/黄油/蛋黄/椰浆');
+      vh+= p<tP?row('🟡','蛋白偏低','已 '+round1(p)+'g / ≥'+tP+'g，加个蛋或一块肉')
+         : p>tP*2?row('🟡','蛋白偏多','已 '+round1(p)+'g，超过目标两倍——过量蛋白也会转糖，记得多补油脂')
+                 :row('🟢','蛋白适量','已 '+round1(p)+'g / ≥'+tP+'g');
+    }
+    vd.innerHTML=vh;
+  }
+  /* 饮食页顶部当日汇总条 */
+  const db2=document.getElementById('mealDayBar');
+  if(db2){
+    db2.innerHTML=today.length
+      ?'<div class="day-bar">📊 今日已记 '+today.length+' 餐 · 净碳水 <b>'+round1(c)+'</b>/'+tgt+'g'+(c>tgt?'（<span style="color:var(--red)">超标</span>）':'（安全）')+' · 蛋白 <b>'+round1(p)+'</b>g · 脂肪 <b>'+round1(f)+'</b>g · 详情见「📊 营养」页</div>'
+      :'';
+  }
+  if(!today.length){
+    wrap.innerHTML='<div class="empty"><div class="big">📊</div>今天还没有饮食记录<br>去「饮食」页记一餐，这里会自动汇总净碳水</div>';
+    return;
+  }
+  wrap.innerHTML=today.slice().reverse().map(m=>{
+    let mp=0,mf=0,mc=0;
+    m.items.forEach(i=>{mp+=(i.p||0)*(i.qty||0);mf+=(i.f||0)*(i.qty||0);mc+=(i.c||0)*(i.qty||0);});
+    return '<div class="meal-log"><span class="mt-tag">'+m.type+' '+m.time+'</span>'+
+      '<div class="items">'+m.items.map(i=>'· '+foodEmoji(i.name)+' '+esc(i.name)+' × '+i.qty+' '+i.unit).join('<br>')+'</div>'+
+      (mp||mf||mc?'<div class="meal-macros">净碳 '+round1(mc)+'g · 蛋白 '+round1(mp)+'g · 脂肪 '+round1(mf)+'g</div>':'')+
+      '<div class="time">'+m.date+' <a href="javascript:void(0)" style="color:var(--red)" onclick="undoMeal(\''+m.id+'\')">撤回</a></div></div>';
+  }).join('');
+}
+function editNutriTarget(){
+  const cur=state.ketoTarget||50;
+  const v=prompt('设置每日净碳水目标（克），生酮一般 ≤50：',cur);
+  if(v===null)return;
+  const n=parseFloat(v);
+  if(isNaN(n)||n<=0){toast('请输入正数');return;}
+  state.ketoTarget=n;save();renderNutri();toast('净碳水目标已设为 '+n+'g');
+}
+function editFatTarget(){
+  const cur=state.fatTarget||100;
+  const v=prompt('设置每日脂肪目标（克），生酮建议 ≥100：',cur);
+  if(v===null)return;
+  const n=parseFloat(v);
+  if(isNaN(n)||n<=0){toast('请输入正数');return;}
+  state.fatTarget=n;save();renderNutri();toast('脂肪目标已设为 '+n+'g');
+}
+function editProtTarget(){
+  const cur=state.protTarget||60;
+  const v=prompt('设置每日蛋白质目标（克），按体重约 1~1.5g/kg：',cur);
+  if(v===null)return;
+  const n=parseFloat(v);
+  if(isNaN(n)||n<=0){toast('请输入正数');return;}
+  state.protTarget=n;save();renderNutri();toast('蛋白目标已设为 '+n+'g');
+}
+
+/* ================= 减脂一日推荐（基于库存） ================= */
+let recoSeed=0;let usedQty={};
+/* 归一化成每100g：重量单位直接用；非重量单位按「一份克数」折算 */
+function eff100(f){
+  const nu=foodNutri(f);
+  if(nu.basis===100)return {p:nu.p,f:nu.f,c:nu.c};
+  const g=nu.grams||portionGrams(f.name)||100;
+  return {p:nu.p/g*100,f:nu.f/g*100,c:nu.c/g*100};
+}
+/* 分桶：carb=碳水高危 / fat=油脂脂肪源 / prot=蛋白源 / veg=蔬菜配菜 */
+function ketoBucket(f){
+  const e=eff100(f);
+  if(e.p<3&&e.f<3&&e.c>8)return 'carb';
+  if(e.f>=15)return 'fat';
+  if(e.p>=8)return 'prot';
+  if(e.c<=8)return 'veg';
+  return 'other';
+}
+/* 推荐优先级：快过期 > 过期预警 > 库存多的 */
+function recoScore(f){
+  const dl=daysLeft(f);
+  return (dl<0?1000:dl<=1?500:dl<=3?200:0)+Math.min((f.qty||0)*2,100);
+}
+function recoRot(arr){return arr.length?arr.slice(recoSeed%arr.length).concat(arr.slice(0,recoSeed%arr.length)):arr;}
+function recoPick(buck){return recoRot(state.foods.filter(f=>f.qty>0&&ketoBucket(f)===buck).sort((a,b)=>recoScore(b)-recoScore(a))).map(f=>({f:f,e:eff100(f),nu:foodNutri(f)}));}
+/* 蛋白源按「1 餐约 25g 蛋白」反推克数；脂肪源按 15g 脂肪反推；库存不够返回 null（调用方跳过） */
+function recoPortion(x,needProt){
+  const nu=x.nu;
+  const avail=Math.floor((x.f.qty||0)-(usedQty[x.f.id]||0));
+  if(nu.basis===100){
+    if(avail<10)return null;
+    const need=needProt?25:15;
+    const per=needProt?Math.max(x.e.p,3):Math.max(x.e.f,3);
+    let g=Math.round(need/per*100/10)*10;
+    if(needProt&&x.e.f>25)g=Math.min(g,120); /* 很肥的主菜少给点 */
+    g=Math.max(10,Math.min(needProt?350:80,g,avail)); /* 不超库存 */
+    usedQty[x.f.id]=(usedQty[x.f.id]||0)+g;
+    return {q:g+'g',p:x.e.p*g/100,f:x.e.f*g/100,c:x.e.c*g/100};
+  }
+  if(avail<1)return null;
+  const per=needProt?Math.max(nu.p,1):Math.max(nu.f,1);
+  const need=needProt?25:15;
+  const n=Math.max(1,Math.min(3,Math.round(need/per),avail)); /* 不超库存 */
+  usedQty[x.f.id]=(usedQty[x.f.id]||0)+n;
+  return {q:'×'+n,p:nu.p*n,f:nu.f*n,c:nu.c*n};
+}
+/* 小份脂肪：油/黄油 10g，坚果类 15g，其他 20g 或 1 份；库存不够返回 null */
+function recoPortionSmall(x){
+  const avail=Math.floor((x.f.qty||0)-(usedQty[x.f.id]||0));
+  if(x.nu.basis===100){
+    if(avail<10)return null;
+    const g=Math.min(/油$|黄油/.test(x.f.name)?10:(/核桃|坚果|巴旦木|腰果|夏威夷/.test(x.f.name)?15:20),avail);
+    usedQty[x.f.id]=(usedQty[x.f.id]||0)+g;
+    return {q:g+'g',p:x.e.p*g/100,f:x.e.f*g/100,c:x.e.c*g/100};
+  }
+  if(avail<1)return null;
+  usedQty[x.f.id]=(usedQty[x.f.id]||0)+1;
+  return {q:'×1',p:x.nu.p,f:x.nu.f,c:x.nu.c};
+}
+/* 蔬菜份量：午餐 250g / 晚餐 150g，同样不超库存 */
+function vegPortion(x,g){
+  const avail=Math.floor((x.f.qty||0)-(usedQty[x.f.id]||0));
+  if(x.nu.basis===100){
+    const v=Math.min(g,avail);
+    if(v<20)return null;
+    usedQty[x.f.id]=(usedQty[x.f.id]||0)+v;
+    return {q:v+'g',p:x.e.p*v/100,f:x.e.f*v/100,c:x.e.c*v/100};
+  }
+  if(avail<1)return null;
+  usedQty[x.f.id]=(usedQty[x.f.id]||0)+1;
+  return {q:'×1',p:x.nu.p,f:x.nu.f,c:x.nu.c};
+}
+function renderReco(){
+  const el=document.getElementById('ketoReco');
+  if(!el)return;
+  const stock=state.foods.filter(f=>f.qty>0);
+  usedQty={};
+  if(!stock.length){el.innerHTML='';return;}
+  const prots=recoPick('prot'),fats=recoPick('fat'),vegs=recoPick('veg');
+  const eggs=prots.filter(x=>String(x.f.name).includes('蛋'));
+  /* 主菜池：蛋白源优先；没有就用「脂肪多但蛋白也不低」的（五花肉/肥牛/鸡腿） */
+  const mains=prots.length?prots:fats.filter(x=>x.e.p>=8);
+  const miss=[];
+  if(!mains.length)miss.push('蛋白类（鸡蛋/鸡腿/鱼虾/豆腐）');
+  if(!vegs.length)miss.push('绿叶蔬菜');
+  if(!fats.length)miss.push('油脂类（黄油/坚果/五花肉）');
+  const used=[];
+  let tp=0,tf=0,tc=0;
+  const rows=[];
+  function addRow(ic,title,items){
+    let p=0,f=0,c=0;
+    const parts=items.filter(Boolean).map(x=>{
+      p+=x.v.p;f+=x.v.f;c+=x.v.c;
+      return '<b>'+esc(x.name)+'</b> '+x.v.q;
+    });
+    if(!parts.length)return;
+    tp+=p;tf+=f;tc+=c;
+    rows.push('<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px dashed #d7e4da;font-size:13px;align-items:flex-start">'+
+      '<span style="font-size:16px;line-height:1.3">'+ic+'</span>'+
+      '<div style="flex:1"><div>'+title+'：'+parts.join(' ＋ ')+'</div>'+
+      '<i style="font-style:normal;font-size:11.5px;color:#8a9a95">蛋白'+round1(p)+'g · 脂肪'+round1(f)+'g · 净碳'+round1(c)+'g</i></div></div>');
+  }
+  /* 早餐：蛋优先，配黄油/奶酪/牛油果（库存不够就自动省掉） */
+  if(mains.length){
+    const bSrc=eggs.length?eggs[0]:mains[0];
+    let bp=null;
+    if(eggs.length&&eggs[0].nu.basis===1){
+      const av=Math.floor((eggs[0].f.qty||0)-(usedQty[eggs[0].f.id]||0));
+      if(av>=1){const n2=Math.min(2,av);usedQty[eggs[0].f.id]=(usedQty[eggs[0].f.id]||0)+n2;bp={q:'×'+n2,p:eggs[0].nu.p*n2,f:eggs[0].nu.f*n2,c:eggs[0].nu.c*n2};}
+    } else bp=recoPortion(bSrc,true);
+    const items=[];
+    if(bp){used.push(bSrc.f.name);items.push({name:bSrc.f.name,v:bp});}
+    const bf=fats.find(x=>String(x.f.name).includes('黄油'))||fats.find(x=>String(x.f.name).includes('奶酪'))||fats.find(x=>String(x.f.name).includes('牛油果'))||fats[0];
+    if(bf){const sv=recoPortionSmall(bf);if(sv){used.push(bf.f.name);items.push({name:bf.f.name,v:sv});}}
+    addRow('🍳','早餐',items);
+  }
+  /* 午/晚餐：两种不同主菜 + 蔬菜 + 油（库存不够的食材自动跳过） */
+  [25,25].forEach((need,i)=>{
+    const tag=i===0?'午餐':'晚餐';
+    const main=mains.find(x=>used.indexOf(x.f.name)<0)||mains[(i+1)%Math.max(mains.length,1)]||null;
+    const mv=main?recoPortion(main,true):null;
+    if(mv)used.push(main.f.name);
+    const veg1=vegs.find(x=>used.indexOf(x.f.name)<0)||vegs[0];
+    const veg2=vegs.find(x=>used.indexOf(x.f.name)<0&&(!veg1||x.f.name!==veg1.f.name))||null;
+    const oil=fats.find(x=>/油$|黄油/.test(x.f.name)&&used.indexOf(x.f.name)<0)||null;
+    const items=[];
+    if(mv)items.push({name:main.f.name,v:mv});
+    if(veg1){const v1=vegPortion(veg1,250);if(v1){used.push(veg1.f.name);items.push({name:veg1.f.name,v:v1});}}
+    if(veg2){const v2=vegPortion(veg2,150);if(v2){used.push(veg2.f.name);items.push({name:veg2.f.name,v:v2});}}
+    if(oil){used.push(oil.f.name);items.push({name:oil.f.name,v:{q:'10g',p:0,f:10,c:0}});}
+    else items.push({name:'炒菜用油',v:{q:'10g',p:0,f:10,c:0}});
+    addRow(i===0?'🥘':'🍲',tag,items);
+  });
+  /* 加餐：坚果/黑巧/酸奶/奶酪优先（同样不超库存） */
+  const hasLeft=x=>Math.floor((x.f.qty||0)-(usedQty[x.f.id]||0))>0;
+  const snack=fats.find(x=>/核桃|坚果|巴旦木|腰果|夏威夷|黑巧|酸奶|奶酪/.test(x.f.name)&&used.indexOf(x.f.name)<0&&hasLeft(x))||fats.find(x=>used.indexOf(x.f.name)<0&&hasLeft(x));
+  if(snack){const sv=recoPortionSmall(snack);if(sv){used.push(snack.f.name);addRow('🥜','加餐',[{name:snack.f.name,v:sv}]);}}
+  if(!rows.length){el.innerHTML='';return;}
+  /* 差距建议 */
+  const gaps=[];
+  if(tp<70)gaps.push('蛋白还差 '+round1(70-tp)+'g → 睡前补 1 个蛋或 1 杯无糖酸奶');
+  if(tf<85)gaps.push('脂肪还差 '+round1(85-tf)+'g → 炒菜多放约 '+Math.round(85-tf)+'g 油，或加 1 片奶酪/1 勺蛋黄酱');
+  if(tc>25)gaps.push('净碳水约 '+round1(tc)+'g 已超 25 → 把蔬菜或水果的量减半');
+  const gapHtml=gaps.length
+    ?'<div style="margin-top:6px;font-size:12.5px;color:#b95c2e">'+gaps.map(g=>'· '+g).join('<br>')+'</div>'
+    :'<div style="margin-top:6px;font-size:12.5px;color:#3e7d5a">✓ 蛋白/脂肪/净碳水都在带宽内，照这个吃就行</div>';
+  el.innerHTML='<div style="margin-top:14px;padding:12px;border:1px dashed #b9cfc2;border-radius:12px;background:#f2f8f4">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">'+
+    '<b style="font-size:14px">🎯 明日减脂推荐 · 基于你的库存</b>'+
+    '<span onclick="recoSeed++;renderReco()" style="cursor:pointer;font-size:12px;color:#3e7d5a;background:#fff;border:1px solid #b9cfc2;border-radius:8px;padding:2px 10px">🔄 换一批</span></div>'+
+    '<div style="font-size:11.5px;color:#8a9a95;margin:4px 0 2px">快过期的优先安排，克数为生重估算；照着吃≈蛋白75 · 脂肪90 · 净碳水25</div>'+
+    rows.join('')+
+    '<div style="margin-top:8px;font-size:12.5px;font-weight:700">合计 ≈ 蛋白'+round1(tp)+'g · 脂肪'+round1(tf)+'g · 净碳水'+round1(tc)+'g</div>'+
+    gapHtml+
+    (miss.length?'<div style="margin-top:4px;font-size:12px;color:#8a9a95">库存里缺：'+miss.join('、')+'，买上效果更好</div>':'')+
+    '</div>';
 }
 
 /* ================= 菜谱推荐 ================= */
@@ -1207,6 +1849,7 @@ document.querySelectorAll('#recipeFilter .chip').forEach(c=>c.onclick=()=>{
 function renderRecipes(){
   const kw=(document.getElementById('recipeSearch').value||'').trim();
   const wrap=document.getElementById('recipeList');
+  const adv=nutriAdviceHtml(kw);
   let list=RECIPES.map(r=>{
     const matched=r.ings.map(g=>({g,got:!!ingMatch(g)}));
     const miss=matched.filter(x=>!x.got).length;
@@ -1218,8 +1861,8 @@ function renderRecipes(){
   else if(ui.recipeFilter==='fast')list=list.filter(x=>parseInt(x.r.t)<=15);
   if(ui.recipeFilter==='fast')list=list.filter(x=>parseInt(x.r.t)<=15);
   if(kw)list=list.filter(x=>x.r.n.includes(kw)||x.matched.some(m=>m.g[0].includes(kw)));
-  if(!list.length){wrap.innerHTML='<div class="empty">没有符合条件的菜谱</div>';return;}
-  wrap.innerHTML=list.map((x,idx)=>{
+  if(!list.length){wrap.innerHTML=adv+'<div class="empty">没有符合条件的菜谱</div>';return;}
+  wrap.innerHTML=adv+list.map((x,idx)=>{
     const {r,matched,miss}=x;
     const pill=miss===0?'<span class="match-pill match-yes">✓ 现在就能做</span>':miss<=2?'<span class="match-pill match-near">差 '+miss+' 样</span>':'<span class="match-pill match-no">缺 '+miss+' 样</span>';
     return '<div class="recipe-card" id="rc'+idx+'">'+
@@ -1273,7 +1916,9 @@ function mapChips(arr,light){
     const nm=esc(x[0]).replace(/'/g,"\\'");
     const tip=x[1]?esc(x[1]):'';
     const clk=light!=='r';
-    return '<span class="map-chip mc-'+light+(clk?' clk':'')+'"'+(clk?' onclick="addShopFromSeason(\''+nm+'\',\'其他\')"':'')+(tip?' title="'+tip+'"':'')+'>'+foodEmoji(x[0],guessCat(x[0]))+' '+esc(x[0])+'</span>';
+    const nu=findNutri(x[0]);
+    const nuHtml=nu?'<i class="mc-nu">糖'+nu.s+' · 碳'+nu.c+' · 脂'+nu.f+'</i>':'<i class="mc-nu na">暂无营养数据</i>';
+    return '<span class="map-chip mc-'+light+(clk?' clk':'')+'"'+(clk?' onclick="addShopFromSeason(\''+nm+'\',\'其他\')"':'')+(tip?' title="'+tip+'"':'')+'>'+foodEmoji(x[0],guessCat(x[0]))+' '+esc(x[0])+nuHtml+'</span>';
   }).join('');
 }
 /* 发酵食物：[名称, 说明, 生酮友好度, 存放提示] */
@@ -1307,22 +1952,37 @@ const SEMIS=[
 function ketoRow(x){
   const lv=x[2]==='keto'?'<span class="tag tag-keto">🥑 低碳友好</span>':x[2]==='mid'?'<span class="tag tag-warn">适量</span>':'<span class="tag tag-bad">慎选</span>';
   const storeTip=x[3]?' · <span style="color:#8a9a95">📦 '+esc(x[3])+'</span>':'';
+  const nu=findNutri(x[0]);
+  const nuTip=nu?' · <span style="color:#8a9a95">每100g 糖'+nu.s+'/碳'+nu.c+'/脂'+nu.f+'g</span>':'';
   const nm=esc(x[0]).replace(/'/g,"\\'");
   return '<div class="season-food"><div style="font-size:22px">'+foodEmoji(x[0],guessCat(x[0]))+'</div>'+
-    '<div class="sf-info"><div class="sf-name">'+esc(x[0])+'</div><div class="sf-note">'+lv+(x[1]?' · '+esc(x[1]):'')+storeTip+'</div></div>'+
+    '<div class="sf-info"><div class="sf-name">'+esc(x[0])+'</div><div class="sf-note">'+lv+nuTip+(x[1]?' · '+esc(x[1]):'')+storeTip+'</div></div>'+
     '<button class="btn btn-ghost btn-sm" onclick="addShopFromSeason(\''+nm+'\',\'其他\')">＋清单</button></div>';
 }
 function renderKeto(){
+  const kwEl=document.getElementById('mapSearch');
+  const kw=kwEl?(kwEl.value||'').trim():'';
   let html='';
+  if(kw){
+    html+=nutriAdviceHtml(kw);
+    if(!findNutri(kw))html+='<div class="empty">营养库里还没有「'+esc(kw)+'」的数据，换个常见食材名试试</div>';
+  }
   FOOD_MAP.forEach(m=>{
+    const fg=kw?m.g.filter(x=>x[0].includes(kw)):m.g;
+    const fy=kw?m.y.filter(x=>x[0].includes(kw)):m.y;
+    const fr=kw?m.r.filter(x=>x[0].includes(kw)):m.r;
+    if(kw&&!fg.length&&!fy.length&&!fr.length)return;
     html+='<div class="section-title"><span>'+m.icon+' '+m.sec+'</span></div>';
     if(m.note)html+='<p style="font-size:11px;color:var(--sub);margin:-4px 4px 6px">'+esc(m.note)+'</p>';
-    if(m.g.length)html+='<div class="map-row"><b class="mr-g">🟢 推荐</b><div class="map-chips">'+mapChips(m.g,'g')+'</div></div>';
-    if(m.y.length)html+='<div class="map-row"><b class="mr-y">🟡 限量</b><div class="map-chips">'+mapChips(m.y,'y')+'</div></div>';
-    if(m.r.length)html+='<div class="map-row"><b class="mr-r">🔴 少碰</b><div class="map-chips">'+mapChips(m.r,'r')+'</div></div>';
+    if(fg.length)html+='<div class="map-row"><b class="mr-g">🟢 推荐</b><div class="map-chips">'+mapChips(fg,'g')+'</div></div>';
+    if(fy.length)html+='<div class="map-row"><b class="mr-y">🟡 限量</b><div class="map-chips">'+mapChips(fy,'y')+'</div></div>';
+    if(fr.length)html+='<div class="map-row"><b class="mr-r">🔴 少碰</b><div class="map-chips">'+mapChips(fr,'r')+'</div></div>';
   });
-  html+='<div class="section-title" style="margin-top:18px"><span>🥬 发酵食物 · 肠道好朋友</span></div>'+FERMENTS.map(ketoRow).join('');
-  html+='<div class="section-title"><span>🍱 半成品 · 省时囤货</span></div>'+SEMIS.map(ketoRow).join('');
+  const fer=kw?FERMENTS.filter(x=>x[0].includes(kw)):FERMENTS;
+  const sem=kw?SEMIS.filter(x=>x[0].includes(kw)):SEMIS;
+  if(fer.length)html+='<div class="section-title" style="margin-top:18px"><span>🥬 发酵食物 · 肠道好朋友</span></div>'+fer.map(ketoRow).join('');
+  if(sem.length)html+='<div class="section-title"><span>🍱 半成品 · 省时囤货</span></div>'+sem.map(ketoRow).join('');
+  if(kw&&!html.includes('map-row')&&!fer.length&&!sem.length)html+='<div class="empty">食物地图里没有「'+esc(kw)+'」</div>';
   document.getElementById('ketoList').innerHTML=html;
 }
 /* 隐藏页入口：点顶部徽章进入，点任意标签或返回按钮退出 */
@@ -1493,7 +2153,7 @@ function renderSeasonal(){
     html+=items.map(x=>{
       const lv=x[2]==='keto'?'<span class="tag tag-keto">🥑 低碳友好</span>':x[2]==='mid'?'<span class="tag tag-warn">适量</span>':'<span class="tag tag-bad">高碳慎吃</span>';
       return '<div class="season-food"><div style="font-size:22px">'+foodEmoji(x[0],c)+'</div>'+
-        '<div class="sf-info"><div class="sf-name">'+esc(x[0])+'</div><div class="sf-note">'+lv+(x[3]?' · '+esc(x[3]):'')+'</div></div>'+
+        '<div class="sf-info"><div class="sf-name">'+esc(x[0])+'</div><div class="sf-note">'+lv+nutriTip(x[0])+(x[3]?' · '+esc(x[3]):'')+'</div></div>'+
         '<button class="btn btn-ghost btn-sm" onclick="addShopFromSeason(\''+esc(x[0]).replace(/'/g,"\\'")+'\',\''+c+'\')">＋清单</button></div>';
     }).join('');
   });
@@ -1574,8 +2234,8 @@ function shopHtml(s){
   let migrated=false;
   state.foods.forEach(f=>{if(!f.addedAt){f.addedAt=todayStr();migrated=true;}});
   if(migrated)save();
-  updateShelfHint();
-  renderFridge();renderMealHistory();renderSeasonal();renderShopping();renderRecipes();renderKeto();
+  updateShelfHint();unitSelHint();
+  renderFridge();renderMealHistory();renderSeasonal();renderShopping();renderRecipes();renderKeto();renderNutri();
   if(gistOn()){
     // 先拉云端最新（期间禁止自动上传，防止本机旧数据覆盖云端新数据）
     bootPulling=true;
