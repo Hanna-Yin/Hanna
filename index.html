@@ -1622,18 +1622,41 @@ function logMeal(){
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 /* 饮食模块搜索：同时过滤「饮食记录」与「库存食材清单」 */
 function mealSearchExec(){renderMealHistory();renderMealPick();}
+/* 饮食记录三段分组：今天 / 最近 7 天 / 更早（默认折叠，点组头展开） */
+let mealOlderOpen=false;
+function mealCutoffStr(){
+  const d=new Date(todayStr()+'T00:00:00');
+  d.setDate(d.getDate()-6);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function mealGroupOf(d){
+  if(d===todayStr())return 0;
+  return d>=mealCutoffStr()?1:2;
+}
+function mealOlderToggle(){mealOlderOpen=!mealOlderOpen;renderMealHistory();}
+function mealDateTxt(d){
+  if(d===todayStr())return '今天';
+  return d.slice(5)+' 周'+'日一二三四五六'[new Date(d+'T00:00:00').getDay()];
+}
 function renderMealHistory(){
   const wrap=document.getElementById('mealHistory');
   const sEl=document.getElementById('mealSearch');
   const q=(sEl?sEl.value.trim().toLowerCase():'');
   let all=state.meals;
   if(q)all=all.filter(m=>m.type.toLowerCase().includes(q)||m.items.some(i=>i.name.toLowerCase().includes(q)));
-  const today=all.filter(m=>m.date===todayStr());
-  const past=all.filter(m=>m.date!==todayStr()).slice(0,30);
+  const todayM=all.filter(m=>mealGroupOf(m.date)===0);
+  const past=all.filter(m=>mealGroupOf(m.date)!==0).slice(0,30);
+  const week=past.filter(m=>mealGroupOf(m.date)===1);
+  const older=past.filter(m=>mealGroupOf(m.date)===2);
   let html='';
   if(q&&!all.length){wrap.innerHTML='<div class="empty"><div class="big">🔍</div>没有匹配「'+(sEl?sEl.value.trim():'')+'」的饮食记录</div>';return;}
-  if(today.length){html+='<div class="section-title"><span>今天</span></div>'+today.map(m=>mealHtml(m)).join('');}
-  if(past.length){html+='<div class="section-title"><span>更早</span></div>'+past.map(m=>mealHtml(m)).join('');}
+  const grp=(label,cnt,clickable)=>'<div class="section-title"'+(clickable?' style="cursor:pointer" onclick="mealOlderToggle()"':'')+'><span>'+label+'（'+cnt+' 餐）</span>'+(clickable?'<span>'+(mealOlderOpen?'▾':'▸')+'</span>':'')+'</div>';
+  if(todayM.length)html+=grp('今天',todayM.length)+todayM.map(m=>mealHtml(m)).join('');
+  if(week.length)html+=grp('最近 7 天',week.length)+week.map(m=>mealHtml(m)).join('');
+  if(older.length){
+    html+=grp('更早',older.length,true);
+    if(mealOlderOpen)html+=older.map(m=>mealHtml(m)).join('');
+  }
   if(!state.meals.length)html='<div class="empty"><div class="big">🍽️</div>还没有饮食记录<br>吃了什么，记一笔</div>';
   wrap.innerHTML=html;
 }
@@ -1647,7 +1670,7 @@ function mealHtml(m){
   return '<div class="meal-log"><span class="mt-tag">'+m.type+' '+m.time+'</span>'+
     '<div class="items">'+m.items.map(i=>'· '+foodEmoji(i.name)+' '+esc(i.name)+' × '+i.qty+' '+i.unit).join('<br>')+'</div>'+
     mealMacros(m)+
-    '<div class="time">'+m.date+' <a href="javascript:void(0)" style="color:var(--red)" onclick="undoMeal(\''+m.id+'\')">撤回</a></div></div>';
+    '<div class="time">'+mealDateTxt(m.date)+' <a href="javascript:void(0)" style="color:var(--red)" onclick="undoMeal(\''+m.id+'\')">撤回</a></div></div>';
 }
 /* 撤回一餐：删除记录并把吃掉的食材按原温区返还回冰箱 */
 function undoMeal(id){
@@ -1722,7 +1745,7 @@ function renderNutri(){
     return '<div class="meal-log"><span class="mt-tag">'+m.type+' '+m.time+'</span>'+
       '<div class="items">'+m.items.map(i=>'· '+foodEmoji(i.name)+' '+esc(i.name)+' × '+i.qty+' '+i.unit).join('<br>')+'</div>'+
       (mp||mf||mc?'<div class="meal-macros">净碳 '+round1(mc)+'g · 蛋白 '+round1(mp)+'g · 脂肪 '+round1(mf)+'g</div>':'')+
-      '<div class="time">'+m.date+' <a href="javascript:void(0)" style="color:var(--red)" onclick="undoMeal(\''+m.id+'\')">撤回</a></div></div>';
+      '<div class="time">'+mealDateTxt(m.date)+' <a href="javascript:void(0)" style="color:var(--red)" onclick="undoMeal(\''+m.id+'\')">撤回</a></div></div>';
   }).join('');
 }
 function editNutriTarget(){
