@@ -448,6 +448,7 @@ function macroChip(f){
   const nu=foodNutri(f);
   if(!nu.p&&!nu.f&&!nu.c)return '';
   if(nu.basis===100)return '<span class="macro-chip">每100g P'+round1(nu.p)+' F'+round1(nu.f)+' C'+round1(nu.c)+'</span>';
+  if(f.unit==='份'&&nu.grams)return '<span class="macro-chip">'+(nu.est?'约':'')+'P'+round1(nu.p)+' F'+round1(nu.f)+' C'+round1(nu.c)+'（每份≈'+nu.grams+'g）</span>';
   const hint=(nu.est&&nu.grams)?'（1'+esc(f.unit)+'≈'+nu.grams+'g）':'';
   return '<span class="macro-chip">'+(nu.est?'约':'')+'P'+round1(nu.p)+' F'+round1(nu.f)+' C'+round1(nu.c)+hint+'</span>';
 }
@@ -822,9 +823,9 @@ function foodNutri(f){
     p:val(f.p,has?db.p:0),
     f:val(f.f,has?db.f:0),
     c:val(f.c,has?db.nc:0)};
-  const g=portionGrams(f.name)||100;
+  const g=f.portionG||portionGrams(f.name)||100;
   const est=!(f.p!=null&&f.p!=='')&&!(f.f!=null&&f.f!=='')&&!(f.c!=null&&f.c!=='');
-  return {basis:1,est:est,grams:has?g:null,
+  return {basis:1,est:est,grams:(f.portionG||has)?g:null,
     p:val(f.p,has?Math.round(db.p*g/10)/10:0),
     f:val(f.f,has?Math.round(db.f*g/10)/10:0),
     c:val(f.c,has?Math.round(db.nc*g/10)/10:0)};
@@ -877,7 +878,7 @@ function applyMacroRef(){
       const perG=Math.round(totalG/divN);
       if(perG>=10){
         k=perG/100;basisTxt='每份≈'+perG+'g';
-        if(dh)dh.innerHTML='📦 分装：<b>'+qty+esc(u)+'</b>（约'+totalG+'g）÷ <b>'+divN+'</b> 份 = 每份约 <b>'+perG+'g</b>，保存后生成 <b>'+divN+'</b> 条独立食材（每条约'+perG+'g，吃一份删一份）'+(overMax?'（最多50份，已按50份算）':'')+'。';
+        if(dh)dh.innerHTML='📦 分装：<b>'+qty+esc(u)+'</b>（约'+totalG+'g）÷ <b>'+divN+'</b> 份 = 每份约 <b>'+perG+'g</b>，保存后存成 <b>1 条</b>库存（×'+divN+' 份，每份约'+perG+'g，吃一份减一份）'+(overMax?'（最多50份，已按50份算）':'')+'。';
       }else if(dh){
         dh.innerHTML='⚠️ 每份只有约 '+perG+'g（不足10g），份数太多了，建议调小。';
       }
@@ -1439,14 +1440,16 @@ function addFood(){
   if(split){
     const perG=Math.max(10,Math.round(totalG/divN));
     const nEff=Math.max(1,Math.min(50,Math.round(totalG/perG)));
-    for(let i=0;i<nEff;i++)state.foods.unshift({id:uid(),name,cat,unit:'g',qty:perG,note,addedAt:todayStr(),days,frozen:zone==='freeze',room:zone==='room',p:prot||undefined,f:fat||undefined,c:carb||undefined});
+    const existS=state.foods.find(f=>f.name===name&&f.unit==='份'&&zoneOf(f)===zone&&(f.note||'')===(note||'')&&f.portionG===perG);
+    if(existS){existS.qty=+(existS.qty+nEff).toFixed(2);existS.portionTotal=(existS.portionTotal||Math.round(existS.qty))+nEff;existS.addedAt=todayStr();if(days!=null)existS.days=days;if(note)existS.note=note;if(prot)existS.p=prot;if(fat)existS.f=fat;if(carb)existS.c=carb;}
+    else state.foods.unshift({id:uid(),name,cat,unit:'份',qty:nEff,portionG:perG,portionTotal:nEff,note,addedAt:todayStr(),days,frozen:zone==='freeze',room:zone==='room',p:prot||undefined,f:fat||undefined,c:carb||undefined});
     save();renderFridge();
     document.getElementById('f-name').value='';document.getElementById('f-note').value='';
     document.getElementById('f-qty').value=1;document.getElementById('f-days').value='';
     document.getElementById('f-prot').value='';document.getElementById('f-fat').value='';document.getElementById('f-carb').value='';
     if(document.getElementById('f-div'))document.getElementById('f-div').value='';
     updateShelfHint();dupHint();unitSelHint();
-    toast('已分装：'+name+' '+qty+unit+' → '+nEff+'份 × 约'+perG+'g，吃一份删一份');
+    toast('已分装：'+name+' '+qty+unit+' → 1 条库存（'+nEff+' 份，每份约'+perG+'g），吃一份减一份');
     return;
   }
   const exist=state.foods.find(f=>f.name===name&&f.unit===unit&&zoneOf(f)===zone&&(f.note||'')===(note||''));
@@ -1543,7 +1546,7 @@ function renderFridge(){
           (st?'<span class="tag '+st.cls+'" style="cursor:help" title="'+esc(st.title)+'" onclick="toast(\''+esc(st.title).replace(/'/g,"\\'")+'\')">'+st.t+'</span>':'')+
           (f.note?'<span>'+esc(f.note)+'</span>':'')+stock+macroChip(f)+'</div></div>'+
           '<div class="qty-box"><button class="qty-btn" onclick="adjustQty(\''+f.id+'\',-'+step+')">−</button>'+
-          '<div class="num">'+f.qty+'<small> '+f.unit+'</small></div>'+
+          '<div class="num">'+f.qty+(f.unit==='份'&&f.portionTotal?'<small>/'+f.portionTotal+' 份</small>':'<small> '+f.unit+'</small>')+'</div>'+
           '<button class="qty-btn" onclick="adjustQty(\''+f.id+'\','+step+')">＋</button></div>'+
           moveBtns+
           '<button class="btn btn-danger btn-sm" onclick="delFood(\''+f.id+'\')">🗑</button>'+
@@ -1576,7 +1579,7 @@ function renderMealPick(){
     return '<div class="pick-item'+(sel?' sel':'')+'" onclick="togglePick(\''+f.id+'\')">'+
       '<div class="ck">'+(sel?'✓':'')+'</div>'+
       '<div style="flex:1;min-width:0"><div class="name" style="font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+foodEmoji(f.name,f.cat)+' '+esc(f.name)+'</div>'+
-      '<div style="font-size:11px;color:var(--sub);margin-top:2px">库存 '+f.qty+' '+f.unit+
+      '<div style="font-size:11px;color:var(--sub);margin-top:2px">库存 '+f.qty+(f.unit==='份'&&f.portionTotal?'/'+f.portionTotal+' 份（每份约'+(f.portionG||'?')+'g）':' '+f.unit)+
       (f.frozen?' · <span style="color:#4a90d9;font-weight:600">❄️ 冷冻中·先解冻</span>':'')+
       (f.room?' · <span style="color:#b97821;font-weight:600">🏠 常温存放</span>':'')+
       (et&&et.lv>0&&!f.frozen?' · <span style="color:'+(et.lv>=2?'var(--red)':'#b97821')+';font-weight:600">'+et.t+'</span>':'')+'</div>'+
@@ -1607,7 +1610,7 @@ function logMeal(){
     if(q<=0)return;
     const nu=foodNutri(f);
     const k100=nu.basis===100?(unitToGrams(1,f.unit)||0)/100:1;
-    items.push({name:f.name,qty:q,unit:f.unit,zone:zoneOf(f),
+    items.push({name:f.name,qty:q,unit:f.unit,zone:zoneOf(f),portionG:f.portionG||undefined,
       p:Math.round(nu.p*k100*1000)/1000,f:Math.round(nu.f*k100*1000)/1000,c:Math.round(nu.c*k100*1000)/1000});
     f.qty=+Math.max(0,f.qty-q).toFixed(2);
     if(f.qty<=0)usedUp.push(f.name);
@@ -1680,8 +1683,8 @@ function undoMeal(id){
   m.items.forEach(i=>{
     const zone=i.zone||'fridge'; // 老记录没有温区时默认冷藏
     const exist=state.foods.find(f=>f.name===i.name&&f.unit===i.unit&&zoneOf(f)===zone);
-    if(exist)exist.qty=+(exist.qty+i.qty).toFixed(2);
-    else state.foods.unshift({id:uid(),name:i.name,cat:guessCat(i.name),unit:i.unit,qty:i.qty,note:'',addedAt:todayStr(),days:null,frozen:zone==='freeze',room:zone==='room'});
+    if(exist){exist.qty=+(exist.qty+i.qty).toFixed(2);if(i.portionG&&!exist.portionG)exist.portionG=i.portionG;if(i.unit==='份'&&!exist.portionTotal)exist.portionTotal=Math.round(exist.qty);}
+    else state.foods.unshift({id:uid(),name:i.name,cat:guessCat(i.name),unit:i.unit,qty:i.qty,portionG:i.portionG||undefined,portionTotal:(i.unit==='份'&&i.portionG)?Math.round(i.qty):undefined,note:'',addedAt:todayStr(),days:null,frozen:zone==='freeze',room:zone==='room'});
   });
   state.meals=state.meals.filter(x=>x.id!==id);
   save();renderFridge();renderMealHistory();renderMealPick();renderRecipes();
