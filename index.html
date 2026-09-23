@@ -1669,11 +1669,20 @@ function mealMacros(m){
   if(!p&&!f&&!c)return '';
   return '<div class="meal-macros">本餐 · 净碳 '+round1(c)+'g · 蛋白 '+round1(p)+'g · 脂肪 '+round1(f)+'g</div>';
 }
+const MEAL_TYPES=['早餐','午餐','晚餐','加餐'];
+function mealTypeOptions(sel){return MEAL_TYPES.map(t=>'<option value="'+t+'"'+(t===sel?' selected':'')+'>'+t+'</option>').join('');}
+function setMealType(id,t){
+  const m=state.meals.find(x=>x.id===id);if(!m||!MEAL_TYPES.includes(t))return;
+  const old=m.type;m.type=t;save();renderMealHistory();renderNutri();
+  toast('🍽️ 已把「'+old+'」改成「'+t+'」');
+}
 function mealHtml(m){
   return '<div class="meal-log"><span class="mt-tag">'+m.type+' '+m.time+'</span>'+
     '<div class="items">'+m.items.map(i=>'· '+foodEmoji(i.name)+' '+esc(i.name)+' × '+i.qty+' '+i.unit).join('<br>')+'</div>'+
     mealMacros(m)+
-    '<div class="time">'+mealDateTxt(m.date)+' <a href="javascript:void(0)" style="color:var(--red)" onclick="undoMeal(\''+m.id+'\')">撤回</a></div></div>';
+    '<div class="time">'+mealDateTxt(m.date)+
+    ' <a href="javascript:void(0)" style="color:var(--red)" onclick="undoMeal(\''+m.id+'\')">撤回</a>'+
+    ' <select class="mt-edit" onchange="setMealType(\''+m.id+'\',this.value)">'+mealTypeOptions(m.type)+'</select></div></div>';
 }
 /* 撤回一餐：删除记录并把吃掉的食材按原温区返还回冰箱 */
 function undoMeal(id){
@@ -1692,6 +1701,11 @@ function undoMeal(id){
 }
 
 /* ================= 今日营养汇总 ================= */
+function mealTopContrib(today,key){
+  let best=null,bv=0;
+  today.forEach(m=>m.items.forEach(i=>{const v=(i[key]||0)*(i.qty||0);if(v>bv){bv=v;best={name:i.name,v};}}));
+  return bv>0?best:null;
+}
 function renderNutri(){
   const wrap=document.getElementById('nutriMeals');
   if(!wrap)return;
@@ -1721,13 +1735,14 @@ function renderNutri(){
     let vh='<div style="font-size:13px;font-weight:700;margin-bottom:4px">📋 今日小结</div>';
     if(!today.length)vh+=row('💤','还没记录','去「饮食」页记一餐，这里自动出判断');
     else{
-      vh+= c>tgt?row('🔴','净碳水超标','今天已 '+round1(c)+'g，超 '+round1(c-tgt)+'g；主食水果先停一停，多喝水')
-               :row('🟢','净碳水安全','已 '+round1(c)+'g / ≤'+tgt+'g，还剩 '+round1(tgt-c)+'g 额度');
-      vh+= f>=tF?row('🟢','脂肪吃够了','已 '+round1(f)+'g / ≥'+tF+'g，供能主力在线')
-                :row('🟡','脂肪还不够','已 '+round1(f)+'g / ≥'+tF+'g，还差 '+round1(tF-f)+'g——补点五花肉/黄油/蛋黄/椰浆');
-      vh+= p<tP?row('🟡','蛋白偏低','已 '+round1(p)+'g / ≥'+tP+'g，加个蛋或一块肉')
+      const tc=mealTopContrib(today,'c'),tf=mealTopContrib(today,'f'),tp=mealTopContrib(today,'p');
+      vh+= c>tgt?row('🔴','净碳水超标啦','今天已 '+round1(c)+'g，超了 '+round1(c-tgt)+'g～ 明天可以适量减少摄入'+(tc?'；其中「'+tc.name+'」吃得最多（'+round1(tc.v)+'g 净碳水），可以少放点/换小份':''))
+               :row('🟢','净碳水安全','已 '+round1(c)+'g / ≤'+tgt+'g，还剩 '+round1(tgt-c)+'g 额度，稳稳生酮 👍');
+      vh+= f>=tF?row('🟢','脂肪吃够啦','已 '+round1(f)+'g，脂肪充足（生酮供能主力在线）👍')
+                :row('🟡','脂肪还不够','已 '+round1(f)+'g / ≥'+tF+'g，还差 '+round1(tF-f)+'g——补点五花肉、黄油、蛋黄或椰浆'+(tf?'（今天「'+tf.name+'」脂肪最多）':''));
+      vh+= p<tP?row('🟡','蛋白偏低','已 '+round1(p)+'g / ≥'+tP+'g，还差 '+round1(tP-p)+'g——加个蛋或一块肉'+(tp?'（今天「'+tp.name+'」蛋白最多）':''))
          : p>tP*2?row('🟡','蛋白偏多','已 '+round1(p)+'g，超过目标两倍——过量蛋白也会转糖，记得多补油脂')
-                 :row('🟢','蛋白适量','已 '+round1(p)+'g / ≥'+tP+'g');
+                 :row('🟢','蛋白适量','已 '+round1(p)+'g / ≥'+tP+'g，蛋白够啦 👍');
     }
     vd.innerHTML=vh;
   }
@@ -1742,14 +1757,21 @@ function renderNutri(){
     wrap.innerHTML='<div class="empty"><div class="big">📊</div>今天还没有饮食记录<br>去「饮食」页记一餐，这里会自动汇总净碳水</div>';
     return;
   }
-  wrap.innerHTML=today.slice().reverse().map(m=>{
-    let mp=0,mf=0,mc=0;
-    m.items.forEach(i=>{mp+=(i.p||0)*(i.qty||0);mf+=(i.f||0)*(i.qty||0);mc+=(i.c||0)*(i.qty||0);});
-    return '<div class="meal-log"><span class="mt-tag">'+m.type+' '+m.time+'</span>'+
-      '<div class="items">'+m.items.map(i=>'· '+foodEmoji(i.name)+' '+esc(i.name)+' × '+i.qty+' '+i.unit).join('<br>')+'</div>'+
-      (mp||mf||mc?'<div class="meal-macros">净碳 '+round1(mc)+'g · 蛋白 '+round1(mp)+'g · 脂肪 '+round1(mf)+'g</div>':'')+
-      '<div class="time">'+mealDateTxt(m.date)+' <a href="javascript:void(0)" style="color:var(--red)" onclick="undoMeal(\''+m.id+'\')">撤回</a></div></div>';
-  }).join('');
+  const order=MEAL_TYPES;
+  let detail='';
+  order.forEach(t=>{
+    const recs=today.filter(m=>m.type===t);
+    if(!recs.length)return;
+    let gp=0,gf=0,gc=0;const lines=[];
+    recs.forEach(m=>m.items.forEach(i=>{
+      gp+=(i.p||0)*(i.qty||0);gf+=(i.f||0)*(i.qty||0);gc+=(i.c||0)*(i.qty||0);
+      lines.push('· '+foodEmoji(i.name)+' '+esc(i.name)+' × '+i.qty+' '+i.unit);
+    }));
+    detail+='<div class="meal-group" style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:8px 0">'+
+      '<div class="mg-head" style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px">'+t+' · 净碳 '+round1(gc)+'g · 蛋白 '+round1(gp)+'g · 脂肪 '+round1(gf)+'g</div>'+
+      '<div class="items" style="font-size:13px;color:var(--sub);line-height:1.7">'+lines.join('<br>')+'</div></div>';
+  });
+  wrap.innerHTML=detail;
 }
 function editNutriTarget(){
   const cur=state.ketoTarget||50;
