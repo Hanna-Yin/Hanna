@@ -1,5 +1,5 @@
 /* 冰箱管家 Service Worker：离线缓存 */
-const CACHE = 'fridge-keeper-v16';
+const CACHE = 'fridge-keeper-v17';
 const ASSETS = [
   './',
   './index.html',
