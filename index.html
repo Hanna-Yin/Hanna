@@ -92,8 +92,8 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
 .pick-item .amt input{text-align:center;padding:7px 6px;}
 .meal-log{border-left:3px solid var(--green-light);padding:10px 12px;background:var(--card);border-radius:0 12px 12px 0;margin-bottom:10px;}
 .meal-log .mt-tag{font-size:11px;color:var(--green-dark);background:var(--green-light);border-radius:6px;padding:2px 7px;display:inline-block;margin-bottom:5px;font-weight:600;}
-.meal-log .items{font-size:13px;line-height:1.7;}
-.meal-log .time{font-size:11px;color:var(--sub);margin-top:4px;}\n.sub-title{font-size:12px;font-weight:700;color:var(--green-dark);margin:14px 4px 6px;padding-left:6px;border-left:3px solid var(--green);}\n.mdate{display:inline-block;font-size:10px;color:var(--sub);background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;margin-right:6px;}\n.pick-toggle{font-size:13px;color:var(--green-dark);background:var(--green-light);border-radius:10px;padding:10px 12px;margin-bottom:8px;text-align:center;cursor:pointer;font-weight:600;}\n.pick-scroll{max-height:260px;overflow-y:auto;}
+.meal-log .items{font-size:13px;line-height:1.5;}
+.meal-log .time{font-size:11px;color:var(--sub);margin-top:4px;}\n.sub-title{font-size:12px;font-weight:700;color:var(--green-dark);margin:14px 4px 6px;padding-left:6px;border-left:3px solid var(--green);display:flex;justify-content:space-between;align-items:center;}\n.sub-title .st-edit{font-size:12px;padding:2px 6px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--text);font-family:inherit;}\n.mdate{display:inline-block;font-size:10px;color:var(--sub);background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;margin-right:6px;}\n.pick-toggle{font-size:13px;color:var(--green-dark);background:var(--green-light);border-radius:10px;padding:10px 12px;margin-bottom:8px;text-align:center;cursor:pointer;font-weight:600;}\n.pick-scroll{max-height:260px;overflow-y:auto;}\n.mi-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:5px 0;border-bottom:1px dashed var(--line);}\n.mi-row:last-child{border-bottom:none;}\n.mi-name{display:flex;align-items:center;gap:4px;flex:1;min-width:0;}\n.mi-ctrl{display:flex;align-items:center;gap:6px;flex-shrink:0;}\n.mi-qty{width:54px;text-align:center;padding:4px 4px;font-size:13px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);font-family:inherit;}\n.mi-unit{font-size:12px;color:var(--sub);white-space:nowrap;}\n.mi-del{font-size:12px;color:var(--red);padding:2px 6px;border-radius:6px;background:#fdeeed;white-space:nowrap;}
 
 /* recipes */
 .recipe-card{background:var(--card);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(30,60,50,.05);}
@@ -1677,7 +1677,7 @@ function mealDateGroup(label,meals,open,q){
   ['早餐','午餐','晚餐','加餐'].forEach(t=>{
     const list=meals.filter(m=>m.type===t);
     if(!list.length)return;
-    body+='<div class="sub-title">'+t+' · '+list.length+' 笔</div>';
+    body+='<div class="sub-title"><span>'+t+' · '+list.length+' 笔</span><select class="st-edit" onchange="changeGroupType(\''+label+'\',\''+t+'\',this.value)">'+mealTypeOptions(t)+'</select></div>';
     list.forEach(m=>{body+=mealCard(m,label!=='今天');});
   });
   return head+body;
@@ -1695,26 +1695,78 @@ function setMealType(id,t){
   const old=m.type;m.type=t;save();renderMealHistory();renderNutri();
   toast('🍽️ 已把「'+old+'」改成「'+t+'」');
 }
+const GROUP_LABEL_MAP={'今天':0,'最近 7 天':1,'更早':2};
+function changeGroupType(label,fromType,toType){
+  if(fromType===toType||!(label in GROUP_LABEL_MAP))return;
+  const g=GROUP_LABEL_MAP[label];
+  const ids=[];
+  state.meals.forEach(m=>{if(mealGroupOf(m.date)===g&&m.type===fromType){m.type=toType;ids.push(m.id);}});
+  if(!ids.length)return;
+  save();renderMealHistory();renderNutri();
+  toast('🍽️ 已把 '+label+' 的 '+ids.length+' 笔「'+fromType+'」改成「'+toType+'」');
+}
+function returnFoodItem(i){
+  const zone=i.zone||'fridge';
+  const exist=state.foods.find(f=>f.name===i.name&&f.unit===i.unit&&zoneOf(f)===zone);
+  if(exist){
+    exist.qty=+(exist.qty+i.qty).toFixed(2);
+    if(i.portionG&&!exist.portionG)exist.portionG=i.portionG;
+    if(i.unit==='份'&&exist.portionG)exist.portionTotal=Math.round(exist.qty);
+  } else {
+    state.foods.unshift({id:uid(),name:i.name,cat:guessCat(i.name),unit:i.unit,qty:i.qty,portionG:i.portionG||undefined,portionTotal:(i.unit==='份'&&i.portionG)?Math.round(i.qty):undefined,note:'',addedAt:todayStr(),days:null,frozen:zone==='freeze',room:zone==='room'});
+  }
+}
+function adjustInventory(item,delta){
+  if(!delta)return true;
+  const zone=item.zone||'fridge';
+  const f=state.foods.find(x=>x.name===item.name&&x.unit===item.unit&&zoneOf(x)===zone);
+  if(delta>0){
+    if(!f||f.qty<delta){toast('冰箱库存不够增加这个量');return false;}
+    f.qty=+(f.qty-delta).toFixed(2);
+    if(item.portionG&&!f.portionG)f.portionG=item.portionG;
+    if(item.unit==='份'&&f.portionG)f.portionTotal=Math.round(f.qty);
+    if(f.qty<=0)state.foods=state.foods.filter(x=>!(x.name===item.name&&x.unit===item.unit&&zoneOf(x)===zone));
+  } else if(delta<0){
+    returnFoodItem({name:item.name,unit:item.unit,qty:-delta,zone:item.zone,portionG:item.portionG});
+  }
+  return true;
+}
+function changeMealItemQty(id,idx,newQty){
+  const m=state.meals.find(x=>x.id===id);if(!m||!m.items[idx])return;
+  const item=m.items[idx];
+  const q=parseFloat(newQty)||0;
+  if(q<=0){deleteMealItem(id,idx);return;}
+  const diff=q-item.qty;
+  if(diff!==0){
+    if(!adjustInventory(item,diff))return;
+    item.qty=q;
+    save();renderFridge();renderMealHistory();renderNutri();
+    toast('✏️ '+item.name+' 改为 ×'+q+item.unit);
+  }
+}
+function deleteMealItem(id,idx){
+  const m=state.meals.find(x=>x.id===id);if(!m||!m.items[idx])return;
+  const item=m.items[idx];
+  if(!confirm('删除「'+item.name+' × '+item.qty+item.unit+'」？'))return;
+  returnFoodItem(item);
+  m.items.splice(idx,1);
+  if(!m.items.length){state.meals=state.meals.filter(x=>x.id!==id);}
+  save();renderFridge();renderMealHistory();renderNutri();
+  toast('🗑️ 已删除 '+item.name);
+}
 function mealCard(m,showDate){
   const dt=showDate?'<span class="mdate">'+m.date.slice(5)+'</span> ':'';
   return '<div class="meal-log">'+dt+
-    '<div class="items">'+m.items.map(i=>'· '+foodEmoji(i.name)+' '+esc(i.name)+' × '+i.qty+' '+i.unit).join('<br>')+'</div>'+
+    '<div class="items">'+m.items.map((i,idx)=>'<div class="mi-row"><span class="mi-name">'+foodEmoji(i.name)+' '+esc(i.name)+'</span><span class="mi-ctrl"><input type="number" class="mi-qty" value="'+i.qty+'" step="any" onchange="changeMealItemQty(\''+m.id+'\','+idx+',this.value)"><span class="mi-unit">'+i.unit+'</span><a href="javascript:void(0)" class="mi-del" onclick="deleteMealItem(\''+m.id+'\','+idx+')">删</a></span></div>').join('')+'</div>'+
     mealMacros(m)+
-    '<div class="time">'+
-    '<a href="javascript:void(0)" style="color:var(--red)" onclick="undoMeal(\''+m.id+'\')">撤回</a>'+
-    ' <select class="mt-edit" onchange="setMealType(\''+m.id+'\',this.value)">'+mealTypeOptions(m.type)+'</select></div></div>';
+    '<div class="time"><a href="javascript:void(0)" style="color:var(--red)" onclick="undoMeal(\''+m.id+'\')">撤回整餐</a></div></div>';
 }
 /* 撤回一餐：删除记录并把吃掉的食材按原温区返还回冰箱 */
 function undoMeal(id){
   const m=state.meals.find(x=>x.id===id);if(!m)return;
   const summary=m.items.map(i=>'· '+foodEmoji(i.name)+' '+i.name+' × '+i.qty+i.unit).join('\n');
   if(!confirm('撤回这一餐（'+m.type+' '+m.time+'）？\n\n'+summary+'\n\n这些食物会按原存放位置返还回冰箱。'))return;
-  m.items.forEach(i=>{
-    const zone=i.zone||'fridge'; // 老记录没有温区时默认冷藏
-    const exist=state.foods.find(f=>f.name===i.name&&f.unit===i.unit&&zoneOf(f)===zone);
-    if(exist){exist.qty=+(exist.qty+i.qty).toFixed(2);if(i.portionG&&!exist.portionG)exist.portionG=i.portionG;if(i.unit==='份'&&!exist.portionTotal)exist.portionTotal=Math.round(exist.qty);}
-    else state.foods.unshift({id:uid(),name:i.name,cat:guessCat(i.name),unit:i.unit,qty:i.qty,portionG:i.portionG||undefined,portionTotal:(i.unit==='份'&&i.portionG)?Math.round(i.qty):undefined,note:'',addedAt:todayStr(),days:null,frozen:zone==='freeze',room:zone==='room'});
-  });
+  m.items.forEach(i=>returnFoodItem(i));
   state.meals=state.meals.filter(x=>x.id!==id);
   save();renderFridge();renderMealHistory();renderMealPick();renderRecipes();
   toast('↩️ 已撤回这一餐，食物已返还冰箱');
