@@ -93,7 +93,7 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
 .meal-log{border-left:3px solid var(--green-light);padding:10px 12px;background:var(--card);border-radius:0 12px 12px 0;margin-bottom:10px;}
 .meal-log .mt-tag{font-size:11px;color:var(--green-dark);background:var(--green-light);border-radius:6px;padding:2px 7px;display:inline-block;margin-bottom:5px;font-weight:600;}
 .meal-log .items{font-size:13px;line-height:1.7;}
-.meal-log .time{font-size:11px;color:var(--sub);margin-top:4px;}
+.meal-log .time{font-size:11px;color:var(--sub);margin-top:4px;}\n.sub-title{font-size:12px;font-weight:700;color:var(--green-dark);margin:14px 4px 6px;padding-left:6px;border-left:3px solid var(--green);}\n.mdate{display:inline-block;font-size:10px;color:var(--sub);background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;margin-right:6px;}\n.pick-toggle{font-size:13px;color:var(--green-dark);background:var(--green-light);border-radius:10px;padding:10px 12px;margin-bottom:8px;text-align:center;cursor:pointer;font-weight:600;}\n.pick-scroll{max-height:260px;overflow-y:auto;}
 
 /* recipes */
 .recipe-card{background:var(--card);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(30,60,50,.05);}
@@ -651,7 +651,7 @@ const NUTRI_DB={
 '三文鱼':[0,0,13],'金枪鱼':[0,0,4],'巴沙鱼':[0,0,4],'带鱼':[0,0,4.9],'鲈鱼':[0,0,3.4],'黑虎虾':[0,1,0.8],'基围虾':[0,1,0.8],'皮皮虾':[0,1,1],'虾':[0,1,0.8],'扇贝':[0,3,0.5],'蛏子':[0,2,0.9],'花甲':[0,2,0.6],'龙虾':[0,0.5,1],'螃蟹':[0,1.5,2.3],'鲍鱼':[0,6,0.8],'鱿鱼':[0,3,1.4],'生蚝':[0,4.9,2],'章鱼':[0,2,1],
 /* 蔬菜类 */
 '菠菜':[0.4,3.6,0.4],'生菜':[0.5,2.9,0.2],'油麦菜':[0.5,2,0.3],'空心菜':[0.5,3,0.3],'芹菜':[1.3,3,0.2],'韭菜':[1.5,4.6,0.4],'西兰花':[1.7,7,0.4],'菜花':[1.9,5,0.3],'黄瓜':[1.7,3.6,0.1],'冬瓜':[1.2,2.6,0.2],'丝瓜':[1.5,4,0.2],'苦瓜':[1.9,4.9,0.1],'芦笋':[1.9,3.9,0.1],'白萝卜':[2.5,4.1,0.1],'菌菇':[1.5,4.5,0.3],'香菇':[2.2,5.2,0.3],'金针菇':[0.2,6,0.4],'木耳':[0.2,6,0.5],'海带':[0.5,2.5,0.1],'紫菜':[2,44,1.3],'大白菜':[1.2,3.2,0.1],'娃娃菜':[1,3,0.2],
-'番茄':[2.6,3.9,0.2],'圣女果':[2.6,3.9,0.2],'洋葱':[4.2,9.3,0.1],'胡萝卜':[4.7,9.6,0.2],'彩椒':[4.2,6,0.3],'豌豆':[5.7,14,0.4],'四季豆':[2.5,7,0.2],
+'番茄':[2.6,3.9,0.2],'圣女果':[2.6,3.9,0.2],'洋葱':[4.2,9.3,0.1],'胡萝卜':[4.7,9.6,0.2],'彩椒':[4.2,6,0.3],'豌豆':[5.7,14,0.4],'四季豆':[2.5,7,0.2],'豆角':[1.5,8.4,0.2],'豇豆':[1.5,8.4,0.2],
 /* 水果类 */
 '牛油果':[0.7,8.5,15],'橄榄':[0,3.8,15],'柠檬':[2.5,9.3,0.3],
 '草莓':[4.9,7.7,0.3],'树莓':[4.4,12,0.7],'黑莓':[4.9,10,0.5],'蔓越莓':[4,12,0.1],'蓝莓':[10,14.5,0.3],'西梅':[10,11,0.3],'桑葚':[8,12,0.4],'杨桃':[4,6.7,0.3],'杨梅':[5,6.7,0.2],'木瓜':[8,10,0.1],'百香果':[11,23,0.7],
@@ -666,7 +666,7 @@ const NUTRI_DB={
 '玉米':[4.5,22,1.5],'芋头':[0.4,18,0.2],'红薯':[4.2,20,0.2],'紫薯':[5,25,0.2],'山药':[0.5,12.4,0.2],'南瓜':[2.8,5.5,0.1],'土豆':[0.8,17,0.1],
 '大米':[0.1,26,0.3],'米饭':[0.1,26,0.3],'糯米':[0.5,78,1],'小米':[0.5,75,3.1],'玉米面':[1.5,70,3],'面条':[0.5,27,0.5],'米粉':[0.3,25,0.2],'粉丝':[0.5,83,0.2],'包子':[2,35,5],'馒头':[2,47,1.1],'面包':[5,50,5],'饼干':[20,70,20],
 /* 发酵 / 半成品 / 其他常用 */
-'泡菜':[1,3,0.2],'酸菜':[0.5,3,0.2],'开菲尔':[4,4.5,3],'纳豆':[2,12,11],'味噌':[6,26,6],'康普茶':[2,4,0],'苹果醋':[0.4,1,0],'酸黄瓜':[1,2.3,0.2],'腐乳':[1,5,8],
+'泡菜':[1,3,0.2],'酸菜':[0.5,3,0.2],'酸豆角':[1.2,6.5,0.2],'开菲尔':[4,4.5,3],'纳豆':[2,12,11],'味噌':[6,26,6],'康普茶':[2,4,0],'苹果醋':[0.4,1,0],'酸黄瓜':[1,2.3,0.2],'腐乳':[1,5,8],
 '原切腌制牛排':[0,0,15],'腌制鸡腿':[1,2,15],'卤牛肉':[1,2,6],'溏心蛋':[0.4,1.1,9],'烤肠':[3,12,20],'川味香肠':[2,10,30],'蛋饺':[2,12,10],'火锅丸子':[3,15,12],'冻豆腐':[0.5,4,8],'豆腐':[0.5,4,8],'椰浆':[3,6,20],'椰子':[3,15,33],
 /* —— 补充：应季食材与常见别名/缺项 —— */
 '杏鲍菇':[1.5,4.5,0.3],'猕猴桃':[9,14.7,0.5],'桃':[8,10,0.3],'笋':[0.8,3.6,0.2],'花菜':[1.9,5,0.3],'花蛤':[0,2,0.6],'蛤蜊':[0,2,0.6],'蛏':[0,2,0.9],'牡蛎':[0,4.9,2],'海蜇':[0,2,0.3],
@@ -748,10 +748,10 @@ const PROTEIN_DB={
 '五花肉':13,'五花肉片':13,'肥牛':17,'肥牛卷':17,'牛排':22,'原切腌制牛排':22,'牛腩':17.5,'牛尾':17,'牛肉':20,'牛肉干':45,'牛骨髓':7,'牛筋':34,'猪蹄筋':35,'猪蹄':22.6,'猪肝':19.3,'猪里脊':20,'猪排骨':17.5,'猪血':12,'猪肉':13,'培根':12.5,'香肠':12,'川味香肠':12,'腊肉':20,'火腿肠':10,'午餐肉':10,'猪肉脯':25,'烤肠':12,'纯肉烤肠':12,'腌制鸡腿':18,'卤牛肉':30,
 '带皮鸡腿':17,'鸡腿':17,'鸡腿肉':18,'鸡胸':22,'鸡胸肉':22,'鸡蛋':13.3,'鸡蛋羹':8,'鸡蛋干':15,'茶叶蛋':13,'卤蛋':13,'溏心蛋':13,'鸭蛋':12.6,'咸鸭蛋':12,'皮蛋':14,'鸭':16,'鸭胸':20,'鸭血':14,'羊排':19,'羊腿':20,'羊肉':19,'羊肉片':18,'脑花':10,'鸡翅':17,
 '三文鱼':20,'香煎三文鱼':22,'金枪鱼':23,'金枪鱼罐头':25,'巴沙鱼':13,'带鱼':17.7,'鲈鱼':18.6,'清蒸鲈鱼':18,'鲫鱼':17.1,'黄花鱼':17.7,'鳜鱼':19.9,'鲅鱼':21,'秋刀鱼':18.5,'草鱼':16.6,'鳝鱼':18,'泥鳅':17.9,'青鱼':20,'海参':16,'黑虎虾':16,'基围虾':18,'皮皮虾':11.6,'虾':16.4,'虾滑':15,'河虾':16.4,'白灼虾':16,'小龙虾':14.8,'扇贝':11.1,'蛏子':7.3,'蛏':7.3,'花甲':10,'花蛤':10,'蛤蜊':10,'龙虾':18.9,'螃蟹':11.6,'大闸蟹':14,'梭子蟹':15.9,'鲍鱼':12.6,'鱿鱼':17.4,'生蚝':9.9,'牡蛎':9.9,'章鱼':14.6,'螺蛳':10,'海蜇':3.7,'鱼丸':12,
-'菠菜':2.6,'生菜':1.3,'油麦菜':1.4,'空心菜':2.2,'芹菜':0.8,'韭菜':2.4,'西兰花':4.1,'菜花':2.1,'花菜':2.1,'黄瓜':0.8,'冬瓜':0.4,'丝瓜':1,'苦瓜':1,'芦笋':1.4,'白萝卜':0.9,'菌菇':2.7,'香菇':2.2,'金针菇':2.4,'杏鲍菇':1.3,'平菇':1.9,'口蘑':3.1,'木耳':1.5,'海带':1.2,'紫菜':26.5,'大白菜':1.5,'娃娃菜':1.5,'番茄':0.9,'圣女果':0.9,'洋葱':1.1,'胡萝卜':1,'彩椒':1.3,'豌豆':7.4,'豌豆苗':3.1,'四季豆':2,'苋菜':2.8,'茼蒿':1.9,'茭白':1.2,'荠菜':2.9,'香椿':1.7,'鸡毛菜':1.5,'荷兰豆':2.5,'红薯叶':2.8,'茄子':1.1,'秋葵':2,'蒜苔':2,'莴笋':1,'莲藕':1.9,'笋':2.6,'春笋':2.6,'冬笋':4,'西葫芦':0.8,
+'菠菜':2.6,'生菜':1.3,'油麦菜':1.4,'空心菜':2.2,'芹菜':0.8,'韭菜':2.4,'西兰花':4.1,'菜花':2.1,'花菜':2.1,'黄瓜':0.8,'冬瓜':0.4,'丝瓜':1,'苦瓜':1,'芦笋':1.4,'白萝卜':0.9,'菌菇':2.7,'香菇':2.2,'金针菇':2.4,'杏鲍菇':1.3,'平菇':1.9,'口蘑':3.1,'木耳':1.5,'海带':1.2,'紫菜':26.5,'大白菜':1.5,'娃娃菜':1.5,'番茄':0.9,'圣女果':0.9,'洋葱':1.1,'胡萝卜':1,'彩椒':1.3,'豌豆':7.4,'豌豆苗':3.1,'四季豆':2,'豆角':2.4,'豇豆':2.4,'苋菜':2.8,'茼蒿':1.9,'茭白':1.2,'荠菜':2.9,'香椿':1.7,'鸡毛菜':1.5,'荷兰豆':2.5,'红薯叶':2.8,'茄子':1.1,'秋葵':2,'蒜苔':2,'莴笋':1,'莲藕':1.9,'笋':2.6,'春笋':2.6,'冬笋':4,'西葫芦':0.8,
 '牛油果':2,'橄榄':0.8,'柠檬':1.1,'草莓':1,'树莓':1.2,'黑莓':1.4,'蔓越莓':0.4,'蓝莓':0.7,'西梅':0.7,'桑葚':1.7,'杨桃':0.6,'杨梅':0.8,'木瓜':0.4,'百香果':2.2,'苹果':0.4,'梨':0.4,'香蕉':1.4,'西瓜':0.5,'哈密瓜':0.5,'芒果':0.6,'荔枝':0.9,'龙眼':1.2,'葡萄':0.5,'提子':0.5,'菠萝':0.5,'榴莲':2.6,'菠萝蜜':0.7,'桃子':0.9,'桃':0.9,'李子':0.7,'杏':0.9,'枇杷':0.8,'奇异果':1.1,'猕猴桃':1.1,'橙子':0.8,'芦柑':0.6,'柑橘':0.7,'车厘子':1.1,'樱桃':1.1,'番石榴':1.1,'石榴':1.4,'山竹':0.4,'火龙果':1.1,'柿子':0.4,'冬枣':1.1,'枣':1.1,'甘蔗':0.4,'无花果':1.5,'柚子':0.8,
 '奶油奶酪':8.5,'干酪':25,'硬奶酪':25,'芝士片':10,'淡奶油':2.1,'酸奶油':2.5,'无糖酸奶':3.5,'希腊酸奶':9,'酸奶':3.5,'全脂牛奶':3.2,'牛奶':3.2,'低脂牛奶':3.3,'脱脂牛奶':3.4,'零乳糖牛奶':3.2,'含糖乳饮料':1,'含糖酸奶':3,'开菲尔':3.5,
-'豆腐':8.1,'冻豆腐':8,'内酯豆腐':5,'豆干':16,'腐竹':45,'油豆腐':17,'千张':25,'香干':15,'豆浆':3,'无糖豆浆':3,'豆腐脑':3,'纳豆':16.5,'味噌':12,'泡菜':1.2,'酸菜':1.2,'酸黄瓜':0.9,'腐乳':12,'康普茶':0,'苹果醋':0,
+'豆腐':8.1,'冻豆腐':8,'内酯豆腐':5,'豆干':16,'腐竹':45,'油豆腐':17,'千张':25,'香干':15,'豆浆':3,'无糖豆浆':3,'豆腐脑':3,'纳豆':16.5,'味噌':12,'泡菜':1.2,'酸菜':1.2,'酸豆角':2.2,'酸黄瓜':0.9,'腐乳':12,'康普茶':0,'苹果醋':0,
 '巴西坚果':14,'南瓜子':30,'夏威夷果':8,'无糖椰子片':7,'碧根果':9,'杏仁':21,'杏仁粉':21,'核桃':15,'榛子':15,'花生':24,'松子':14,'葵花籽':21,'西瓜子':32,'芝麻':18,'腰果':18,'开心果':20,'栗子':4.2,'奇亚籽':17,'亚麻籽仁':18,'亚麻籽粉':18,'椰子':3.3,'椰子面粉':20,'椰浆':2,
 '蛋饺':7.5,'火锅丸子':7,'蚕豆':8.5,'毛豆':13,'大米':2.6,'米饭':2.6,'糯米':7.3,'小米':9,'玉米':4,'玉米面':8,'面条':2.7,'米粉':1.5,'粉丝':0.8,'包子':8,'馒头':7,'面包':8.3,'饼干':9,'土豆':2,'芋头':2.2,'红薯':1.6,'紫薯':1.1,'山药':1.9,'南瓜':0.7,'魔芋丝':0.1,'魔芋':0.1,
 '皮蛋瘦肉粥':5,'紫菜蛋花汤':2,'番茄炒蛋':6,'辣椒炒肉':12,'红烧肉':15,'可乐鸡翅':12,'黑咖啡':0.3,'美式':0.3,'拿铁':3.4,'无糖可乐':0,'无糖气泡水':0,'椰子水':0.2,'杏仁奶':1
@@ -768,13 +768,13 @@ function proteinOf(name){
 const FIBER_DB={
 '猪油':0,'牛油':0,'黄油':0,'椰子油':0,'牛油果油':0,'橄榄油':0,'MCT油':0,'MCT':0,'亚麻籽油':0,'棕榈仁油':0,'调和油':0,'菜籽油':0,'玉米油':0,'大豆油':0,'花生油':0,'葵花籽油':0,'芝麻油':0,
 '牛油果':6.7,'奇亚籽':34,'亚麻籽仁':27,'亚麻籽粉':27,'椰子面粉':39,'杏仁粉':10,
-'西兰花':3.3,'菜花':2,'花菜':2,'菠菜':2.2,'生菜':1.3,'油麦菜':1.2,'空心菜':1.6,'芹菜':1.6,'韭菜':2.4,'黄瓜':0.5,'冬瓜':1,'丝瓜':0.6,'苦瓜':2.6,'芦笋':2.1,'白萝卜':1.6,'菌菇':1.5,'香菇':3.3,'金针菇':2.7,'杏鲍菇':2.5,'平菇':2,'口蘑':2.5,'蘑菇':2.5,'木耳':2.6,'海带':1.3,'紫菜':1.5,'大白菜':1,'娃娃菜':1,'包菜':2,'番茄':1.2,'圣女果':1.8,'洋葱':1.7,'胡萝卜':2.8,'彩椒':2.1,'豌豆':5.5,'豌豆苗':1.9,'四季豆':2.7,
+'西兰花':3.3,'菜花':2,'花菜':2,'菠菜':2.2,'生菜':1.3,'油麦菜':1.2,'空心菜':1.6,'芹菜':1.6,'韭菜':2.4,'黄瓜':0.5,'冬瓜':1,'丝瓜':0.6,'苦瓜':2.6,'芦笋':2.1,'白萝卜':1.6,'菌菇':1.5,'香菇':3.3,'金针菇':2.7,'杏鲍菇':2.5,'平菇':2,'口蘑':2.5,'蘑菇':2.5,'木耳':2.6,'海带':1.3,'紫菜':1.5,'大白菜':1,'娃娃菜':1,'包菜':2,'番茄':1.2,'圣女果':1.8,'洋葱':1.7,'胡萝卜':2.8,'彩椒':2.1,'豌豆':5.5,'豌豆苗':1.9,'四季豆':2.7,'豆角':3.4,'豇豆':3.4,
 '苋菜':1.8,'茼蒿':1.2,'茭白':1.9,'荠菜':1.4,'香椿':1.5,'鸡毛菜':1,'荷兰豆':2.5,'红薯叶':1,'茄子':2.5,'秋葵':3.2,'蒜苔':2.5,'莴笋':1.5,'莲藕':2.2,'笋':1.8,'春笋':2.2,'冬笋':2.2,'西葫芦':1,'白菜':1,
 '草莓':2,'树莓':6.5,'黑莓':5.3,'蔓越莓':4.6,'蓝莓':2.4,'西梅':2.4,'桑葚':1.7,'杨桃':1.4,'杨梅':1,'木瓜':1.7,'百香果':10.4,'苹果':2.4,'梨':3.1,'香蕉':2.6,'西瓜':0.4,'哈密瓜':0.9,'芒果':1.6,'荔枝':1.3,'龙眼':1.1,'葡萄':0.9,'提子':0.9,'菠萝':1.4,'榴莲':3.8,'菠萝蜜':2.3,'桃子':1.5,'桃':1.5,'李子':1.4,'杏':2,'枇杷':0.4,'奇异果':3,'猕猴桃':3,'橙子':2.4,'芦柑':1.7,'柑橘':1.7,'车厘子':1.9,'樱桃':1.6,'番石榴':5.4,'石榴':4,'山竹':1.8,'火龙果':1.8,'柿子':1.4,'冬枣':1.9,'枣':1.9,'无花果':2.9,'柚子':1.8,'柠檬':2.8,'橄榄':3.3,
 '巴西坚果':7.5,'南瓜子':6,'夏威夷果':8.6,'无糖椰子片':16.3,'碧根果':9.6,'杏仁':12.5,'核桃':6.7,'榛子':9.7,'花生':8.5,'松子':3.7,'葵花籽':8.6,'西瓜子':1.1,'芝麻':11.8,'腰果':3.3,'开心果':10.3,'栗子':5.1,'椰子':9,
 '玉米':2.4,'芋头':4.1,'红薯':3,'紫薯':3.3,'山药':1.5,'南瓜':1.2,'土豆':1.8,'蚕豆':4,'毛豆':5.2,
 '大米':0.4,'米饭':0.4,'糯米':0.4,'小米':1.5,'玉米面':5.5,'面条':1.8,'米粉':0.8,'粉丝':0.7,'包子':1.5,'馒头':2,'面包':2.4,'饼干':2.5,
-'泡菜':2.4,'酸菜':1.9,'酸黄瓜':1.2,'味噌':5.4,'纳豆':5.4,'腐乳':0.5,'豆腐':0.3,
+'泡菜':2.4,'酸菜':1.9,'酸豆角':3.0,'酸黄瓜':1.2,'味噌':5.4,'纳豆':5.4,'腐乳':0.5,'豆腐':0.3,
 '豆浆':0.5,'杏仁奶':0.5,'椰子水':0,'拿铁':0,'美式':0
 };
 const FIBER_KEYS=Object.keys(FIBER_DB).sort((a,b)=>b.length-a.length);
@@ -1565,14 +1565,18 @@ document.querySelectorAll('#mealTypePick .mt').forEach(m=>m.onclick=()=>{
 });
 function renderMealPick(){
   const wrap=document.getElementById('mealPickList');
-  if(!state.foods.length){wrap.innerHTML='<div class="empty">冰箱空空的，先去「冰箱」页添加食物吧</div>';return;}
   const sEl=document.getElementById('mealSearch');
   const q=(sEl?sEl.value.trim().toLowerCase():'');
+  if(!mealPickOpen && !q){
+    wrap.innerHTML='<div class="pick-toggle" onclick="mealPickToggle()">▾ 选择食物（共 '+state.foods.length+' 种）· 点我展开</div>';
+    return;
+  }
+  if(!state.foods.length){wrap.innerHTML='<div class="empty">冰箱空空的，先去「冰箱」页添加食物吧</div>';return;}
   let foods=state.foods;
   if(q)foods=foods.filter(f=>f.name.toLowerCase().includes(q)||(f.note||'').toLowerCase().includes(q));
   if(q&&!foods.length){wrap.innerHTML='<div class="empty"><div class="big">🔍</div>库存里没有「'+(sEl?sEl.value.trim():'')+'」<br>可去「冰箱」页添加</div>';return;}
   const zoneRank=f=>f.frozen?2:(f.room?1:0);
-  wrap.innerHTML=foods.slice().sort((a,b)=>zoneRank(a)-zoneRank(b)||daysLeft(a)-daysLeft(b)).map(f=>{
+  const listHtml=foods.slice().sort((a,b)=>zoneRank(a)-zoneRank(b)||daysLeft(a)-daysLeft(b)).map(f=>{
     const sel=ui.picked[f.id];
     const et=f.qty>0?expTag(f):null;
     const nl=nutriLine(f.name);
@@ -1588,7 +1592,9 @@ function renderMealPick(){
       (sel?'<div class="amt" onclick="event.stopPropagation()"><input type="number" min="0" step="any" value="'+sel.qty+'" oninput="setPickQty(\''+f.id+'\',this.value)"></div>':'')+
     '</div>';
   }).join('');
+  wrap.innerHTML='<div class="pick-toggle" onclick="mealPickToggle()">▴ 选择食物（'+foods.length+' 种）· 点我收起</div><div class="pick-scroll">'+listHtml+'</div>';
 }
+function mealPickToggle(){mealPickOpen=!mealPickOpen;renderMealPick();}
 function togglePick(id){
   const f=state.foods.find(x=>x.id===id);if(!f)return;
   if(ui.picked[id]){delete ui.picked[id];}
@@ -1624,9 +1630,9 @@ function logMeal(){
 }
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 /* 饮食模块搜索：同时过滤「饮食记录」与「库存食材清单」 */
-function mealSearchExec(){renderMealHistory();renderMealPick();}
+function mealSearchExec(){mealPickOpen=true;renderMealHistory();renderMealPick();}
 /* 饮食记录三段分组：今天 / 最近 7 天 / 更早（默认折叠，点组头展开） */
-let mealOlderOpen=false;
+let mealOlderOpen=false, mealWeekOpen=false, mealPickOpen=false;
 function mealCutoffStr(){
   const d=new Date(todayStr()+'T00:00:00');
   d.setDate(d.getDate()-6);
@@ -1636,7 +1642,11 @@ function mealGroupOf(d){
   if(d===todayStr())return 0;
   return d>=mealCutoffStr()?1:2;
 }
-function mealOlderToggle(){mealOlderOpen=!mealOlderOpen;renderMealHistory();}
+function mealDateToggle(label){
+  if(label==='最近 7 天')mealWeekOpen=!mealWeekOpen;
+  else if(label==='更早')mealOlderOpen=!mealOlderOpen;
+  renderMealHistory();
+}
 function mealDateTxt(d){
   if(d===todayStr())return '今天';
   return d.slice(5)+' 周'+'日一二三四五六'[new Date(d+'T00:00:00').getDay()];
@@ -1648,20 +1658,29 @@ function renderMealHistory(){
   let all=state.meals;
   if(q)all=all.filter(m=>m.type.toLowerCase().includes(q)||m.items.some(i=>i.name.toLowerCase().includes(q)));
   const todayM=all.filter(m=>mealGroupOf(m.date)===0);
-  const past=all.filter(m=>mealGroupOf(m.date)!==0).slice(0,30);
-  const week=past.filter(m=>mealGroupOf(m.date)===1);
-  const older=past.filter(m=>mealGroupOf(m.date)===2);
+  const week=all.filter(m=>mealGroupOf(m.date)===1).slice(0,30);
+  const older=all.filter(m=>mealGroupOf(m.date)===2).slice(0,30);
   let html='';
   if(q&&!all.length){wrap.innerHTML='<div class="empty"><div class="big">🔍</div>没有匹配「'+(sEl?sEl.value.trim():'')+'」的饮食记录</div>';return;}
   const grp=(label,cnt,clickable)=>'<div class="section-title"'+(clickable?' style="cursor:pointer" onclick="mealOlderToggle()"':'')+'><span>'+label+'（'+cnt+' 餐）</span>'+(clickable?'<span>'+(mealOlderOpen?'▾':'▸')+'</span>':'')+'</div>';
-  if(todayM.length)html+=grp('今天',todayM.length)+todayM.map(m=>mealHtml(m)).join('');
-  if(week.length)html+=grp('最近 7 天',week.length)+week.map(m=>mealHtml(m)).join('');
-  if(older.length){
-    html+=grp('更早',older.length,true);
-    if(mealOlderOpen)html+=older.map(m=>mealHtml(m)).join('');
-  }
+  if(todayM.length)html+=mealDateGroup('今天',todayM,true,q);
+  if(week.length)html+=mealDateGroup('最近 7 天',week, q||mealWeekOpen, q);
+  if(older.length)html+=mealDateGroup('更早',older, q||mealOlderOpen, q);
   if(!state.meals.length)html='<div class="empty"><div class="big">🍽️</div>还没有饮食记录<br>吃了什么，记一笔</div>';
   wrap.innerHTML=html;
+}
+function mealDateGroup(label,meals,open,q){
+  const clickable=label!=='今天';
+  const head='<div class="section-title"'+(clickable?' style="cursor:pointer" onclick="mealDateToggle(\''+label+'\')"':'')+'><span>'+label+'（'+meals.length+' 餐）</span>'+(clickable?'<span>'+(open?'▾':'▸')+'</span>':'')+'</div>';
+  if(!open)return head;
+  let body='';
+  ['早餐','午餐','晚餐','加餐'].forEach(t=>{
+    const list=meals.filter(m=>m.type===t);
+    if(!list.length)return;
+    body+='<div class="sub-title">'+t+' · '+list.length+' 笔</div>';
+    list.forEach(m=>{body+=mealCard(m,label!=='今天');});
+  });
+  return head+body;
 }
 function mealMacros(m){
   let p=0,f=0,c=0;
@@ -1676,12 +1695,13 @@ function setMealType(id,t){
   const old=m.type;m.type=t;save();renderMealHistory();renderNutri();
   toast('🍽️ 已把「'+old+'」改成「'+t+'」');
 }
-function mealHtml(m){
-  return '<div class="meal-log"><span class="mt-tag">'+m.type+' '+m.time+'</span>'+
+function mealCard(m,showDate){
+  const dt=showDate?'<span class="mdate">'+m.date.slice(5)+'</span> ':'';
+  return '<div class="meal-log">'+dt+
     '<div class="items">'+m.items.map(i=>'· '+foodEmoji(i.name)+' '+esc(i.name)+' × '+i.qty+' '+i.unit).join('<br>')+'</div>'+
     mealMacros(m)+
-    '<div class="time">'+mealDateTxt(m.date)+
-    ' <a href="javascript:void(0)" style="color:var(--red)" onclick="undoMeal(\''+m.id+'\')">撤回</a>'+
+    '<div class="time">'+
+    '<a href="javascript:void(0)" style="color:var(--red)" onclick="undoMeal(\''+m.id+'\')">撤回</a>'+
     ' <select class="mt-edit" onchange="setMealType(\''+m.id+'\',this.value)">'+mealTypeOptions(m.type)+'</select></div></div>';
 }
 /* 撤回一餐：删除记录并把吃掉的食材按原温区返还回冰箱 */
