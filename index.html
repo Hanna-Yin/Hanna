@@ -205,6 +205,15 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
 .modal .sync-step p{font-size:12px;color:var(--sub);margin:0 0 8px;line-height:1.5;}
 .modal textarea{width:100%;height:90px;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:11px;font-family:monospace;resize:vertical;}
 .modal .close-btn{width:100%;margin-top:8px;}
+.pchips{display:flex;gap:6px;flex-wrap:wrap;margin:7px 0 4px}
+.pchip{font-size:12px;padding:3px 10px;border:1px solid var(--line);border-radius:999px;color:var(--sub);background:#fff;cursor:pointer;white-space:nowrap}
+.pchip.on{background:var(--green);color:#fff;border-color:var(--green);font-weight:700}
+.plist{margin-top:2px}
+.prow{display:flex;align-items:center;gap:6px;font-size:13px;padding:5px 0;border-bottom:1px dashed #e3ece6;flex-wrap:wrap}
+.pname{flex:1 1 60%}
+.pq{font-weight:700}
+.pst{font-size:11.5px;min-width:52px;text-align:right}
+.ptip{flex:1 1 100%;font-size:11.5px;color:var(--sub);line-height:1.5;margin-top:1px}
 </style>
 </head>
 <body>
@@ -360,6 +369,7 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
       <div class="nutri-target">蛋白目标 <b id="protTarget" onclick="editProtTarget()">60</b> g · 适量即可，不是越多越好（点数字修改）</div>
       <div id="nutriVerdict"></div>
       <div id="ketoReco"></div>
+      <div id="myPlan"></div>
     </div>
     <div class="section-title"><span>🍽️ 今日各餐</span></div>
     <div id="nutriMeals"></div>
@@ -1785,7 +1795,7 @@ function mealTopContrib(today,key){
 function renderNutri(){
   const wrap=document.getElementById('nutriMeals');
   if(!wrap)return;
-  renderReco();
+  renderReco();renderMyPlan();
   const today=state.meals.filter(m=>m.date===todayStr());
   let p=0,f=0,c=0;
   today.forEach(m=>m.items.forEach(i=>{p+=(i.p||0)*(i.qty||0);f+=(i.f||0)*(i.qty||0);c+=(i.c||0)*(i.qty||0);}));
@@ -1872,6 +1882,225 @@ function editProtTarget(){
   const n=parseFloat(v);
   if(isNaN(n)||n<=0){toast('请输入正数');return;}
   state.protTarget=n;save();renderNutri();toast('蛋白目标已设为 '+n+'g');
+}
+
+/* ================= 我的食谱（和 AI 商定的计划，可在 app 内更新） ================= */
+const DEFAULT_PLAN_TEXT=[
+'# 9/24-9/28 五日食谱 · 低碳 | 2026-09-24 定',
+'## Day1 | 9/24 周四 | 减负日（爆碳后主动减量）',
+'杏鲍菇 230g ::3,0.2,14 |切片炒，别再多了（菌菇净碳不低）',
+'小油菜 320g ::5,0.6,5 |直接烫在猪肚汤里，别另起清水锅',
+'鸡蛋 2个 ::13,11,1',
+'大肠汤 320g ::10,27,2 |约含大肠100g，比猪肚油多，减负优先猪肚',
+'鸡腿 180g ::41,28,0 |熟重带皮，皮别去掉',
+'## Day2 | 9/25 周五 | 中秋 · 分两餐吃（间隔4~5h）',
+'大鸡腿 300g ::43,32,0 |第1餐12:00，带骨生重',
+'娃娃菜 150g ::2.3,0.3,2 |第1餐',
+'炒菜油 5g ::0,5,0 |第1餐',
+'螃蟹 2只 ::16,3,1 |第2餐16:00-17:00，配姜末醋，别配冷饮',
+'五花肉 100g ::9,18,0 |第2餐，煸油倒掉2/3',
+'娃娃菜 150g ::2.3,0.3,2 |第2餐',
+'小油菜 200g ::3,0.4,3.2 |第2餐',
+'水煮蛋 2个 ::13,11,1 |第2餐',
+'炒菜油 5g ::0,5,0 |第2餐',
+'## Day3 | 9/26 周六 | 泰式黄咖喱鸡（一锅分两顿）',
+'鸡腿 400g ::57,42,0 |带骨生重，可食约300g',
+'kara椰浆 65g ::1,11,1.5 |开封冷藏3天内用完',
+'黄咖喱酱 20g ::0.5,0.4,2.5 |配料无糖；钠超高，当天少放盐',
+'咖喱粉 5g ::0.7,0.7,1.5 |干锅小火过油炒10秒再下酱',
+'水煮蛋 4个 ::26,22,1 |剥壳丢进咖喱一起炖，比单吃香',
+'杏鲍菇 200g ::3,0.2,8 |替土豆，和鸡腿一起炖',
+'黄油 10g ::0,8,0',
+'MCT油 10g ::0,10,0 |关火后淋，别下锅煮；分两顿各5g',
+'娃娃菜 250g ::3.5,0.5,4 |切丝煮，配咖喱汁',
+'魔芋丝 150g ::0.5,0,1 |别超量，当天分次喝温水',
+'## Day4 | 9/27 周日 | 加一份大鸡腿才达标',
+'大鸡腿 300g ::43,32,0 |带骨生重，皮别去（脂肪靠它）',
+'绿叶菜 300g ::4.5,0.9,5 |小油菜/菠菜/生菜，需另买',
+'五花肉 150g ::13.5,27,0 |煸油倒掉2/3；不倒油脂肪约80g',
+'番茄 1个 ::1.4,0.3,4.5',
+'鸡蛋 2个 ::13,11,1',
+'炒菜油 10g ::0,10,0',
+'## Day5 | 9/28 周一 | 五花肉必须倒油',
+'娃娃菜 300g ::4.5,0.6,5',
+'小油菜 200g ::3,0.6,3.2',
+'鸡腿 180g ::41,28,0 |熟重带皮',
+'五花肉 250g ::22.5,44,0 |煸油倒掉2/3，不倒油脂肪172g直接爆',
+'番茄 1个 ::1.4,0.3,4.5',
+'鸡蛋 2个 ::13,11,1',
+'魔芋丝 150g ::0.5,0,1'
+].join('\n');
+
+let planOpenDay=null, planEditOpen=false, _planCache=null, _planSrc=null;
+function planText(){return state.planText||DEFAULT_PLAN_TEXT;}
+const PLAN_UNITS='g|克|kg|千克|公斤|斤|个|只|份|罐|包|袋|片|块|根|把|盒|瓶|ml|毫升|杯|勺|条|颗';
+function parsePlan(txt){
+  const days=[];let title='',updated='';
+  (txt||'').split(/\r?\n/).forEach(function(raw){
+    const line=String(raw).trim();if(!line)return;
+    if(line.charAt(0)==='#'){
+      const body=line.replace(/^#+\s*/,'');
+      const parts=body.split('|').map(function(s){return s.trim();});
+      if(line.indexOf('##')===0){
+        days.push({label:parts[0]||('第'+(days.length+1)+'天'),sub:parts[1]||'',note:parts[2]||'',items:[]});
+      }else{title=parts[0]||'我的食谱';updated=parts[1]||'';}
+      return;
+    }
+    if(!days.length)days.push({label:'第1天',sub:'',note:'',items:[]});
+    let rest=line,tip='',nut=null;
+    const pi=rest.indexOf('|');
+    if(pi>=0){tip=rest.slice(pi+1).trim();rest=rest.slice(0,pi).trim();}
+    const ni=rest.indexOf('::');
+    if(ni>=0){
+      const n=rest.slice(ni+2).split(/[,，]/).map(function(s){return parseFloat(s)||0;});
+      nut={p:n[0]||0,f:n[1]||0,c:n[2]||0};
+      rest=rest.slice(0,ni).trim();
+    }
+    const re=new RegExp('^(.*?)\\s*(\\d+(?:\\.\\d+)?)\\s*('+PLAN_UNITS+')$');
+    const m=rest.match(re);
+    if(!m)return;
+    days[days.length-1].items.push({name:m[1].trim(),qty:parseFloat(m[2]),unit:m[3],tip:tip,nut:nut});
+  });
+  return {title:title||'我的食谱',updated:updated,days:days};
+}
+function planData(){
+  const t=planText();
+  if(_planSrc!==t){_planCache=parsePlan(t);_planSrc=t;}
+  return _planCache;
+}
+/* 库存匹配：同名优先，其次互相包含 */
+function planStockOf(name){
+  const key=String(name||'').trim();if(!key)return null;
+  let best=null;
+  state.foods.forEach(function(f){
+    if(!(f.qty>0))return;
+    const fn=String(f.name||'').trim();
+    if(!fn)return;
+    const score=fn===key?3:(fn.indexOf(key)>=0?2:(key.indexOf(fn)>=0?1:0));
+    if(score&&(!best||score>best.score))best={f:f,score:score};
+  });
+  return best?best.f:null;
+}
+/* 该项这一份的营养：优先用食谱里写的，其次按库存内置库折算 */
+function planItemNutri(i){
+  if(i.nut)return {p:i.nut.p,f:i.nut.f,c:i.nut.c};
+  const f=planStockOf(i.name);
+  if(!f)return {p:0,f:0,c:0};
+  const nu=foodNutri(f);
+  if(nu.basis===100){
+    const g=unitIsWeight(i.unit)?(unitToGrams(i.qty,i.unit)||0):(portionGrams(i.name)||100)*i.qty;
+    return {p:nu.p*g/100,f:nu.f*g/100,c:nu.c*g/100};
+  }
+  return {p:nu.p*i.qty,f:nu.f*i.qty,c:nu.c*i.qty};
+}
+/* 库存够不够：ok=够 / low=不够 / none=没货 */
+function planItemStatus(i){
+  const f=planStockOf(i.name);
+  if(!f)return {state:'none',text:'没库存'};
+  const needG=unitIsWeight(i.unit)?(unitToGrams(i.qty,i.unit)||0):(portionGrams(i.name)||100)*i.qty;
+  const haveG=unitIsWeight(f.unit)?(unitToGrams(f.qty,f.unit)||0):(f.portionG||portionGrams(f.name)||100)*(f.qty||0);
+  if(haveG>=needG)return {state:'ok',text:'够'};
+  return {state:'low',text:'差'+Math.ceil(needG-haveG)+'g'};
+}
+function planTodayIndex(d){
+  const t=todayStr();
+  const a=String(+t.slice(5,7))+'/'+t.slice(8), b=t.slice(5).replace('-','/');
+  for(let i=0;i<d.days.length;i++){
+    const s=(d.days[i].sub||'')+' '+(d.days[i].label||'');
+    if(s.indexOf(a)>=0||s.indexOf(b)>=0)return i;
+  }
+  return 0;
+}
+function planDay(i){planOpenDay=i;planEditOpen=false;renderMyPlan();}
+function planToggleEdit(){planEditOpen=!planEditOpen;renderMyPlan();}
+function planSaveEdit(){
+  const el=document.getElementById('planEditBox');
+  if(!el)return;
+  const v=String(el.value||'').trim();
+  if(!v){toast('内容不能为空');return;}
+  state.planText=v;_planSrc=null;planOpenDay=null;planEditOpen=false;save();renderMyPlan();
+  toast('✅ 食谱已更新（共 '+planData().days.length+' 天）');
+}
+function planReset(){
+  if(!confirm('恢复成内置默认食谱？你自己改过的内容会被覆盖。'))return;
+  state.planText=DEFAULT_PLAN_TEXT;_planSrc=null;planOpenDay=null;planEditOpen=false;save();renderMyPlan();
+  toast('↩️ 已恢复默认食谱');
+}
+/* 缺的一键加入购物清单 */
+function planAddMissing(){
+  const d=planData(),cur=d.days[planOpenDay];if(!cur)return;
+  const miss=cur.items.filter(function(i){return planItemStatus(i).state!=='ok';});
+  if(!miss.length){toast('库存都够，不用买 👍');return;}
+  let n=0;
+  miss.forEach(function(i){
+    const nm=i.name+' '+i.qty+i.unit;
+    if(state.shopping.some(function(s){return !s.done&&s.name===nm;}))return;
+    state.shopping.push({id:uid(),name:nm,done:false});n++;
+  });
+  save();renderShopping();
+  toast('🛒 已加入清单 '+n+' 项（去「🛒 清单」页查看）');
+}
+/* 照此记一餐 */
+function planLogMeal(){
+  const d=planData(),cur=d.days[planOpenDay];if(!cur)return;
+  if(!confirm('把「'+cur.label+'」的 '+cur.items.length+' 项记入今天的饮食记录？\n\n库存里有的会自动扣减，没有的只记不扣。'))return;
+  const items=[],usedUp=[];
+  cur.items.forEach(function(i){
+    const n=planItemNutri(i);
+    const f=planStockOf(i.name);
+    const q=i.qty||0;
+    items.push({name:i.name,qty:q,unit:i.unit,zone:f?zoneOf(f):'fridge',portionG:f?f.portionG:undefined,
+      p:q?Math.round(n.p/q*1000)/1000:0,f:q?Math.round(n.f/q*1000)/1000:0,c:q?Math.round(n.c/q*1000)/1000:0});
+    if(!f)return;
+    if(f.unit===i.unit){
+      f.qty=+Math.max(0,f.qty-q).toFixed(2);
+    }else if(unitIsWeight(f.unit)&&unitIsWeight(i.unit)){
+      const left=Math.max(0,(unitToGrams(f.qty,f.unit)||0)-(unitToGrams(q,i.unit)||0));
+      f.qty=+(left/(unitToGrams(1,f.unit)||1)).toFixed(2);
+    }else{return;}
+    if(f.qty<=0)usedUp.push(f.name);
+  });
+  if(!items.length){toast('这一天还没有食材');return;}
+  const mt=(typeof ui!=='undefined'&&ui.mealType)?ui.mealType:'午餐';
+  state.meals.unshift({id:uid(),date:todayStr(),type:mt,time:new Date().toTimeString().slice(0,5),items:items});
+  if(usedUp.length)state.foods=state.foods.filter(function(f){return f.qty>0;});
+  save();renderFridge();renderMealPick();renderMealHistory();renderNutri();
+  toast('✅ 已记录「'+cur.label+'」'+(usedUp.length?' · 已用完：'+usedUp.join('、'):''));
+}
+function renderMyPlan(){
+  const el=document.getElementById('myPlan');
+  if(!el)return;
+  const d=planData();
+  if(!d.days.length){el.innerHTML='';return;}
+  if(planOpenDay==null||planOpenDay>=d.days.length)planOpenDay=planTodayIndex(d);
+  const idx=planOpenDay,cur=d.days[idx];
+  let p=0,f=0,c=0;
+  cur.items.forEach(function(i){const n=planItemNutri(i);p+=n.p;f+=n.f;c+=n.c;});
+  const kcal=Math.round(p*4+f*9+c*4);
+  const tC=state.ketoTarget||50,tF=state.fatTarget||100,tP=state.protTarget||60;
+  const chips=d.days.map(function(x,i){return '<span class="pchip'+(i===idx?' on':'')+'" onclick="planDay('+i+')">'+esc(x.label)+'</span>';}).join('');
+  const rows=cur.items.length?cur.items.map(function(i){
+    const st=planItemStatus(i);
+    const mark=st.state==='ok'?'<span style="color:#0b7a55">✅ 够</span>':(st.state==='low'?'<span style="color:var(--orange)">⚠️ '+st.text+'</span>':'<span style="color:var(--red)">🛒 缺货</span>');
+    return '<div class="prow"><span class="pname">'+foodEmoji(i.name)+' '+esc(i.name)+'</span><span class="pq">'+i.qty+i.unit+'</span><span class="pst">'+mark+'</span>'+(i.tip?'<div class="ptip">'+esc(i.tip)+'</div>':'')+'</div>';
+  }).join(''):'<div style="font-size:12.5px;color:var(--sub)">这一天还没有内容</div>';
+  const missN=cur.items.filter(function(i){return planItemStatus(i).state!=='ok';}).length;
+  const tag=function(ok,txt){return '<span style="color:'+(ok?'#0b7a55':'var(--orange)')+'">'+txt+'</span>';};
+  let h='<div style="margin-top:14px;border-top:1px dashed var(--line);padding-top:10px">';
+  h+='<div style="display:flex;align-items:baseline;gap:6px"><b style="font-size:13.5px">📅 我的食谱</b><span style="font-size:11.5px;color:var(--sub);flex:1">'+esc(d.title)+(d.updated?' · '+esc(d.updated):'')+'</span><a href="javascript:void(0)" style="font-size:12px" onclick="planToggleEdit()">✏️ 更新</a></div>';
+  h+='<div class="pchips">'+chips+'</div>';
+  h+='<div style="font-size:12.5px;font-weight:700;color:var(--green)">'+esc(cur.label)+(cur.sub?' · '+esc(cur.sub):'')+(cur.note?' · '+esc(cur.note):'')+'</div>';
+  h+='<div class="plist">'+rows+'</div>';
+  h+='<div style="font-size:12.5px;margin-top:7px">👉 合计：蛋白 <b>'+round1(p)+'</b>g · 脂肪 <b>'+round1(f)+'</b>g · 净碳 <b>'+round1(c)+'</b>g · ≈'+kcal+' kcal</div>';
+  h+='<div style="font-size:11.5px;color:var(--sub)">对比你的目标：净碳 '+tag(c<=tC,round1(c)+'/≤'+tC+'g')+' · 脂肪 '+tag(f>=tF,round1(f)+'/≥'+tF+'g')+' · 蛋白 '+tag(p>=tP,round1(p)+'/≥'+tP+'g')+'</div>';
+  h+='<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><button class="btn btn-sm" onclick="planAddMissing()">🛒 缺的一键加入清单'+(missN?'（'+missN+'）':'')+'</button><button class="btn btn-sm btn-primary" onclick="planLogMeal()">🍽️ 照此记一餐</button></div>';
+  if(planEditOpen){
+    h+='<div style="margin-top:8px;font-size:11.5px;color:var(--sub);line-height:1.6">格式：<b>#</b> 食谱名 | 更新日期；<b>##</b> 天标签 | 日期 | 备注；每行一条「名称 数量单位」，可加 <b>::蛋白,脂肪,净碳</b> 和 <b>| 做法备注</b>。</div>';
+    h+='<textarea id="planEditBox" style="width:100%;height:220px;margin-top:6px;font-size:12px">'+esc(planText())+'</textarea>';
+    h+='<div style="display:flex;gap:6px;margin-top:6px"><button class="btn btn-sm btn-primary" onclick="planSaveEdit()">保存</button><button class="btn btn-sm" onclick="planReset()">恢复默认</button><button class="btn btn-sm btn-ghost" onclick="planToggleEdit()">取消</button></div>';
+  }
+  h+='</div>';
+  el.innerHTML=h;
 }
 
 /* ================= 减脂一日推荐（基于库存） ================= */
