@@ -1319,6 +1319,18 @@ function renderExpAlert(){
 const ALIAS={'牛肉':['牛排','肥牛','牛腩','牛肉'],'猪肉':['五花肉','排骨','瘦肉','里脊','猪蹄','猪肘','猪肉'],'鸡肉':['鸡腿','鸡胸','鸡翅','整鸡','土鸡','鸡肉'],
 '鱼':['鲈鱼','带鱼','三文鱼','鳕鱼','草鱼','黑鱼','黄花鱼','鱼'],'虾':['基围虾','鲜虾','虾仁','海虾','虾'],'蛋':['鸡蛋','土鸡蛋','鹌鹑蛋']};
 
+/* 食谱食材 -> 库存别名：做法是做法，库存是库存 */
+const PLAN_ALIASES={
+'水煮蛋':['鸡蛋','蛋','土鸡蛋'],'煎蛋':['鸡蛋','蛋','土鸡蛋'],'蒸蛋':['鸡蛋','蛋','土鸡蛋'],
+'茶叶蛋':['鸡蛋','蛋','土鸡蛋'],'炒鸡蛋':['鸡蛋','蛋','土鸡蛋'],'蛋花':['鸡蛋','蛋','土鸡蛋'],
+'鸡腿肉':['鸡腿','鸡肉'],'鸡腿块':['鸡腿','鸡肉'],'鸡丁':['鸡腿','鸡胸','鸡肉'],
+'五花肉片':['五花肉','猪肉'],'五花肉丝':['五花肉','猪肉'],
+'猪里脊':['里脊','猪肉'],'猪瘦肉':['瘦肉','猪肉'],
+'肥牛卷':['肥牛','牛肉'],'牛腩块':['牛腩','牛肉'],
+'虾仁':['虾','基围虾','鲜虾','海虾'],'虾肉':['虾','基围虾','鲜虾','海虾'],
+'鱼片':['鱼','鲈鱼','黑鱼','草鱼','黄花鱼'],'鱼肉':['鱼','鲈鱼','黑鱼','草鱼','黄花鱼']
+};
+
 /* ================= 菜谱库（低碳生酮向） ================= */
 const RECIPES=[
  {n:'香煎牛排',t:'10分钟',tag:'meat',keto:2,carb:'约0.5g',ings:[['牛排','1块'],['黄油','适量']],steps:'1. 牛排回温，厨房纸吸干水分，两面撒盐和黑胡椒\n2. 平底锅烧到冒烟，下牛排每面煎1-2分钟\n3. 转小火加黄油，不断淋油约30秒\n4. 静置5分钟再切，锁住肉汁'},
@@ -1968,17 +1980,35 @@ function planData(){
   if(_planSrc!==t){_planCache=parsePlan(t);_planSrc=t;}
   return _planCache;
 }
-/* 库存匹配：同名优先，其次互相包含 */
+/* 库存匹配：同名优先，其次互相包含，再尝试 PLAN_ALIASES */
 function planStockOf(name){
   const key=String(name||'').trim();if(!key)return null;
   let best=null;
+  function scoreOne(fn){
+    if(fn===key)return 3;
+    if(fn.indexOf(key)>=0)return 2;
+    if(key.indexOf(fn)>=0)return 1;
+    return 0;
+  }
   state.foods.forEach(function(f){
     if(!(f.qty>0))return;
     const fn=String(f.name||'').trim();
     if(!fn)return;
-    const score=fn===key?3:(fn.indexOf(key)>=0?2:(key.indexOf(fn)>=0?1:0));
-    if(score&&(!best||score>best.score))best={f:f,score:score};
+    const sc=scoreOne(fn);
+    if(sc&&(!best||sc>best.score))best={f:f,score:sc};
   });
+  if(!best){
+    const cands=PLAN_ALIASES[key]||[];
+    cands.forEach(function(alias){
+      state.foods.forEach(function(f){
+        if(!(f.qty>0))return;
+        const fn=String(f.name||'').trim();
+        if(!fn)return;
+        const sc=fn===alias?3:(fn.indexOf(alias)>=0?2:(alias.indexOf(fn)>=0?1:0));
+        if(sc&&(!best||sc>best.score))best={f:f,score:sc};
+      });
+    });
+  }
   return best?best.f:null;
 }
 /* 该项这一份的营养：优先用食谱里写的，其次按库存内置库折算 */
