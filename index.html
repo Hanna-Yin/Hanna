@@ -2129,6 +2129,11 @@ function renderMyPlan(){
     h+='<textarea id="planEditBox" style="width:100%;height:220px;margin-top:6px;font-size:12px">'+esc(planText())+'</textarea>';
     h+='<div style="display:flex;gap:6px;margin-top:6px"><button class="btn btn-sm btn-primary" onclick="planSaveEdit()">保存</button><button class="btn btn-sm" onclick="planReset()">恢复默认</button><button class="btn btn-sm btn-ghost" onclick="planToggleEdit()">取消</button></div>';
   }
+  h+='<details style="margin-top:10px;border-top:1px dashed var(--line);padding-top:8px"><summary style="font-size:12.5px;cursor:pointer">🥚 附：生酮简易茶叶蛋（常备零食）</summary>';
+  h+='<div style="font-size:12px;color:var(--sub);line-height:1.7;margin-top:6px">';
+  h+='<b>配料（10个蛋）</b>：鸡蛋10个、红茶8~10g、生抽3~4勺、老抽1勺、盐1茶匙；香料（八角2颗/桂皮1小段/香叶2片/花椒10粒，没有可省）；可选赤藓糖醇1茶匙。<b>🚫 不加糖</b>。<br>';
+  h+='<b>做法</b>：①冷水煮蛋8~10分钟→②泡冷水→③敲裂纹→④换锅加茶/酱油/盐/香料煮开转小火15~20分→⑤关火连汤泡，冷藏过夜更入味。<br>';
+  h+='<b>每颗</b>：蛋白~6.5g·脂肪~5g·净碳0·~70kcal。作加餐配一小把夏威夷果更扛馋。</div></details>';
   h+='</div>';
   el.innerHTML=h;
 }
