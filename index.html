@@ -426,6 +426,19 @@ if(state.fatTarget==null)state.fatTarget=100;
 if(state.protTarget==null)state.protTarget=60;
 let ui={mealType:'早餐',picked:{},seasonMonth:null,recipeFilter:'all'};
 
+/* 启动种子：确保必要清单项存在（按名称去重，避免重复添加）。用于「把食物加入冰箱管家清单」类请求。 */
+const SEED_SHOP=['桂圆（干·每次3~5颗·泡茶喝别当零食）','红枣（干·吃前去皮去核·护铁吸收）'];
+function seedShop(){
+  if(!state.shopping)state.shopping=[];
+  let added=false;
+  SEED_SHOP.forEach(function(nm){
+    if(!state.shopping.some(function(s){return s.name===nm;})){
+      state.shopping.push({id:uid(),name:nm,done:false});added=true;
+    }
+  });
+  if(added){save();renderShopping();}
+}
+
 function save(){localStorage.setItem(KEY,JSON.stringify(state));schedulePush()}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1800);}
@@ -2703,6 +2716,7 @@ function shopHtml(s){
   let migrated=false;
   state.foods.forEach(f=>{if(!f.addedAt){f.addedAt=todayStr();migrated=true;}});
   if(migrated)save();
+  seedShop();
   updateShelfHint();unitSelHint();
   renderFridge();renderMealHistory();renderSeasonal();renderShopping();renderRecipes();renderKeto();renderNutri();
   if(gistOn()){
@@ -2711,7 +2725,7 @@ function shopHtml(s){
     gistPull(true).then(ok=>{
       if(!ok)return new Promise(r=>setTimeout(r,10000)).then(()=>gistPull(true));
       return ok;
-    }).finally(()=>{bootPulling=false});
+    }).finally(()=>{seedShop();bootPulling=false});
   }
 })();
 // 每30秒后台静默拉取云端更新（页面可见时才拉）
