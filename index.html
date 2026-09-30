@@ -1855,6 +1855,12 @@ function ingNameMatch(n,fname){
   for(const base in ALIAS){if(n.includes(base)||n===base)return ALIAS[base].some(a=>fname.includes(a));}
   return false;
 }
+const CUT_WORDS=['丝','片','块','条','丁','末','碎','段','蓉','粒','角','瓣'];
+function extractCut(name){
+  if(!name)return null;
+  for(const w of CUT_WORDS){if(name.includes(w))return w;}
+  return null;
+}
 function canonUnit(u){
   if(!u)return '';
   if(['克','g','G','ml','mL','毫升'].includes(u))return 'w';
@@ -1877,15 +1883,23 @@ function convertIngQty(q,ru,fu){
   return null;
 }
 function matchIngFood(name,pa){
-  if(!pa)return null;let best=null;
+  if(!pa)return null;
+  const cut=extractCut(name);
+  let cands=[];
   state.foods.forEach(f=>{
     if(f.qty<=0)return;
     if(!ingNameMatch(name,f.name))return;
-    if(convertIngQty(pa.q,pa.unit,f.unit)!==null){if(best===null)best=f;return;}
-    const cr=canonUnit(pa.unit),cf=canonUnit(f.unit);
-    if(f.portionG&&((cr==='c'&&cf==='w')||(cr==='w'&&cf==='c'))){if(best===null)best=f;}
+    let ok=false;
+    if(convertIngQty(pa.q,pa.unit,f.unit)!==null)ok=true;
+    else if(f.portionG){const cr=canonUnit(pa.unit),cf=canonUnit(f.unit);if((cr==='c'&&cf==='w')||(cr==='w'&&cf==='c'))ok=true;}
+    if(!ok)return;
+    let score=0;
+    if(cut){if(f.name.includes(cut))score+=1;if(f.note&&f.note.includes(cut))score+=2;}
+    cands.push({f,score});
   });
-  return best;
+  if(!cands.length)return null;
+  cands.sort((a,b)=>b.score-a.score);
+  return cands[0].f;
 }
 function cookRecipe(i){
   const r=window._R&&window._R[i];if(!r)return;
