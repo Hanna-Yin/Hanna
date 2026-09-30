@@ -306,6 +306,7 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
         <div class="chip" data-f="fish">水产</div>
         <div class="chip" data-f="egg">蛋奶</div>
         <div class="chip" data-f="veg">蔬菜</div>
+        <div class="chip" data-f="yangsheng">🌿 养生</div>
         <div class="chip" data-f="fast">⚡ 15分钟快手</div>
       </div>
     </div>
@@ -1374,7 +1375,13 @@ const RECIPES=[
  {n:'椒盐虾',t:'15分钟',tag:'fish',keto:2,carb:'约3g',ings:[['虾','500克'],['蒜','4瓣']],steps:'1. 虾开背去线，吸干水分\n2. 中火煎炸至壳酥脆\n3. 蒜末葱花爆香，倒虾撒椒盐翻匀'},
  {n:'黄油煎杏鲍菇',t:'8分钟',tag:'veg',keto:2,carb:'约5g',ings:[['杏鲍菇','2根'],['黄油','1小块']],steps:'1. 杏鲍菇切厚片，划十字花刀\n2. 黄油融化，小火煎至两面金黄\n3. 撒盐和黑胡椒，口感似鲍鱼'},
  {n:'椰浆咖喱牛肉',t:'50分钟',tag:'meat',keto:1,carb:'约6g',ings:[['牛肉','400克'],['洋葱','半个'],['椰浆','100毫升']],steps:'1. 牛腩焯水后炖40分钟至软\n2. 下洋葱和咖喱粉炒香\n3. 倒入椰浆小火煮10分钟，盐调味'},
- {n:'烤五花肉(空气炸锅)',t:'25分钟',tag:'meat',keto:2,carb:'约1g',ings:[['五花肉','300克']],steps:'1. 五花肉切条，用生抽、蚝油、代糖、五香粉腌1小时\n2. 空气炸锅180度15分钟，翻面再8分钟\n3. 出锅撒辣椒面和熟芝麻'}
+ {n:'烤五花肉(空气炸锅)',t:'25分钟',tag:'meat',keto:2,carb:'约1g',ings:[['五花肉','300克']],steps:'1. 五花肉切条，用生抽、蚝油、代糖、五香粉腌1小时\n2. 空气炸锅180度15分钟，翻面再8分钟\n3. 出锅撒辣椒面和熟芝麻'},
+ {n:'桂圆红枣茶',t:'10分钟',tag:'yangsheng',keto:1,carb:'约8g',ings:[['桂圆','5颗'],['红枣','1颗'],['枸杞','1撮'],['水','300ml']],steps:'1. 桂圆肉(干)取3-5颗、红枣1颗去皮去核、枸杞1小撮\n2. 加水300ml煮开转小火5-8分钟\n3. 当茶饮温热喝；【别当零食抓着吨】干桂圆糖密度高，超量就破碳\n4. 经期量大/血鲜红/易上火(热型)停；虚寒怕冷最合适'},
+ {n:'姜枣茶',t:'10分钟',tag:'yangsheng',keto:1,carb:'5~8g',ings:[['生姜','3片'],['红枣','1颗'],['枸杞','1撮']],steps:'1. 生姜3-5片、红枣1-2颗去皮、枸杞1撮\n2. 加水煮开小火10分钟\n3. 当暖饮喝，不吨；量大上火停\n4. 适合小腹冷、手脚凉的虚寒型'},
+ {n:'酒酿蛋(安全版)',t:'10分钟',tag:'yangsheng',keto:1,carb:'约7g',ings:[['醪糟','15克'],['鸡蛋','2个'],['红枣','1颗'],['枸杞','1撮']],steps:'1. 水200ml+醪糟10-15g(⚠️买无麸款，酒曲常掺小麦)煮微开\n2. 打入2个蛋(整蛋或蛋花)\n3. 加红枣(去皮)、枸杞，【煮透3-5分钟挥发酒精】\n4. 温中活血补蛋白；经期头几天量大时停，经量见少再喝'},
+ {n:'银耳枸杞羹(滋阴)',t:'60分钟',tag:'yangsheng',keto:2,carb:'约3g',ings:[['银耳','半朵'],['枸杞','1撮'],['红枣','1颗']],steps:'1. 银耳半朵泡发去黄蒂撕小朵\n2. 加红枣(去皮)、枸杞，水炖/养生壶1-2小时出胶\n3. 【不加冰糖/红糖】甜味来自红枣\n4. 平性不燥，适合阴虚口干型；银耳本身几乎无糖'},
+ {n:'当归生姜羊肉汤',t:'90分钟',tag:'yangsheng',keto:2,carb:'≈0',ings:[['羊肉','250克'],['当归','10克'],['生姜','20克']],steps:'1. 羊肉切块冷水下锅焯水去沫\n2. 重新加水，放当归10g、生姜20g\n3. 炖1-1.5小时至软烂，加盐\n4. 补血活血调经、温经散寒，寒凝血瘀痛经首选；keto完美；热型/上火停'},
+ {n:'猪肝枸杞叶汤',t:'15分钟',tag:'yangsheng',keto:1,carb:'约3g',ings:[['猪肝','120克'],['枸杞叶','1把'],['姜','2片']],steps:'1. 猪肝切薄片，清水抓洗去血水\n2. 水开下姜丝，放猪肝煮至变色(约1分钟)\n3. 下枸杞叶/菠菜烫熟，盐调味，【别煮老】\n4. 中医以形补形养血第一，经期失血后补铁最佳'}
 ];
 
 /* ================= 应季食材库 ================= */
@@ -2339,9 +2346,8 @@ function renderRecipes(){
   });
   list.sort((a,b)=>a.miss-b.miss);
   if(ui.recipeFilter==='keto')list=list.filter(x=>x.r.keto===2);
-  else if(ui.recipeFilter!=='all')list=list.filter(x=>x.r.tag===ui.recipeFilter);
   else if(ui.recipeFilter==='fast')list=list.filter(x=>parseInt(x.r.t)<=15);
-  if(ui.recipeFilter==='fast')list=list.filter(x=>parseInt(x.r.t)<=15);
+  else if(ui.recipeFilter!=='all')list=list.filter(x=>x.r.tag===ui.recipeFilter);
   if(kw)list=list.filter(x=>x.r.n.includes(kw)||x.matched.some(m=>m.g[0].includes(kw)));
   if(!list.length){wrap.innerHTML=adv+'<div class="empty">没有符合条件的菜谱</div>';return;}
   wrap.innerHTML=adv+list.map((x,idx)=>{
