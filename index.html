@@ -298,7 +298,7 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
   <!-- ============ 菜谱推荐 ============ -->
   <div class="view" id="view-recipe">
     <div class="card" style="padding:12px">
-      <input id="recipeSearch" placeholder="🔍 搜索菜谱 / 食材" oninput="renderRecipes()">
+      <input id="recipeSearch" placeholder="🔍 搜索食谱 / 食材" oninput="renderRecipes()">
       <div class="filter-row" style="margin-top:10px" id="recipeFilter">
         <div class="chip sel" data-f="all">全部</div>
         <div class="chip" data-f="keto">🥑 低碳优先</div>
@@ -310,6 +310,26 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
         <div class="chip" data-f="fast">⚡ 15分钟快手</div>
       </div>
     </div>
+    <details class="card" style="padding:12px;margin-top:10px">
+      <summary style="font-weight:700;cursor:pointer">➕ 添加我的食谱（填了就进「全部 / 快手」分类）</summary>
+      <div style="margin-top:10px">
+        <input id="arName" placeholder="菜名，如 我的快手炒蛋" style="width:100%;padding:8px;margin-bottom:6px;border:1px solid var(--line);border-radius:8px;font-size:14px;box-sizing:border-box">
+        <div style="display:flex;gap:8px;margin-bottom:6px">
+          <select id="arTag" style="flex:1;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:14px">
+            <option value="fast">快手(≤15分钟)</option>
+            <option value="meat">肉类</option>
+            <option value="fish">水产</option>
+            <option value="egg">蛋奶</option>
+            <option value="veg">蔬菜</option>
+            <option value="yangsheng">养生</option>
+          </select>
+          <input id="arCarb" placeholder="净碳水，如 约3g（可空）" style="flex:1;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:14px">
+        </div>
+        <textarea id="arIngs" placeholder="食材每行一条：番茄 2个 / 鸡蛋 2个 / 五花肉 200克（名称要和冰箱库存一致才能自动扣减）" rows="3" style="width:100%;padding:8px;margin-bottom:6px;border:1px solid var(--line);border-radius:8px;font-size:14px;box-sizing:border-box;resize:vertical"></textarea>
+        <textarea id="arSteps" placeholder="做法每行一步（可空）" rows="3" style="width:100%;padding:8px;margin-bottom:8px;border:1px solid var(--line);border-radius:8px;font-size:14px;box-sizing:border-box;resize:vertical"></textarea>
+        <button class="btn btn-sm" style="background:#2e9e6b;color:#fff" onclick="addUserRecipe()">💾 保存食谱</button>
+      </div>
+    </details>
     <div class="section-title"><span>💡 根据冰箱现有食材推荐（已按匹配度排序）</span></div>
     <div id="recipeList"></div>
   </div>
@@ -379,7 +399,7 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
   <div class="tabs">
     <div class="tab active" data-v="fridge"><span class="icon">🧊</span><span class="label">冰箱</span></div>
     <div class="tab" data-v="meal"><span class="icon">🍽️</span><span class="label">饮食</span></div>
-    <div class="tab" data-v="recipe"><span class="icon">📖</span><span class="label">菜谱</span></div>
+    <div class="tab" data-v="recipe"><span class="icon">📖</span><span class="label">食谱</span></div>
     <div class="tab" data-v="season"><span class="icon">🥬</span><span class="label">应季</span></div>
     <div class="tab" data-v="shop"><span class="icon">🛒</span><span class="label">清单</span></div>
     <div class="tab" data-v="nutri"><span class="icon">📊</span><span class="label">营养</span></div>
@@ -422,6 +442,7 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
 /* ================= 数据层 ================= */
 const KEY='fridgeKetoApp_v1';
 let state=JSON.parse(localStorage.getItem(KEY)||'null')||{foods:[],meals:[],shopping:[]};
+if(!state.userRecipes)state.userRecipes=[];
 if(state.ketoTarget==null)state.ketoTarget=50;
 if(state.fatTarget==null)state.fatTarget=100;
 if(state.protTarget==null)state.protTarget=60;
@@ -1802,7 +1823,8 @@ function deleteMealItem(id,idx){
 }
 function mealCard(m,showDate){
   const dt=showDate?'<span class="mdate">'+m.date.slice(5)+'</span> ':'';
-  return '<div class="meal-log">'+dt+
+  const dish=m.dish?'<div style="font-weight:700;font-size:13px;margin-bottom:4px">🍲 '+esc(m.dish)+'</div>':'';
+  return '<div class="meal-log">'+dt+dish+
     '<div class="items">'+m.items.map((i,idx)=>'<div class="mi-row"><span class="mi-name">'+foodEmoji(i.name)+' '+esc(i.name)+'</span><span class="mi-ctrl"><input type="number" class="mi-qty" value="'+i.qty+'" step="any" onchange="changeMealItemQty(\''+m.id+'\','+idx+',this.value)"><span class="mi-unit">'+i.unit+'</span><a href="javascript:void(0)" class="mi-del" onclick="deleteMealItem(\''+m.id+'\','+idx+')">删</a></span></div>').join('')+'</div>'+
     mealMacros(m)+
     '<div class="time"><a href="javascript:void(0)" style="color:var(--red)" onclick="undoMeal(\''+m.id+'\')">撤回整餐</a></div></div>';
@@ -1816,6 +1838,99 @@ function undoMeal(id){
   state.meals=state.meals.filter(x=>x.id!==id);
   save();renderFridge();renderMealHistory();renderMealPick();renderRecipes();
   toast('↩️ 已撤回这一餐，食物已返还冰箱');
+}
+
+/* ================= 做菜：记录饮食 + 扣减库存 ================= */
+function mealTypeByTime(){const h=new Date().getHours();if(h<11)return '早餐';if(h<14)return '午餐';if(h<17)return '加餐';return '晚餐';}
+function parseIngAmt(amt){
+  if(!amt)return null;let s=amt.trim();let q=null;
+  if(/^半/.test(s)){q=0.5;s=s.replace(/^半/,'');}
+  else{const m=s.match(/^(\d+(\.\d+)?)/);if(!m)return null;q=parseFloat(m[1]);s=s.slice(m[0].length).trim();}
+  let unit=s.replace(/[、\s].*$/,'').replace(/^[~约为]/,'');
+  return {q,unit};
+}
+function ingNameMatch(n,fname){
+  if(!fname)return false;
+  if(fname.includes(n)||n.includes(fname))return true;
+  for(const base in ALIAS){if(n.includes(base)||n===base)return ALIAS[base].some(a=>fname.includes(a));}
+  return false;
+}
+function canonUnit(u){
+  if(!u)return '';
+  if(['克','g','G','ml','mL','毫升'].includes(u))return 'w';
+  if(['千克','kg','KG'].includes(u))return 'wk';
+  if(['斤'].includes(u))return 'wj';
+  if(['个','颗','粒','瓣','只','根','条','枚'].includes(u))return 'c';
+  if(['份'].includes(u))return 'p';
+  return u;
+}
+function gramsOf(q,u){if(u==='w')return q;if(u==='wk')return q*1000;if(u==='wj')return q*500;return null;}
+function convertIngQty(q,ru,fu){
+  const cr=canonUnit(ru),cf=canonUnit(fu);
+  if(cr==='w'&&cf==='w')return q;
+  if(cr==='wk'&&cf==='w')return q*1000;
+  if(cr==='wj'&&cf==='w')return q*500;
+  if(cr==='w'&&cf==='wk')return q/1000;
+  if(cr==='w'&&cf==='wj')return q/500;
+  if(cr==='c'&&cf==='c')return q;
+  if(cr==='p'&&cf==='p')return q;
+  return null;
+}
+function matchIngFood(name,pa){
+  if(!pa)return null;let best=null;
+  state.foods.forEach(f=>{
+    if(f.qty<=0)return;
+    if(!ingNameMatch(name,f.name))return;
+    if(convertIngQty(pa.q,pa.unit,f.unit)!==null){if(best===null)best=f;return;}
+    const cr=canonUnit(pa.unit),cf=canonUnit(f.unit);
+    if(f.portionG&&((cr==='c'&&cf==='w')||(cr==='w'&&cf==='c'))){if(best===null)best=f;}
+  });
+  return best;
+}
+function cookRecipe(i){
+  const r=window._R&&window._R[i];if(!r)return;
+  const items=[],deducted=[],missed=[];
+  (r.ings||[]).forEach(g=>{
+    const name=g[0],amt=g[1]||'';const pa=parseIngAmt(amt);
+    if(!pa){if(name)missed.push(name);return;}
+    const f=matchIngFood(name,pa);
+    if(!f){missed.push(name+' '+amt);return;}
+    let q=convertIngQty(pa.q,pa.unit,f.unit);
+    if(q==null&&f.portionG){const cr=canonUnit(pa.unit),cf=canonUnit(f.unit);if(cr==='c'&&cf==='w')q=pa.q*(f.portionG||0);else if(cr==='w'&&cf==='c'){const gm=gramsOf(pa.q,pa.unit);q=gm!=null?gm/(f.portionG||1):null;}}
+    if(q==null||!(q>0)){missed.push(name+' '+amt);return;}
+    if(q>f.qty){missed.push(name+'(库存仅'+f.qty+f.unit+')');q=f.qty;}
+    const nu=foodNutri(f);const k100=nu.basis===100?(unitToGrams(1,f.unit)||0)/100:1;
+    items.push({name:f.name,qty:+(+q).toFixed(2),unit:f.unit,zone:zoneOf(f),portionG:f.portionG||undefined,
+      p:Math.round(nu.p*k100*q*1000)/1000,f:Math.round(nu.f*k100*q*1000)/1000,c:Math.round(nu.c*k100*q*1000)/1000});
+    f.qty=+Math.max(0,f.qty-q).toFixed(2);
+    deducted.push(f.name+' -'+(+q).toFixed(2)+f.unit);
+  });
+  if(state.foods.some(f=>f.qty<=0))state.foods=state.foods.filter(f=>f.qty>0);
+  const type=mealTypeByTime();
+  state.meals.unshift({id:uid(),date:todayStr(),type,time:new Date().toTimeString().slice(0,5),dish:r.n,items});
+  save();renderFridge();renderMealHistory();renderRecipes();renderNutri();
+  let msg='🍲 已记录「'+r.n+'」('+type+')';
+  if(deducted.length)msg+=' · 扣库存：'+deducted.join('、');
+  if(missed.length)msg+=' · 未匹配：'+missed.join('、');
+  toast(msg);
+}
+function addUserRecipe(){
+  const n=document.getElementById('arName').value.trim();
+  if(!n){toast('先填菜名');return;}
+  const tag=document.getElementById('arTag').value;
+  const carb=document.getElementById('arCarb').value.trim()||'—';
+  const ingsTxt=document.getElementById('arIngs').value.trim();
+  const stepsTxt=document.getElementById('arSteps').value.trim();
+  if(!ingsTxt){toast('至少写一种食材');return;}
+  const ings=ingsTxt.split('\n').map(s=>s.trim()).filter(Boolean).map(s=>{
+    const m=s.match(/^(.+?)\s+(\S+)$/);return m?[m[1].trim(),m[2].trim()]:[s,''];
+  });
+  const steps=stepsTxt?stepsTxt.split('\n').map(s=>s.trim()).filter(Boolean).map((s,i)=>(i+1)+'. '+s).join('\n'):'（暂无做法）';
+  if(!state.userRecipes)state.userRecipes=[];
+  state.userRecipes.push({n,t:'15分钟',tag,keto:2,carb,ings,steps});
+  save();renderRecipes();
+  document.getElementById('arName').value='';document.getElementById('arCarb').value='';document.getElementById('arIngs').value='';document.getElementById('arSteps').value='';
+  toast('✅ 已添加「'+n+'」到我的食谱');
 }
 
 /* ================= 今日营养汇总 ================= */
@@ -2339,7 +2454,8 @@ function renderRecipes(){
   const kw=(document.getElementById('recipeSearch').value||'').trim();
   const wrap=document.getElementById('recipeList');
   const adv=nutriAdviceHtml(kw);
-  let list=RECIPES.map(r=>{
+  const ALL=[...RECIPES, ...(state.userRecipes||[])];window._R=ALL;
+  let list=ALL.map(r=>{
     const matched=r.ings.map(g=>({g,got:!!ingMatch(g)}));
     const miss=matched.filter(x=>!x.got).length;
     return {r,matched,miss};
@@ -2349,7 +2465,7 @@ function renderRecipes(){
   else if(ui.recipeFilter==='fast')list=list.filter(x=>parseInt(x.r.t)<=15);
   else if(ui.recipeFilter!=='all')list=list.filter(x=>x.r.tag===ui.recipeFilter);
   if(kw)list=list.filter(x=>x.r.n.includes(kw)||x.matched.some(m=>m.g[0].includes(kw)));
-  if(!list.length){wrap.innerHTML=adv+'<div class="empty">没有符合条件的菜谱</div>';return;}
+  if(!list.length){wrap.innerHTML=adv+'<div class="empty">没有符合条件的食谱</div>';return;}
   wrap.innerHTML=adv+list.map((x,idx)=>{
     const {r,matched,miss}=x;
     const pill=miss===0?'<span class="match-pill match-yes">✓ 现在就能做</span>':miss<=2?'<span class="match-pill match-near">差 '+miss+' 样</span>':'<span class="match-pill match-no">缺 '+miss+' 样</span>';
@@ -2357,7 +2473,7 @@ function renderRecipes(){
       '<div class="r-head"><div><div class="r-name">'+r.n+' '+(r.keto===2?'<span class="tag tag-keto">🥑 低碳</span>':'<span class="tag tag-warn">适量</span>')+'</div>'+
       '<div class="r-sub">⏱ '+r.t+' · 净碳水'+r.carb+'</div></div>'+pill+'</div>'+
       '<div class="r-ings">'+matched.map(m=>'<span class="ing '+((m.got&&state.foods.length)?'ok':'miss')+'">'+esc(m.g[0])+' '+esc(m.g[1])+'</span>').join('')+'</div>'+
-      '<div style="margin-top:10px"><button class="btn btn-ghost btn-sm" onclick="document.getElementById(\'rc'+idx+'\').classList.toggle(\'open\')">👀 看做法</button></div>'+
+      '<div style="margin-top:10px;display:flex;gap:8px"><button class="btn btn-ghost btn-sm" onclick="document.getElementById(\'rc'+idx+'\').classList.toggle(\'open\')">👀 看做法</button><button class="btn btn-sm" style="background:#2e9e6b;color:#fff" onclick="cookRecipe(_R.indexOf(r))">✓ 做了这道</button></div>'+
       '<div class="r-detail">'+r.steps+'</div>'+
     '</div>';
   }).join('');
