@@ -214,6 +214,32 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
 .pq{font-weight:700}
 .pst{font-size:11.5px;min-width:52px;text-align:right}
 .ptip{flex:1 1 100%;font-size:11.5px;color:var(--sub);line-height:1.5;margin-top:1px}
+/* 减脂养身笔记（scoped to .nb） */
+.nb table{border-collapse:collapse;width:100%;font-size:11.5px;margin:8px 0;}
+.nb table th,.nb table td{border:1px solid var(--line);padding:4px 5px;text-align:left;line-height:1.35;vertical-align:top;}
+.nb table th{background:var(--green-light);color:var(--green-dark);font-weight:600;}
+.nb .num{text-align:right;white-space:nowrap;}
+.nb .nb-sub{font-size:12px;color:var(--sub);margin:6px 0;line-height:1.6;}
+.nb .nb-tip{border-radius:10px;padding:9px;margin:7px 0;font-size:12px;line-height:1.65;background:#f7fbf8;border:1px solid #c9dfd0;}
+.nb .nb-tip b{color:var(--green-dark);}
+.nb .nb-box{border-radius:10px;padding:9px;margin:8px 0;font-size:12px;line-height:1.65;}
+.nb .nb-box.warn{background:#fdf6ec;border:1px solid #eed9ae;color:#a86a14;}
+.nb .nb-box.info{background:#eef2fa;border:1px solid #c3d9ea;color:#2a5a8a;}
+.nb .nb-box.red{background:#fdeeed;border:1px solid #f3c4bb;color:var(--red);}
+.nb h4{font-size:13.5px;margin:10px 0 4px;color:var(--text);font-weight:700;}
+.nb ul,.nb ol{margin:4px 0 4px 18px;padding:0;font-size:12px;line-height:1.65;}
+.nb .tg-row{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0;}
+.nb .tg{flex:1;min-width:64px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 4px;text-align:center;}
+.nb .tg .n{font-size:16px;font-weight:700;color:var(--green-dark);}
+.nb .tg .l{font-size:10.5px;color:var(--sub);margin-top:2px;}
+.nb .tg small{display:block;font-size:9.5px;color:var(--sub);margin-top:2px;}
+.nb .tg.k{background:var(--green-light);}
+.nb .tg.o{background:#fdf3e7;}
+.nb .xtag{display:inline-block;font-size:10px;padding:1px 5px;border-radius:6px;margin:1px 2px 1px 0;white-space:nowrap;}
+.nb .t-cheap{background:#fff3e0;color:#b26a00;}
+.nb .t-om3{background:#e3f2fd;color:#1565c0;}
+.nb .t-lean{background:#e8f5e9;color:#2e7d32;}
+.nb .t-rich{background:#fce4ec;color:#c2185b;}
 </style>
 </head>
 <body>
@@ -332,6 +358,146 @@ label.field-label{display:block;font-size:12px;color:var(--sub);margin-bottom:4p
     </details>
     <div class="section-title"><span>💡 根据冰箱现有食材推荐（已按匹配度排序）</span></div>
     <div id="recipeList"></div>
+    <div class="section-title"><span>📚 减脂养身笔记（长期参考 · 点开看）</span></div>
+    <div class="nb" style="margin-bottom:12px">
+
+      <details class="card" style="padding:12px">
+        <summary style="font-weight:700;cursor:pointer">🎯 每天吃多少（4 个数 · 维稳期）</summary>
+        <div class="tg-row">
+          <div class="tg k"><div class="n">~1250</div><div class="l">热量 kcal</div><small>缺口~550</small></div>
+          <div class="tg"><div class="n">75</div><div class="l">蛋白 g</div><small>1.3g/kg</small></div>
+          <div class="tg o"><div class="n">90</div><div class="l">脂肪 g</div><small>生酮燃料</small></div>
+          <div class="tg"><div class="n">≤25</div><div class="l">净碳 g</div><small>总碳≤50</small></div>
+        </div>
+        <div class="nb-box info">🐟 <b>你缺 Ω-3</b>：脂肪几乎全来自猪油/五花/黄油/椰浆/MCT，EPA+DHA≈0。补法：每周2~3次深海鱼（三文鱼/秋刀鱼/沙丁鱼）；或鱼油 EPA+DHA 合计 1~2g/天随餐。详见《低碳生酮参考手册》。</div>
+        <details style="margin-top:6px"><summary style="font-size:12.5px;cursor:pointer">为什么是这些数？</summary>
+          <ul>
+            <li>基础代谢≈1330 kcal（166cm/56.5kg/23岁女性）</li>
+            <li>每天总消耗≈1750~1800 kcal，吃1250→每周稳掉约1斤纯肥肉</li>
+            <li>蛋白75g保肌肉；净碳≤25g稳生酮；脂肪~90g是燃料，吃够才不饿不掉发不暴食</li>
+            <li>⚠️ 别低于1100连续几天，掉的是肌肉和代谢</li>
+          </ul>
+        </details>
+      </details>
+
+      <details class="card" style="padding:12px;margin-top:10px">
+        <summary style="font-weight:700;cursor:pointer">🥓 五花肉打底 · 每日搭配速查表</summary>
+        <div class="nb-sub">目标：蛋白 75~90g · 脂肪 85~100g · 净碳 ≤25g。<b>重量全生重</b>。菜 300g 生重（便秘期加到生重 700~800g）；五花肉煸出的油 150~200g 基准倒 1/3 再计入。</div>
+        <div class="nb-box info">🥬 蔬菜「生↔熟」：叶菜煮熟掉约一半水，煮熟 350~400g ≈ 生重 700~800g；便秘期分 1~2 周逐步加，配洋车前子壳1勺+多喝水。</div>
+        <h4>① 150g 五花打底（倒油后蛋白20/脂肪37，可配带脂肪的肉）</h4>
+        <table>
+          <tr><th>主蛋白(生重)</th><th class="num">蛋白</th><th class="num">脂肪</th><th class="num">净碳</th><th>点评</th></tr>
+          <tr><td>鸡腿带皮 300g</td><td class="num">~79</td><td class="num">~74</td><td class="num">~9</td><td>香·家常</td></tr>
+          <tr><td>猪里脊250+蛋1</td><td class="num">~84</td><td class="num">~58</td><td class="num">~9</td><td><span class="xtag t-cheap">最便宜</span><span class="xtag t-lean">瘦</span></td></tr>
+          <tr><td>三文鱼 250g</td><td class="num">~75</td><td class="num">~71</td><td class="num">~9</td><td><span class="xtag t-om3">补Ω3</span></td></tr>
+          <tr><td>牛腩 200g</td><td class="num">~61</td><td class="num">~82</td><td class="num">~9</td><td><span class="xtag t-rich">炖着香·偏肥</span></td></tr>
+          <tr><td>带肥羊 200g</td><td class="num">~61</td><td class="num">~80</td><td class="num">~9</td><td><span class="xtag t-rich">暖身·偏肥</span></td></tr>
+          <tr><td>鸭胸去皮250g+油5</td><td class="num">~85</td><td class="num">~48</td><td class="num">~9</td><td><span class="xtag t-lean">瘦而香</span></td></tr>
+          <tr><td>虾300+蛋1</td><td class="num">~85</td><td class="num">~48</td><td class="num">~10</td><td><span class="xtag t-lean">低脂高蛋白</span></td></tr>
+          <tr><td>鸡胸250+蛋1</td><td class="num">~91</td><td class="num">~48</td><td class="num">~9</td><td><span class="xtag t-lean">蛋白最高</span></td></tr>
+          <tr><td>猪梅花肉 200g</td><td class="num">~59</td><td class="num">~78</td><td class="num">~9</td><td><span class="xtag t-rich">带肥·香</span></td></tr>
+          <tr><td>排骨小排 200g</td><td class="num">~57</td><td class="num">~88</td><td class="num">~9</td><td><span class="xtag t-rich">炖汤香</span></td></tr>
+          <tr><td>鸡翅250+蛋2</td><td class="num">~83</td><td class="num">~76</td><td class="num">~9</td><td><span class="xtag t-rich">方便·香</span></td></tr>
+          <tr><td>青花鱼250+蛋1</td><td class="num">~79</td><td class="num">~78</td><td class="num">~9</td><td><span class="xtag t-om3">补Ω3·便宜</span></td></tr>
+          <tr><td>扇贝/带子 300g</td><td class="num">~76</td><td class="num">~41</td><td class="num">~12</td><td><span class="xtag t-lean">海鲜·清甜</span></td></tr>
+          <tr><td>蛤蜊 400g+蛋1</td><td class="num">~75</td><td class="num">~47</td><td class="num">~15</td><td><span class="xtag t-lean">低卡·鲜</span></td></tr>
+        </table>
+        <h4>② 200g 五花打底（倒油后蛋白26/脂肪49，必须配低脂高蛋白）</h4>
+        <table>
+          <tr><th>主蛋白(生重)</th><th class="num">蛋白</th><th class="num">脂肪</th><th class="num">净碳</th><th>点评</th></tr>
+          <tr><td>虾 350g</td><td class="num">~94</td><td class="num">~55</td><td class="num">~10</td><td><span class="xtag t-lean">低脂高蛋白</span></td></tr>
+          <tr><td>瘦牛肉牛里脊250g</td><td class="num">~86</td><td class="num">~58</td><td class="num">~9</td><td><span class="xtag t-cheap">最便宜</span><span class="xtag t-lean">瘦</span></td></tr>
+          <tr><td>去皮鸡腿 250g</td><td class="num">~76</td><td class="num">~55</td><td class="num">~9</td><td><span class="xtag t-lean">家常</span></td></tr>
+          <tr><td>鸡胸250+蛋1</td><td class="num">~97</td><td class="num">~60</td><td class="num">~9</td><td><span class="xtag t-lean">蛋白最高</span></td></tr>
+          <tr><td>白鱼鳕鱼鲈鱼300g</td><td class="num">~85</td><td class="num">~56</td><td class="num">~9</td><td><span class="xtag t-om3">补Ω3·清爽</span></td></tr>
+          <tr><td>猪里脊 250g</td><td class="num">~83</td><td class="num">~65</td><td class="num">~9</td><td><span class="xtag t-cheap">最便宜</span></td></tr>
+          <tr><td>秋刀鱼250+蛋1</td><td class="num">~85</td><td class="num">~83</td><td class="num">~9</td><td><span class="xtag t-om3">补Ω3·当季</span></td></tr>
+          <tr><td>沙丁鱼250+蛋1</td><td class="num">~87</td><td class="num">~85</td><td class="num">~9</td><td><span class="xtag t-om3">补Ω3·便宜</span></td></tr>
+          <tr><td>带鱼 300g</td><td class="num">~85</td><td class="num">~65</td><td class="num">~9</td><td><span class="xtag t-lean">家常·清爽</span></td></tr>
+          <tr><td>牛腱 250g</td><td class="num">~81</td><td class="num">~58</td><td class="num">~9</td><td><span class="xtag t-lean">瘦·卤着香</span></td></tr>
+          <tr><td>牛排西冷带肥200g</td><td class="num">~71</td><td class="num">~80</td><td class="num">~9</td><td><span class="xtag t-rich">香·西式</span></td></tr>
+          <tr><td>鸭胸去皮 250g</td><td class="num">~91</td><td class="num">~55</td><td class="num">~9</td><td><span class="xtag t-lean">瘦·香</span></td></tr>
+          <tr><td>猪肝200+蛋1</td><td class="num">~75</td><td class="num">~63</td><td class="num">~11</td><td><span class="xtag t-cheap">补铁·便宜</span></td></tr>
+          <tr><td>鱿鱼 300g</td><td class="num">~76</td><td class="num">~55</td><td class="num">~12</td><td><span class="xtag t-lean">海鲜·低卡</span></td></tr>
+        </table>
+        <div class="nb-sub"><b>🔑 口诀</b>：五花脂肪多→其他肉要瘦；反之可肥。总脂肪别超~100g。五花别低于100g（脂肪不足→便秘+酮流感），别超200g（脂肪爆）。</div>
+      </details>
+
+      <details class="card" style="padding:12px;margin-top:10px">
+        <summary style="font-weight:700;cursor:pointer">🚀 消化太慢？6 个促动力动作</summary>
+        <div class="nb-sub">你是胃排空延迟 + 结肠传输慢（打嗝有饭味、隔天晚上才排便），靠练动力回来。按有效性排序：</div>
+        <div class="nb-tip">① <b>饭后散步 20~30 分钟</b>（最有效）：饭后10分钟起身走到微热，别立刻坐/躺。走得多就要吃得多。</div>
+        <div class="nb-tip">② <b>吃姜（促胃排空）</b>：干姜粉 1~2g 餐前15~30分钟温水冲，一天≤4~5g；或姜枣茶/姜片热茶。有反流先饭后吃。</div>
+        <div class="nb-tip">③ <b>恢复期先把一餐拆两餐</b>：间隔3~5小时（蛋白平分，脂肪别堆一餐），轻松再回 OMAD。</div>
+        <div class="nb-tip">④ <b>液体固体分开</b>：随餐≤150ml，其余餐前30分或餐后1小时；早起空腹200~300ml温水启动。</div>
+        <div class="nb-tip">⑤ <b>固定排便训练</b>：每天晨起/餐后坐马桶5~10分钟，脚下踩小凳膝盖高于髋，别用力。</div>
+        <div class="nb-tip">⑥ <b>顺时针揉腹 + 柠檬酸镁</b>：右下→右上→左上→左下揉10分钟，早晚各一次；镁睡前30分钟配200~250ml水。</div>
+        <div class="nb-box red">💊 补剂剂量：镁看"元素镁"不是粉重（柠檬酸镁约11~16%元素镁，称2g≈220~320mg✅，安全150~350mg/天）；VC 单次≤1~2g（肠胃慢尤易腹泻）；镁和VC间隔30分。黑咖啡/浓茶餐后30分促结肠动力。⏱见效：前3天先不胀，7~14天规律。</div>
+      </details>
+
+      <details class="card" style="padding:12px;margin-top:10px">
+        <summary style="font-weight:700;cursor:pointer">🍽️ 聚餐 / 外出损害控制（通用）</summary>
+        <div class="nb-sub">不追求零破功，追求：①每顿伤害最小 ②每天守1锚点 ③事后快速回本。</div>
+        <div class="nb-tip">🥢 <b>改顺序不改菜</b>：先肉和菜垫底→最后主食；主食只吃半拳/尝两口，别硬扛别吃完；别喝粥/汤泡饭；面食重灾区（面条只吃1/3碗+大量卤蛋肉，饺子吃5个就停）。</div>
+        <div class="nb-tip">🍪 <b>零食分级</b>：🟢绿灯接（原味坚果/卤蛋/无糖酸奶/黄瓜小番茄/酱牛肉）；🟡黄灯尝一口（1/4月饼/一口蛋糕/一把带味瓜子）；🔴红灯别接（整块蛋糕面包/整袋薯片/含糖饮料果汁/蜜饯/麻花）。</div>
+        <div class="nb-tip">🚫 <b>隐形炸弹</b>：糖醋类、勾芡类、红烧类、油炸、含糖饮料、饭后水果拼盘。</div>
+        <div class="nb-tip">⏰ <b>被拉着吃三顿</b>→每餐只盛半碗吃完绝不添，筷子慢放（你慢胃吃慢自然停）。</div>
+        <div class="nb-tip">⚓ <b>每天1锚点</b>：带去的镁+纤维照吃 / 每天走8000步 / 每天至少1蛋+1拳绿菜——做一件就算没白过。</div>
+        <div class="nb-tip">🗣️ <b>投喂话术</b>：长辈「我胃在调理医生让我少吃甜腻的」+撒娇；平辈「我在戒糖呢脸上湿疹闹脾气」；手端杯茶/剥核桃嘴不空就没人塞。</div>
+        <div class="nb-tip">🧯 <b>吃多了</b>：下一顿「清淡顿」（蛋+菜+汤≈800~1000kcal）拉平；别连放两天，别用断食惩罚；饭后走30分。</div>
+        <div class="nb-box warn">⚖️ 重新定义成功：最坏情况真脂肪+1~3斤+水/残渣+3~6斤=秤面+4~8斤峰值，但全是水+屎不是肉，回本3~5天就掉。能"伤害最小+事后回本"就是满分。</div>
+      </details>
+
+      <details class="card" style="padding:12px;margin-top:10px">
+        <summary style="font-weight:700;cursor:pointer">🍵 花茶性质库 + 👩 女生养身食材库</summary>
+        <div class="nb-sub">花茶分寒温不是都性阴；女生养身也不只红枣。全表无麸、控碳。</div>
+        <h4>🌸 花茶（你寒型怎么选）</h4>
+        <table>
+          <tr><th>花茶</th><th>性</th><th>能喝吗</th><th>备注</th></tr>
+          <tr><td>玫瑰花</td><td>微温</td><td>✅首选</td><td>疏肝解郁活血调经，寒型最友好</td></tr>
+          <tr><td>桂花</td><td>温</td><td>✅</td><td>温肺化痰暖胃</td></tr>
+          <tr><td>茉莉</td><td>平/微温</td><td>✅</td><td>理气安神</td></tr>
+          <tr><td>枸杞菊花</td><td>菊凉</td><td>⚠️配枸杞中和</td><td>单喝伤你，加枸杞/红枣</td></tr>
+          <tr><td>洛神花</td><td>凉酸</td><td>⚠️加姜/肉桂</td><td>胃寒少喝，想喝必配温料</td></tr>
+          <tr><td>金银花</td><td>大寒</td><td>❌别碰</td><td>怕冷体质避开</td></tr>
+        </table>
+        <div class="nb-box info">💡 温性花茶（玫瑰/桂花/茉莉）随便喝；凉性（菊/洛神/金银）剔掉或必须配温料，照样能轮换多喝水。</div>
+        <h4>👩 女生养身食材库（不止红枣）</h4>
+        <table>
+          <tr><th>食材</th><th>类别</th><th>净碳</th><th>作用&注意</th></tr>
+          <tr><td>猪肝/鸭血/猪血</td><td>补血</td><td>≈0</td><td>铁+B12，补经期失血最实在，比红枣管用</td></tr>
+          <tr><td>当归</td><td>补血活血</td><td>≈0</td><td>妇科第一药，配羊肉/蛋</td></tr>
+          <tr><td>桂圆肉</td><td>补心脾</td><td>~6-9g</td><td>虚型合适，干品3~5颗限量，热型/量大停</td></tr>
+          <tr><td>黑芝麻</td><td>补肾</td><td>~3g/勺</td><td>补肝肾益精血</td></tr>
+          <tr><td>核桃</td><td>温肾</td><td>中</td><td>几颗就好</td></tr>
+          <tr><td>黄芪</td><td>补气</td><td>≈0</td><td>气能生血，虚型泡水</td></tr>
+          <tr><td>鸡蛋</td><td>基础蛋白</td><td>~0.6/个</td><td>每日可+1个</td></tr>
+          <tr><td>羊肉</td><td>温补</td><td>≈0</td><td>当归生姜羊肉汤，寒凝血瘀首选</td></tr>
+          <tr><td>益母草</td><td>活血调经</td><td>—</td><td>经后/经期辨证用，不长期</td></tr>
+        </table>
+        <div class="nb-box warn">⚠️ 月经推迟先别只靠食补：偶尔一次最可能是能量缺口（吃少+动多+体重偏低）身体暂时熄火。核心是收窄能量缺口、别再压体重；停超3个月或伴脱发/怕冷骤重/情绪大变，挂妇科查激素六项+甲功+超声。本页不构成医疗建议。</div>
+      </details>
+
+      <details class="card" style="padding:12px;margin-top:10px">
+        <summary style="font-weight:700;cursor:pointer">🍂 节气养身食谱（生酮·无麸）</summary>
+        <div class="nb-sub">传统节气食方多含糯米/栗子/柿子/汤圆（高碳或含麸），下列换成 keto 友好的肉/芝麻/银耳/百合。</div>
+        <table>
+          <tr><th>节气</th><th class="num">净碳</th><th>养身食谱&中医思路</th></tr>
+          <tr><td>秋分</td><td class="num">~3g</td><td>润肺燥：银耳百合羹、黑芝麻</td></tr>
+          <tr><td>寒露</td><td class="num">~5g</td><td>银耳+少许梨(2~3薄片)+芝麻；或无糖酸奶/奶酪。少辛辣</td></tr>
+          <tr><td>霜降</td><td class="num">~6g</td><td>羊肉萝卜汤（萝卜少量）、当归羊肉</td></tr>
+          <tr><td>立冬</td><td class="num">≈0</td><td>当归生姜羊肉汤+白萝卜；黑芝麻骨头汤</td></tr>
+          <tr><td>小雪</td><td class="num">~5g</td><td>黑芝麻+黑豆(少量)+羊肉；黑色入肾</td></tr>
+          <tr><td>大雪</td><td class="num">~8g</td><td>桂圆羊肉汤、骨头汤；桂圆几颗限量</td></tr>
+          <tr><td>冬至</td><td class="num">≈0</td><td>羊肉煲+骨头汤（冬至饺子多为麸皮面皮→改羊肉煲）</td></tr>
+        </table>
+        <div class="nb-tip">🍐 <b>银耳百合羹</b>：银耳半朵+鲜百合30g+枸杞，炖1~2h出胶，不加糖。秋分润肺。</div>
+        <div class="nb-tip">🐑 <b>羊肉萝卜汤</b>：羊肉200g+白萝卜少量+当归5g+姜，炖1h下萝卜再15min。霜降平补。</div>
+        <div class="nb-tip">⚫ <b>黑芝麻骨头汤</b>：猪骨汤+炒香黑芝麻粉1~2勺+盐。补肾益精。</div>
+        <div class="nb-box info">🌰 红枣去皮：干枣皮含鞣酸→抑铁吸收+收敛加重便秘+刺激肠胃。去皮减鞣酸好消化。银耳+红枣不会"煮出糖"，甜全来自红枣自身溶出的糖，想控碳少放枣或只喝汤。</div>
+      </details>
+
+    </div>
   </div>
 
   <!-- ============ 食材分级（隐藏页：点顶部「🥑 食物地图」徽章进入） ============ -->
@@ -1403,6 +1569,13 @@ const RECIPES=[
  {n:'银耳枸杞羹(滋阴)',t:'60分钟',tag:'yangsheng',keto:2,carb:'约3g',ings:[['银耳','半朵'],['枸杞','1撮'],['红枣','1颗']],steps:'1. 银耳半朵泡发去黄蒂撕小朵\n2. 加红枣(去皮)、枸杞，水炖/养生壶1-2小时出胶\n3. 【不加冰糖/红糖】甜味来自红枣\n4. 平性不燥，适合阴虚口干型；银耳本身几乎无糖'},
  {n:'当归生姜羊肉汤',t:'90分钟',tag:'yangsheng',keto:2,carb:'≈0',ings:[['羊肉','250克'],['当归','10克'],['生姜','20克']],steps:'1. 羊肉切块冷水下锅焯水去沫\n2. 重新加水，放当归10g、生姜20g\n3. 炖1-1.5小时至软烂，加盐\n4. 补血活血调经、温经散寒，寒凝血瘀痛经首选；keto完美；热型/上火停'},
  {n:'猪肝枸杞叶汤',t:'15分钟',tag:'yangsheng',keto:1,carb:'约3g',ings:[['猪肝','120克'],['枸杞叶','1把'],['姜','2片']],steps:'1. 猪肝切薄片，清水抓洗去血水\n2. 水开下姜丝，放猪肝煮至变色(约1分钟)\n3. 下枸杞叶/菠菜烫熟，盐调味，【别煮老】\n4. 中医以形补形养血第一，经期失血后补铁最佳'}
+,
+ {n:'酸菜炒五花肉',t:'15分钟',tag:'fast',keto:2,carb:'约5g',ings:[['酸菜','300克'],['五花肉','200克'],['姜','适量'],['蒜','适量']],steps:'1. 酸菜清水多搓洗3-4遍挤干(盐敏感减钠关键)，切段\n2. 五花肉切薄片，冷锅中小火煸出油(油留着，是脂肪额度)\n3. 下姜蒜爆香，倒酸菜大火炒2分钟出味\n4. 淋无麸生抽+少许代糖提鲜，翻匀出锅；配饭或单吃'},
+ {n:'番茄鸡蛋金针菇汤',t:'15分钟',tag:'fast',keto:1,carb:'约11g',ings:[['番茄','100克'],['鸡蛋','2个'],['金针菇','200克'],['白胡椒','适量']],steps:'1. 番茄切块少油炒出沙出汁(爱喝汤多加水)\n2. 金针菇去根撕小束下锅煮2分钟\n3. 鸡蛋打散转圈淋入成蛋花煮30秒\n4. 无麸生抽+白胡椒调味；汤水免费吨，碳水在干货里'},
+ {n:'上海青炒五花肉',t:'12分钟',tag:'fast',keto:2,carb:'约5g',ings:[['上海青','400克'],['五花肉','200克'],['蒜','适量']],steps:'1. 上海青先焯水30-60秒(敏感肠胃软化纤维好消化)，过凉切段\n2. 五花肉煸出油，下蒜爆香\n3. 倒上海青大火快炒1分钟，无麸生抽调味出锅，别留生梗'},
+ {n:'无芡酸辣汤(老豆腐丝版)',t:'15分钟',tag:'fast',keto:1,carb:'约15g',ings:[['番茄','2个'],['金针菇','80克'],['老豆腐','100克'],['木耳','40克'],['鸡蛋','2个'],['白胡椒','适量']],steps:'1. 番茄炒沙出汁加水煮开\n2. 下金针菇、木耳丝、老豆腐丝煮3分钟\n3. 淋蛋液成花，白胡椒+无麸生抽调味，【不勾芡不加糖】\n4. 胡辣汤平替，净碳少一半、无麸，可常喝'},
+ {n:'无芡酸辣汤(嫩豆腐咸豆腐脑版)',t:'15分钟',tag:'fast',keto:1,carb:'约14g',ings:[['番茄','2个'],['金针菇','80克'],['木耳','40克'],['鸡蛋','2个'],['嫩豆腐','250克'],['白胡椒','适量']],steps:'1. 番茄炒沙加水，下金针菇、木耳煮2分钟，淋蛋花成卤子\n2. 嫩豆腐用勺挖大块铺碗底\n3. 卤子浇上去，白胡椒提味，就是无芡咸豆腐脑，净碳更低'},
+ {n:'生酮茶叶蛋',t:'30分钟+过夜',tag:'fast',keto:2,carb:'约0g',ings:[['鸡蛋','10个'],['红茶','适量'],['生抽','适量'],['老抽','适量'],['盐','适量'],['八角','可选'],['桂皮','可选']],steps:'1. 鸡蛋冷水煮8-10分钟全熟，泡冰水敲出均匀裂纹\n2. 另锅加水+茶叶+生抽+老抽+盐+香料煮开\n3. 放蛋小火15-20分钟，关火连汤冷藏过夜更入味\n4. 每颗净碳0，当加餐/零食'}
 ];
 
 /* ================= 应季食材库 ================= */
